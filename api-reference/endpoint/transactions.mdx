@@ -1,0 +1,54 @@
+---
+title: 'Get Transactions'
+openapi: 'GET /transactions'
+---
+
+Retrieve a paginated list of your transactions with optional filtering by status and date range.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=20&status=completed" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | integer | Page number (default: 1) |
+| `pageSize` | integer | Results per page (default: 20, max: 100) |
+| `status` | string | Filter by status: `pending`, `completed`, `failed` |
+| `startDate` | string | Start date filter (ISO 8601 format) |
+| `endDate` | string | End date filter (ISO 8601 format) |
+
+## Example Response
+
+```json
+{
+  "status": true,
+  "message": "Transactions retrieved successfully",
+  "data": {
+    "transactions": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "type": "withdrawal",
+        "status": "completed",
+        "amount": 500000,
+        "currency": "NGN",
+        "description": "Vendor payment",
+        "created_at": "2024-01-15T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 150
+    }
+  }
+}
+```
+
+<Tip>
+  Use date range filters to export transaction data for specific periods. Combine with status filter to find failed transactions that may need to be retried.
+</Tip>

@@ -1,0 +1,26 @@
+---
+title: 'List Banks'
+openapi: 'GET /banks'
+---
+
+Retrieve a list of all Nigerian banks supported for payouts. Use the `bankCode` from this response when initiating payouts or performing account lookups.
+
+## Example Response
+
+```json
+{
+  "status": true,
+  "message": "Banks retrieved successfully",
+  "data": {
+    "data": [
+      { "bankName": "Access Bank", "bankCode": "000014" },
+      { "bankName": "GTBank", "bankCode": "000013" },
+      { "bankName": "Zenith Bank", "bankCode": "000015" }
+    ]
+  }
+}
+```
+
+<Note>
+  The bank list is cached and updated periodically. Store the list locally if you need to display bank options frequently.
+</Note>

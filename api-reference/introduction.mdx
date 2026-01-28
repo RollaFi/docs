@@ -1,33 +1,67 @@
 ---
 title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+description: 'Rolla Developer API for programmatic payouts and transaction management'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+The Rolla Developer API enables you to programmatically manage payouts and retrieve transaction data. Use it to automate vendor payments, salary disbursements, and other financial operations.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
-
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+**Base URL**: `https://api.rolla.xyz/api/v1/external`
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+All API endpoints require authentication using an API key. Include your API key in the `X-API-Key` header with every request.
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+<Warning>
+  Keep your API key secure. Do not expose it in client-side code or public repositories.
+</Warning>
+
+### Obtaining an API Key
+
+API keys can be generated from your [Rolla Dashboard](https://app.rolla.xyz). Navigate to **Settings → API Keys** to create and manage your keys.
+
+### IP Whitelisting
+
+For enhanced security, you can optionally whitelist specific IP addresses for your API key. When enabled, requests from non-whitelisted IPs will be rejected.
+
+## Response Format
+
+All responses follow a consistent JSON structure:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+{
+  "status": true,
+  "message": "Description of the result",
+  "data": { ... }
+}
 ```
+
+### Error Responses
+
+When an error occurs, the response will include `status: false` and a descriptive error message:
+
+```json
+{
+  "status": false,
+  "message": "Invalid or inactive API key"
+}
+```
+
+## Rate Limiting
+
+API requests are rate-limited to ensure fair usage. If you exceed the limit, you'll receive a `429 Too Many Requests` response.
+
+## Available Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/banks` | GET | List Nigerian banks |
+| `/lookup` | POST | Validate bank account |
+| `/payouts` | POST | Initiate a payout |
+| `/transactions` | GET | Retrieve transactions |

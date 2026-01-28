@@ -1,97 +1,74 @@
 ---
 title: "Introduction"
-description: "Welcome to the new home for your documentation"
+description: "Welcome to the Rolla Developer API documentation"
 ---
 
-## Setting up
+## What is Rolla?
 
-Get your documentation site up and running in minutes.
+Rolla is a financial infrastructure platform that enables businesses to manage multi-currency wallets, process payouts, and handle cross-border transactions. Our Developer API gives you programmatic access to these capabilities.
 
 <Card
-  title="Start here"
+  title="Quick Start"
   icon="rocket"
   href="/quickstart"
   horizontal
 >
-  Follow our three step quickstart guide.
+  Get up and running with the Rolla API in minutes.
 </Card>
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
+## Core Capabilities
 
 <Columns cols={2}>
   <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
+    title="Bank Payouts"
+    icon="money-bill-transfer"
+    href="/api-reference/endpoint/payouts"
   >
-    Edit your docs locally and preview them in real time.
+    Send instant payouts to Nigerian bank accounts programmatically.
   </Card>
   <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
+    title="Account Validation"
+    icon="magnifying-glass-dollar"
+    href="/api-reference/endpoint/lookup"
   >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+    Verify bank account details before sending payments.
   </Card>
   <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
+    title="Bank Directory"
+    icon="building-columns"
+    href="/api-reference/endpoint/banks"
   >
-    Auto-generate API documentation from OpenAPI specifications.
+    Access our complete list of supported Nigerian banks.
+  </Card>
+  <Card
+    title="Transaction History"
+    icon="clock-rotate-left"
+    href="/api-reference/endpoint/transactions"
+  >
+    Query and filter your transaction records via API.
   </Card>
 </Columns>
 
-## Create beautiful pages
+## Getting Started
 
-Everything you need to create world-class documentation.
+<Steps>
+  <Step title="Get API Access">
+    Sign up at [app.rolla.xyz](https://app.rolla.xyz) and complete business verification.
+  </Step>
+  <Step title="Generate API Key">
+    Navigate to **Settings → API Keys** in your dashboard to create a key.
+  </Step>
+  <Step title="Make Your First Request">
+    Use your API key to call any endpoint with the `X-API-Key` header.
+  </Step>
+</Steps>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
-
-## Need inspiration?
+## Need Help?
 
 <Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
+  title="Contact Support"
+  icon="headset"
+  href="mailto:support@rolla.xyz"
 >
-  Browse our showcase of exceptional documentation sites.
+  Reach out to our team for integration assistance.
 </Card>
