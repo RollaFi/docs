@@ -1,0 +1,68 @@
+---
+title: 'Create KYB Application'
+openapi: 'POST /kyb'
+---
+
+Create a new KYB application for your business. All fields are optional, allowing you to save a draft and complete it later using the update endpoint.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/kyb" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "business_info": {
+      "legalName": "Acme Corp Ltd",
+      "tradingName": "Acme",
+      "businessType": "Limited Company",
+      "incorporationDate": "2020-01-15",
+      "incorporationCountry": "NG",
+      "registrationNumber": "RC-1234567",
+      "taxId": "12345678-0001"
+    },
+    "business_address": {
+      "street": "123 Main Street",
+      "city": "Lagos",
+      "state": "Lagos",
+      "postalCode": "100001",
+      "country": "NG"
+    },
+    "contact_info": {
+      "email": "contact@acmecorp.com",
+      "phone": "+2341234567890"
+    }
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Application created successfully",
+  "data": {
+    "application": {
+      "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+      "status": "draft",
+      "current_step": 1,
+      "is_complete": false,
+      "business_info": {
+        "legalName": "Acme Corp Ltd",
+        "tradingName": "Acme",
+        "businessType": "Limited Company",
+        "incorporationDate": "2020-01-15",
+        "incorporationCountry": "NG",
+        "registrationNumber": "RC-1234567",
+        "taxId": "12345678-0001"
+      },
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+<Warning>
+  Only one KYB application can exist per business. This endpoint returns a `409 Conflict` if an application already exists. Use `PUT /kyb` to update an existing application.
+</Warning>

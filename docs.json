@@ -41,6 +41,72 @@
           {
             "group": "Transactions",
             "pages": ["api-reference/endpoint/transactions"]
+          },
+          {
+            "group": "Wallet",
+            "pages": [
+              "api-reference/endpoint/wallet/wallets",
+              "api-reference/endpoint/wallet/rates",
+              "api-reference/endpoint/wallet/supported-currencies",
+              "api-reference/endpoint/wallet/payment-accounts",
+              "api-reference/endpoint/wallet/add-funds",
+              "api-reference/endpoint/wallet/swap",
+              "api-reference/endpoint/wallet/withdraw",
+              "api-reference/endpoint/wallet/fee",
+              "api-reference/endpoint/wallet/transactions",
+              "api-reference/endpoint/wallet/export-transactions",
+              "api-reference/endpoint/wallet/get-transaction",
+              "api-reference/endpoint/wallet/statement",
+              "api-reference/endpoint/wallet/virtual-accounts",
+              "api-reference/endpoint/wallet/loans",
+              "api-reference/endpoint/wallet/loan-draw",
+              "api-reference/endpoint/wallet/loan-repay"
+            ]
+          },
+          {
+            "group": "Beneficiaries",
+            "pages": [
+              "api-reference/endpoint/beneficiaries/list",
+              "api-reference/endpoint/beneficiaries/create",
+              "api-reference/endpoint/beneficiaries/get",
+              "api-reference/endpoint/beneficiaries/update",
+              "api-reference/endpoint/beneficiaries/delete",
+              "api-reference/endpoint/beneficiaries/nigerian-banks",
+              "api-reference/endpoint/beneficiaries/lookup"
+            ]
+          },
+          {
+            "group": "Teams",
+            "pages": [
+              "api-reference/endpoint/teams/roles",
+              "api-reference/endpoint/teams/invite",
+              "api-reference/endpoint/teams/members",
+              "api-reference/endpoint/teams/remove-member",
+              "api-reference/endpoint/teams/update-status"
+            ]
+          },
+          {
+            "group": "Broker",
+            "pages": [
+              "api-reference/endpoint/broker/get-referral-link",
+              "api-reference/endpoint/broker/create-referral-link",
+              "api-reference/endpoint/broker/referred-businesses",
+              "api-reference/endpoint/broker/commissions",
+              "api-reference/endpoint/broker/referral-stats"
+            ]
+          },
+          {
+            "group": "KYB",
+            "pages": [
+              "api-reference/endpoint/kyb/get-application",
+              "api-reference/endpoint/kyb/create-application",
+              "api-reference/endpoint/kyb/update-application",
+              "api-reference/endpoint/kyb/get-documents",
+              "api-reference/endpoint/kyb/upload-document",
+              "api-reference/endpoint/kyb/get-invites",
+              "api-reference/endpoint/kyb/related-persons",
+              "api-reference/endpoint/kyb/individual"
+            ]
           }
         ]
       }

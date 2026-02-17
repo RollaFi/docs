@@ -1,0 +1,54 @@
+---
+title: 'Get Commissions'
+openapi: 'GET /broker/commissions'
+---
+
+Retrieve a paginated list of commissions earned from your referrals. Filter by date range or currency.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/broker/commissions?page=1&pageSize=20&currency=USD&startDate=2024-01-01&endDate=2024-01-31" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | integer | Page number (default: 1) |
+| `pageSize` | integer | Results per page (default: 20, max: 100) |
+| `startDate` | string | Start date filter (YYYY-MM-DD) |
+| `endDate` | string | End date filter (YYYY-MM-DD) |
+| `currency` | string | Filter by 3-letter currency code (uppercase, e.g. `USD`) |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Commissions retrieved successfully",
+  "data": {
+    "commissions": [
+      {
+        "id": "e5f6a7b8-c9d0-1234-efgh-567890123456",
+        "amount": 15.50,
+        "currency": "USD",
+        "businessName": "Acme Corp Ltd",
+        "businessEmail": "contact@acmecorp.com",
+        "transactionAmount": 1000,
+        "created_at": "2024-01-20T14:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 45
+    }
+  }
+}
+```
+
+<Tip>
+  Use the `startDate` and `endDate` filters to generate commission reports for specific periods.
+</Tip>

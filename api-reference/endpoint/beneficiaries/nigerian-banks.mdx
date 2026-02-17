@@ -1,0 +1,33 @@
+---
+title: 'List Nigerian Banks'
+openapi: 'GET /beneficiaries/nigerian-banks'
+---
+
+Retrieve a list of Nigerian banks for use when creating NGN beneficiaries. Returns the same data as the `/banks` endpoint.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/beneficiaries/nigerian-banks" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Banks retrieved successfully",
+  "data": {
+    "data": [
+      { "bankName": "Access Bank", "bankCode": "000014" },
+      { "bankName": "GTBank", "bankCode": "000013" },
+      { "bankName": "Zenith Bank", "bankCode": "000015" }
+    ]
+  }
+}
+```
+
+<Note>
+  Use the `bankCode` from this response when creating NGN beneficiaries or performing account lookups.
+</Note>

@@ -1,0 +1,29 @@
+---
+title: 'Get Supported Currencies'
+openapi: 'GET /wallet/supported-currencies'
+---
+
+Retrieve the list of currencies supported on the Rolla platform.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/supported-currencies" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Supported currencies retrieved successfully",
+  "data": {
+    "currencies": ["NGN", "USD", "GBP", "EUR"]
+  }
+}
+```
+
+<Note>
+  Store this list locally and refresh periodically. The supported currencies rarely change but new ones may be added over time.
+</Note>

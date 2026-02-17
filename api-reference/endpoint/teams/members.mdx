@@ -1,0 +1,48 @@
+---
+title: 'Get Team Members'
+openapi: 'GET /teams/members'
+---
+
+Retrieve a paginated list of team members for your business. Filter by status or search by name and email.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize=10&status=active" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `page` | integer | Page number (default: 1) |
+| `pageSize` | integer | Results per page (default: 10, max: 100) |
+| `search` | string | Search by name or email |
+| `status` | string | Filter by status: `active`, `inactive` |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Team members retrieved successfully",
+  "data": {
+    "members": [
+      {
+        "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "email": "jane@example.com",
+        "fullname": "Jane Doe",
+        "role": "Admin",
+        "status": "active",
+        "created_at": "2024-01-10T08:00:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 10,
+      "total": 3
+    }
+  }
+}
+```

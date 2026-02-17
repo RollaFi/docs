@@ -1,0 +1,35 @@
+---
+title: 'Swap Currency'
+openapi: 'POST /wallet/swap'
+---
+
+Swap funds from one currency to another at the current exchange rate. Use a `rateToken` from the `/wallet/rates` endpoint to lock in a specific rate.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/swap" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromCurrency": "USD",
+    "toCurrency": "NGN",
+    "fromAmount": 1000,
+    "description": "Convert USD to NGN",
+    "rateToken": "rt_abc123def456"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Swap completed successfully",
+  "data": {}
+}
+```
+
+<Warning>
+  The `fromCurrency` and `toCurrency` must be different. If you don't provide a `rateToken`, the swap will execute at the current market rate which may differ from the last quoted rate.
+</Warning>

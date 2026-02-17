@@ -1,0 +1,57 @@
+---
+title: 'Get Wallet Transactions'
+openapi: 'GET /wallet/transactions'
+---
+
+Retrieve a paginated list of wallet transactions with optional filtering by currency, type, status, date range, and search term.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions?currency=NGN&status=completed&page=1&pageSize=20" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency` | string | Filter by 3-letter currency code (e.g. `NGN`, `USD`) |
+| `transactionType` | string | Filter by type: `deposit`, `withdrawal`, `swap` |
+| `status` | string | Filter by status: `pending`, `completed`, `failed`, `rejected`, `sent` |
+| `page` | integer | Page number (default: 1) |
+| `pageSize` | integer | Results per page (default: 20, max: 100) |
+| `startDate` | string | Start date filter (YYYY-MM-DD) |
+| `endDate` | string | End date filter (YYYY-MM-DD) |
+| `search` | string | Search term to filter transactions |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Transactions retrieved successfully",
+  "data": {
+    "transactions": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "type": "withdrawal",
+        "status": "completed",
+        "amount": 500000,
+        "currency": "NGN",
+        "description": "Vendor payment",
+        "created_at": "2024-01-15T10:30:00.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 150
+    }
+  }
+}
+```
+
+<Tip>
+  Use date range filters to export transaction data for specific periods. Combine with the `status` filter to find failed transactions that may need to be retried.
+</Tip>

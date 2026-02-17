@@ -1,0 +1,42 @@
+---
+title: 'Get Available Roles'
+openapi: 'GET /teams/roles'
+---
+
+Retrieve the list of roles available for assignment when inviting team members.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Roles retrieved successfully",
+  "data": {
+    "roles": [
+      {
+        "id": "e5f6a7b8-c9d0-1234-efgh-567890123456",
+        "name": "Admin",
+        "description": "Full access to all features",
+        "permissions": ["manage_team", "manage_wallets", "manage_payouts", "manage_api_keys"]
+      },
+      {
+        "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+        "name": "Finance",
+        "description": "Access to wallet and payout features",
+        "permissions": ["manage_wallets", "manage_payouts"]
+      }
+    ]
+  }
+}
+```
+
+<Tip>
+  Use the role `id` from this response when inviting a team member via the `/teams/invite` endpoint.
+</Tip>

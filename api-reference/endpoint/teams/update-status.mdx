@@ -1,0 +1,30 @@
+---
+title: 'Update Member Status'
+openapi: 'PATCH /teams/members/{userId}/status'
+---
+
+Activate or deactivate a team member. Only business owners can update member status.
+
+## Example Request
+
+```bash
+curl -X PATCH "https://api.rolla.xyz/api/v1/external/teams/members/a1b2c3d4-e5f6-7890-abcd-ef1234567890/status" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "inactive"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Member status updated successfully"
+}
+```
+
+<Warning>
+  The business owner's status cannot be changed, and pending invites cannot be activated or deactivated. Only `active` and `inactive` members can have their status updated.
+</Warning>

@@ -1,0 +1,48 @@
+---
+title: 'Upload KYB Document'
+openapi: 'POST /kyb/documents'
+---
+
+Upload a document for a KYB application. This endpoint accepts `multipart/form-data` with the document file and metadata.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/kyb/documents" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "file=@/path/to/certificate.pdf" \
+  -F "applicationId=f6a7b8c9-d0e1-2345-fghi-678901234567" \
+  -F "documentType=certificate_of_incorporation"
+```
+
+## Form Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | file | Yes | The document file to upload |
+| `applicationId` | string | Yes | KYB application ID |
+| `documentType` | string | Yes | Type of document being uploaded |
+| `relatedPersonKey` | string | No | Related person identifier (for person-specific documents) |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Document uploaded successfully",
+  "data": {
+    "document": {
+      "id": "a7b8c9d0-e1f2-3456-ghij-789012345678",
+      "applicationId": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+      "documentType": "certificate_of_incorporation",
+      "fileName": "certificate.pdf",
+      "fileUrl": "https://storage.rolla.xyz/documents/certificate.pdf",
+      "created_at": "2024-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+<Note>
+  Use the `relatedPersonKey` field when uploading documents for specific directors or beneficial owners (e.g., ID documents, proof of address).
+</Note>

@@ -1,0 +1,44 @@
+---
+title: 'Get Wallets'
+openapi: 'GET /wallet/wallets'
+---
+
+Retrieve all wallets for your business, including balances and currency information. Optionally include loan accounts in the response.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets?includeLoans=true" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Business wallets retrieved successfully",
+  "data": {
+    "wallets": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "currency": "NGN",
+        "balance": 1000000,
+        "available_balance": 950000,
+        "created_at": "2024-01-10T08:00:00.000Z"
+      },
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "currency": "USD",
+        "balance": 5000,
+        "available_balance": 5000,
+        "created_at": "2024-01-10T08:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+<Tip>
+  The `available_balance` may be less than `balance` if you have pending transactions or holds. Use `available_balance` when checking if you have sufficient funds for a withdrawal.
+</Tip>

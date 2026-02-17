@@ -1,0 +1,42 @@
+---
+title: 'Get Exchange Rates'
+openapi: 'GET /wallet/rates'
+---
+
+Retrieve current exchange rates for all supported currency pairs. Use the `rateToken` from the response to lock in a rate when performing a swap.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/rates" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Rates retrieved successfully",
+  "data": {
+    "rates": [
+      {
+        "fromCurrency": "USD",
+        "toCurrency": "NGN",
+        "rate": 1550.00,
+        "rateToken": "rt_abc123def456"
+      },
+      {
+        "fromCurrency": "NGN",
+        "toCurrency": "USD",
+        "rate": 0.000645,
+        "rateToken": "rt_def456ghi789"
+      }
+    ]
+  }
+}
+```
+
+<Info>
+  Exchange rates are live and may change between the time you fetch them and when you execute a swap. Pass the `rateToken` to the `/wallet/swap` endpoint to lock in the quoted rate.
+</Info>

@@ -1,0 +1,67 @@
+---
+title: 'Update KYB Application'
+openapi: 'PUT /kyb'
+---
+
+Update an existing KYB application with new information. Use this to complete a draft application step by step or make corrections before submission.
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.rolla.xyz/api/v1/external/kyb" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "related_persons": [
+      {
+        "firstName": "John",
+        "lastName": "Doe",
+        "roles": ["Director", "Beneficial Owner"],
+        "email": "john@acmecorp.com",
+        "phone": "+2341234567890",
+        "dateOfBirth": "1990-01-15",
+        "ownershipPercentage": 60,
+        "currentAddress": {
+          "street": "456 Oak Avenue",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "100001",
+          "country": "NG"
+        }
+      }
+    ],
+    "banking_info": {
+      "bankName": "Access Bank",
+      "accountNumber": "0123456789",
+      "routingNumber": "000014",
+      "accountType": "checking",
+      "currency": "NGN"
+    },
+    "current_step": 4,
+    "is_complete": true,
+    "status": "submitted"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Application updated successfully",
+  "data": {
+    "application": {
+      "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+      "status": "submitted",
+      "current_step": 4,
+      "is_complete": true,
+      "created_at": "2024-01-10T08:00:00.000Z",
+      "updated_at": "2024-01-15T14:00:00.000Z"
+    }
+  }
+}
+```
+
+<Info>
+  Set `status` to `submitted` and `is_complete` to `true` when the application is ready for review. Ensure all required sections (business info, address, contact info, related persons, and banking info) are complete before submitting.
+</Info>

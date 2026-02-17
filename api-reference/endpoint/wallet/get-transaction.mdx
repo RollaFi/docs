@@ -1,0 +1,37 @@
+---
+title: 'Get Transaction'
+openapi: 'GET /wallet/transaction/{transactionId}'
+---
+
+Retrieve the full details of a specific wallet transaction by its ID.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/a1b2c3d4-e5f6-7890-abcd-ef1234567890" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Transaction retrieved successfully",
+  "data": {
+    "transaction": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "type": "withdrawal",
+      "status": "completed",
+      "amount": 500000,
+      "currency": "NGN",
+      "description": "Vendor payment",
+      "created_at": "2024-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+<Note>
+  The `transactionId` must be a valid UUID. You can obtain transaction IDs from the `/wallet/transactions` list endpoint.
+</Note>

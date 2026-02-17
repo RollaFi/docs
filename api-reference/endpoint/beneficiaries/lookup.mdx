@@ -1,0 +1,39 @@
+---
+title: 'Beneficiary Lookup'
+openapi: 'POST /beneficiaries/beneficiary-lookup'
+---
+
+Validate a bank account and retrieve the account holder's name. Use this to confirm details before creating a beneficiary.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries/beneficiary-lookup" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bankCode": "000014",
+    "accountNumber": "0123456789"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Account details retrieved successfully",
+  "data": {
+    "data": {
+      "accountNumber": "0123456789",
+      "accountName": "JOHN DOE",
+      "bankCode": "000014",
+      "bankName": "Access Bank"
+    }
+  }
+}
+```
+
+<Warning>
+  Always verify the account name with your user before creating a beneficiary or initiating a payout. Incorrect details may result in failed or misdirected payments.
+</Warning>

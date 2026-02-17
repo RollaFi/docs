@@ -30,7 +30,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "boolean", "example": true },
+                    "status": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "message": {
                       "type": "string",
                       "example": "Banks retrieved successfully"
@@ -40,7 +43,9 @@
                       "properties": {
                         "data": {
                           "type": "array",
-                          "items": { "$ref": "#/components/schemas/Bank" }
+                          "items": {
+                            "$ref": "#/components/schemas/Bank"
+                          }
                         }
                       }
                     }
@@ -53,7 +58,9 @@
             "description": "Unauthorized - Invalid or missing API key",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -69,7 +76,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/LookupRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/LookupRequest"
+              }
             }
           }
         },
@@ -81,7 +90,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "boolean", "example": true },
+                    "status": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "message": {
                       "type": "string",
                       "example": "Account details retrieved successfully"
@@ -103,7 +115,9 @@
             "description": "Bad request - Missing required fields",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           },
@@ -111,7 +125,19 @@
             "description": "Account not found or invalid",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -127,7 +153,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/PayoutRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/PayoutRequest"
+              }
             }
           }
         },
@@ -139,12 +167,17 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "boolean", "example": true },
+                    "status": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "message": {
                       "type": "string",
                       "example": "Payout initiated successfully"
                     },
-                    "data": { "$ref": "#/components/schemas/PayoutResponse" }
+                    "data": {
+                      "$ref": "#/components/schemas/PayoutResponse"
+                    }
                   }
                 }
               }
@@ -154,7 +187,19 @@
             "description": "Bad request - Invalid input or insufficient balance",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Error" }
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
               }
             }
           }
@@ -171,13 +216,19 @@
             "name": "page",
             "in": "query",
             "description": "Page number (default: 1)",
-            "schema": { "type": "integer", "default": 1 }
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
           },
           {
             "name": "pageSize",
             "in": "query",
             "description": "Number of results per page (default: 20)",
-            "schema": { "type": "integer", "default": 20 }
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
           },
           {
             "name": "status",
@@ -185,20 +236,30 @@
             "description": "Filter by transaction status",
             "schema": {
               "type": "string",
-              "enum": ["pending", "completed", "failed"]
+              "enum": [
+                "pending",
+                "completed",
+                "failed"
+              ]
             }
           },
           {
             "name": "startDate",
             "in": "query",
             "description": "Filter transactions from this date (ISO 8601 format)",
-            "schema": { "type": "string", "format": "date" }
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
           },
           {
             "name": "endDate",
             "in": "query",
             "description": "Filter transactions until this date (ISO 8601 format)",
-            "schema": { "type": "string", "format": "date" }
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
           }
         ],
         "responses": {
@@ -209,13 +270,3084 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": { "type": "boolean", "example": true },
+                    "status": {
+                      "type": "boolean",
+                      "example": true
+                    },
                     "message": {
                       "type": "string",
                       "example": "Transactions retrieved successfully"
                     },
-                    "data": { "$ref": "#/components/schemas/TransactionList" }
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionList"
+                    }
                   }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/wallets": {
+      "get": {
+        "operationId": "getWallets",
+        "summary": "Get Wallets",
+        "description": "Retrieves all wallets for the authenticated business.",
+        "parameters": [
+          {
+            "name": "includeLoans",
+            "in": "query",
+            "description": "Include loan accounts in the response",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallets retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Business wallets retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "wallets": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Wallet"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/rates": {
+      "get": {
+        "operationId": "getRates",
+        "summary": "Get Exchange Rates",
+        "description": "Retrieves current exchange rates for supported currency pairs.",
+        "responses": {
+          "200": {
+            "description": "Rates retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Rates retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "rates": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ExchangeRate"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/supported-currencies": {
+      "get": {
+        "operationId": "getSupportedCurrencies",
+        "summary": "Get Supported Currencies",
+        "description": "Retrieves the list of currencies supported on the platform.",
+        "responses": {
+          "200": {
+            "description": "Supported currencies retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Supported currencies retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "currencies": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "example": "NGN"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/payment-accounts": {
+      "get": {
+        "operationId": "getPaymentAccounts",
+        "summary": "Get Payment Accounts",
+        "description": "Retrieves available payment accounts for a given currency. Used to determine funding methods.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "description": "3-letter currency code (e.g. NGN, USD)",
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "example": "NGN"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payment accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payment accounts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "paymentAccounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PaymentAccount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/add-funds": {
+      "post": {
+        "operationId": "addFunds",
+        "summary": "Add Funds",
+        "description": "Initiates a deposit to add funds to your wallet.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFundsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Funds addition initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Funds addition initiated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        "paymentAccount": {
+                          "$ref": "#/components/schemas/PaymentAccount"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/swap": {
+      "post": {
+        "operationId": "swapCurrency",
+        "summary": "Swap Currency",
+        "description": "Swaps funds from one currency to another at the current exchange rate.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Swap completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Swap completed successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        "fromAmount": {
+                          "type": "number",
+                          "description": "Amount debited from source currency",
+                          "example": 1000
+                        },
+                        "toAmount": {
+                          "type": "number",
+                          "description": "Amount credited to destination currency",
+                          "example": 1550000
+                        },
+                        "rate": {
+                          "type": "number",
+                          "description": "Exchange rate applied",
+                          "example": 1550.0
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid currencies or insufficient balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/withdraw": {
+      "post": {
+        "operationId": "withdraw",
+        "summary": "Withdraw Funds",
+        "description": "Initiates a withdrawal from your wallet to a beneficiary.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Withdrawal initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Withdrawal initiated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        "fee_amount": {
+                          "type": "number",
+                          "description": "Fee charged for the withdrawal",
+                          "example": 50
+                        },
+                        "destination_amount": {
+                          "type": "number",
+                          "description": "Amount received by beneficiary",
+                          "example": 5000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or insufficient balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/fee": {
+      "post": {
+        "operationId": "getTransactionFee",
+        "summary": "Get Transaction Fee",
+        "description": "Calculates the fee for a given transaction type, currency, and amount.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionFeeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fee calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Fee calculated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "fee": {
+                          "type": "number",
+                          "example": 50
+                        },
+                        "currency": {
+                          "type": "string",
+                          "example": "NGN"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transactions": {
+      "get": {
+        "operationId": "getWalletTransactions",
+        "summary": "Get Wallet Transactions",
+        "description": "Retrieves a paginated list of wallet transactions with optional filtering.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Filter by 3-letter currency code",
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            }
+          },
+          {
+            "name": "transactionType",
+            "in": "query",
+            "description": "Filter by transaction type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "deposit",
+                "withdrawal",
+                "swap"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "completed",
+                "failed",
+                "rejected",
+                "sent"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 20, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to filter transactions",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transactions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transactions retrieved successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/TransactionList"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transactions/export": {
+      "get": {
+        "operationId": "exportWalletTransactions",
+        "summary": "Export Transactions",
+        "description": "Exports wallet transactions as a downloadable file with optional filtering.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Filter by 3-letter currency code",
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            }
+          },
+          {
+            "name": "transactionType",
+            "in": "query",
+            "description": "Filter by transaction type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "deposit",
+                "withdrawal",
+                "swap"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "completed",
+                "failed",
+                "rejected",
+                "sent"
+              ]
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transactions exported successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transactions exported successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "format": "uri",
+                          "description": "Download URL for the exported file"
+                        },
+                        "format": {
+                          "type": "string",
+                          "description": "File format",
+                          "example": "csv"
+                        },
+                        "totalRecords": {
+                          "type": "integer",
+                          "description": "Number of transactions exported",
+                          "example": 150
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transaction/{transactionId}": {
+      "get": {
+        "operationId": "getWalletTransaction",
+        "summary": "Get Transaction",
+        "description": "Retrieves details of a specific wallet transaction by ID.",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "description": "Transaction UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transaction retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/statement": {
+      "get": {
+        "operationId": "getStatement",
+        "summary": "Get Statement",
+        "description": "Retrieves wallet statement data for generating account statements.",
+        "responses": {
+          "200": {
+            "description": "Statement data retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Statement data retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "businessName": {
+                          "type": "string",
+                          "description": "Business name",
+                          "example": "Acme Corp Ltd"
+                        },
+                        "currency": {
+                          "type": "string",
+                          "example": "NGN"
+                        },
+                        "openingBalance": {
+                          "type": "number",
+                          "description": "Balance at start of period",
+                          "example": 500000
+                        },
+                        "closingBalance": {
+                          "type": "number",
+                          "description": "Balance at end of period",
+                          "example": 1000000
+                        },
+                        "totalCredits": {
+                          "type": "number",
+                          "description": "Total deposits during period",
+                          "example": 750000
+                        },
+                        "totalDebits": {
+                          "type": "number",
+                          "description": "Total withdrawals during period",
+                          "example": 250000
+                        },
+                        "transactions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Transaction"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/virtual-accounts": {
+      "get": {
+        "operationId": "getVirtualAccounts",
+        "summary": "Get Virtual Accounts",
+        "description": "Retrieves virtual accounts for receiving payments.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Filter by 3-letter currency code",
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            }
+          },
+          {
+            "name": "virtualAccountType",
+            "in": "query",
+            "description": "Filter by account type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "static",
+                "dynamic"
+              ]
+            }
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "description": "Amount for dynamic virtual accounts",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "integrationType",
+            "in": "query",
+            "description": "Filter by integration type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Virtual accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Virtual accounts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "virtualAccounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/VirtualAccount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/loans": {
+      "get": {
+        "operationId": "getLoanAccounts",
+        "summary": "Get Loan Accounts",
+        "description": "Retrieves all loan accounts for the authenticated business.",
+        "responses": {
+          "200": {
+            "description": "Loan accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Loan accounts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "loans": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/LoanAccount"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/loans/draw": {
+      "post": {
+        "operationId": "drawLoanFunds",
+        "summary": "Draw Loan Funds",
+        "description": "Draws funds from a loan account into a destination wallet.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrawLoanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Loan funds drawn successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Loan funds drawn successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        "loanBalance": {
+                          "type": "number",
+                          "description": "Updated loan balance after draw",
+                          "example": 2050000
+                        },
+                        "availableBalance": {
+                          "type": "number",
+                          "description": "Remaining available loan credit",
+                          "example": 2950000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or insufficient loan balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/loans/repay": {
+      "post": {
+        "operationId": "repayLoan",
+        "summary": "Repay Loan",
+        "description": "Repays a loan from a source wallet.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepayLoanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Loan repayment successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Loan repayment successful"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        },
+                        "loanBalance": {
+                          "type": "number",
+                          "description": "Updated loan balance after repayment",
+                          "example": 1975000
+                        },
+                        "availableBalance": {
+                          "type": "number",
+                          "description": "Updated available loan credit",
+                          "example": 3025000
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input or insufficient wallet balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beneficiaries": {
+      "get": {
+        "operationId": "listBeneficiaries",
+        "summary": "List Beneficiaries",
+        "description": "Retrieves a paginated list of saved beneficiaries for the business.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 20, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Filter by currency code",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search by name or account number",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beneficiaries retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiaries retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "beneficiaries": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SavedBeneficiary"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createBeneficiary",
+        "summary": "Create Beneficiary",
+        "description": "Creates a new saved beneficiary for the business.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeneficiaryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Beneficiary created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiary created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "beneficiary": {
+                          "$ref": "#/components/schemas/SavedBeneficiary"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beneficiaries/{beneficiaryId}": {
+      "get": {
+        "operationId": "getBeneficiary",
+        "summary": "Get Beneficiary",
+        "description": "Retrieves a specific beneficiary by ID.",
+        "parameters": [
+          {
+            "name": "beneficiaryId",
+            "in": "path",
+            "required": true,
+            "description": "Beneficiary UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beneficiary retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiary retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "beneficiary": {
+                          "$ref": "#/components/schemas/SavedBeneficiary"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateBeneficiary",
+        "summary": "Update Beneficiary",
+        "description": "Updates an existing beneficiary's details.",
+        "parameters": [
+          {
+            "name": "beneficiaryId",
+            "in": "path",
+            "required": true,
+            "description": "Beneficiary UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeneficiaryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Beneficiary updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiary updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "beneficiary": {
+                          "$ref": "#/components/schemas/SavedBeneficiary"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteBeneficiary",
+        "summary": "Delete Beneficiary",
+        "description": "Deletes a saved beneficiary.",
+        "parameters": [
+          {
+            "name": "beneficiaryId",
+            "in": "path",
+            "required": true,
+            "description": "Beneficiary UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Beneficiary deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiary deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beneficiaries/nigerian-banks": {
+      "get": {
+        "operationId": "getBeneficiaryNigerianBanks",
+        "summary": "List Nigerian Banks",
+        "description": "Returns a list of Nigerian banks for beneficiary creation. Same data as /banks.",
+        "responses": {
+          "200": {
+            "description": "Banks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Banks retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Bank"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/beneficiaries/beneficiary-lookup": {
+      "post": {
+        "operationId": "beneficiaryLookup",
+        "summary": "Beneficiary Lookup",
+        "description": "Validates a bank account and retrieves account holder details for beneficiary creation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Account details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Account details retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/LookupResponse"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/roles": {
+      "get": {
+        "operationId": "getTeamRoles",
+        "summary": "Get Available Roles",
+        "description": "Retrieves the list of available roles that can be assigned to team members.",
+        "responses": {
+          "200": {
+            "description": "Roles retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Roles retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "roles": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TeamRole"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/invite": {
+      "post": {
+        "operationId": "inviteTeamMember",
+        "summary": "Invite Team Member",
+        "description": "Sends an invitation to a new team member via email.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeamInviteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invitation sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invitation sent successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "fullname": {
+                          "type": "string"
+                        },
+                        "isNewUser": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/members": {
+      "get": {
+        "operationId": "getTeamMembers",
+        "summary": "Get Team Members",
+        "description": "Retrieves a paginated list of team members for the business.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 10, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search by name or email",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by member status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "inactive"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team members retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Team members retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "members": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/TeamMember"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/members/{userId}": {
+      "delete": {
+        "operationId": "removeTeamMember",
+        "summary": "Remove Team Member",
+        "description": "Removes a team member from the business. Cannot remove yourself or the business owner.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User UUID of the team member to remove",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team member removed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Team member removed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Cannot remove self or business owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/members/{userId}/status": {
+      "patch": {
+        "operationId": "updateTeamMemberStatus",
+        "summary": "Update Member Status",
+        "description": "Activates or deactivates a team member. Only business owners can update member status.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User UUID of the team member",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Member status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Member status updated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Cannot update owner status or pending invites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Team member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/broker/referral-link": {
+      "get": {
+        "operationId": "getReferralLink",
+        "summary": "Get Referral Link",
+        "description": "Retrieves the existing referral link for the authenticated business.",
+        "responses": {
+          "200": {
+            "description": "Referral link retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Referral link retrieved successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ReferralLink"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Business is not activated as a broker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createReferralLink",
+        "summary": "Create Referral Link",
+        "description": "Generates a new referral link for the authenticated business.",
+        "responses": {
+          "200": {
+            "description": "Referral link created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Referral link created successfully"
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/ReferralLink"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Business is not activated as a broker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/broker/referred-businesses": {
+      "get": {
+        "operationId": "getReferredBusinesses",
+        "summary": "Get Referred Businesses",
+        "description": "Retrieves a paginated list of businesses referred by the authenticated broker.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 20, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by referral status",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "started",
+                "completed",
+                "created",
+                "approved"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Referred businesses retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Referred businesses retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "businesses": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ReferredBusiness"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Business is not activated as a broker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/broker/commissions": {
+      "get": {
+        "operationId": "getCommissions",
+        "summary": "Get Commissions",
+        "description": "Retrieves a paginated list of commissions earned from referrals.",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 20, max: 100)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "Start date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "End date filter (YYYY-MM-DD)",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "description": "Filter by 3-letter currency code (uppercase)",
+            "schema": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3,
+              "example": "USD"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commissions retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Commissions retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "commissions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Commission"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Business is not activated as a broker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/broker/referral-stats": {
+      "get": {
+        "operationId": "getReferralStats",
+        "summary": "Get Referral Stats",
+        "description": "Retrieves aggregate referral statistics including total commissions and referral count.",
+        "responses": {
+          "200": {
+            "description": "Referral stats retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Referral stats retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "totalCommissions": {
+                          "type": "object",
+                          "description": "Total commissions earned, broken down by currency",
+                          "additionalProperties": {
+                            "type": "number"
+                          },
+                          "example": {
+                            "USD": 1500.5,
+                            "NGN": 250000
+                          }
+                        },
+                        "totalReferrals": {
+                          "type": "integer",
+                          "example": 15
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Business is not activated as a broker",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kyb": {
+      "get": {
+        "operationId": "getKybApplication",
+        "summary": "Get KYB Application",
+        "description": "Retrieves the KYB application for the authenticated business.",
+        "responses": {
+          "200": {
+            "description": "Application retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Application retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "application": {
+                          "$ref": "#/components/schemas/KybApplication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createKybApplication",
+        "summary": "Create KYB Application",
+        "description": "Creates a new KYB application for the authenticated business.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KybApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Application created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Application created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "application": {
+                          "$ref": "#/components/schemas/KybApplication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Application already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateKybApplication",
+        "summary": "Update KYB Application",
+        "description": "Updates an existing KYB application with new information.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KybApplicationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Application updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "application": {
+                          "$ref": "#/components/schemas/KybApplication"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kyb/documents": {
+      "get": {
+        "operationId": "getKybDocuments",
+        "summary": "Get KYB Documents",
+        "description": "Retrieves documents associated with a KYB application.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": true,
+            "description": "KYB application ID",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "relatedPersonKey",
+            "in": "query",
+            "description": "Filter documents by related person",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "documentType",
+            "in": "query",
+            "description": "Filter by document type",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Documents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Documents retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "documents": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/KybDocument"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "uploadKybDocument",
+        "summary": "Upload KYB Document",
+        "description": "Uploads a document for a KYB application. Accepts multipart/form-data.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The document file to upload"
+                  },
+                  "applicationId": {
+                    "type": "string",
+                    "description": "KYB application ID"
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "description": "Type of document being uploaded"
+                  },
+                  "relatedPersonKey": {
+                    "type": "string",
+                    "description": "Related person identifier (if applicable)"
+                  }
+                },
+                "required": [
+                  "file",
+                  "applicationId",
+                  "documentType"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Document uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Document uploaded successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "document": {
+                          "$ref": "#/components/schemas/KybDocument"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid file or missing fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kyb/invites": {
+      "get": {
+        "operationId": "getKybInvite",
+        "summary": "Get KYB Invite",
+        "description": "Retrieves the KYB invite information for the authenticated business.",
+        "responses": {
+          "200": {
+            "description": "Invite retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invite retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Invite ID"
+                        },
+                        "businessId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "description": "Business ID"
+                        },
+                        "name": {
+                          "type": "string",
+                          "description": "Business name",
+                          "example": "Acme Corp Ltd"
+                        },
+                        "entityType": {
+                          "type": "string",
+                          "description": "Entity type",
+                          "example": "limited_company"
+                        },
+                        "status": {
+                          "type": "string",
+                          "description": "Invite status",
+                          "example": "active"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kyb/related-persons": {
+      "get": {
+        "operationId": "getRelatedPersons",
+        "summary": "Get Related Persons",
+        "description": "Retrieves the list of related persons (directors, beneficial owners) for the KYB application.",
+        "responses": {
+          "200": {
+            "description": "Related persons retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Related persons retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "relatedPersons": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/RelatedPerson"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/kyb/individual": {
+      "get": {
+        "operationId": "getIndividualApplication",
+        "summary": "Get Individual Application",
+        "description": "Retrieves the individual KYB application details.",
+        "responses": {
+          "200": {
+            "description": "Individual application retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Individual application retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "example": "John"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "example": "Doe"
+                        },
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "example": "john@example.com"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "example": "+2341234567890"
+                        },
+                        "dateOfBirth": {
+                          "type": "string",
+                          "example": "1990-01-15"
+                        },
+                        "bvn": {
+                          "type": "string",
+                          "description": "Bank Verification Number"
+                        },
+                        "nin": {
+                          "type": "string",
+                          "description": "National Identification Number"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "draft",
+                            "submitted",
+                            "approved",
+                            "rejected",
+                            "changes_requested"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -229,13 +3361,22 @@
       "Bank": {
         "type": "object",
         "properties": {
-          "bankName": { "type": "string", "example": "Access Bank" },
-          "bankCode": { "type": "string", "example": "000014" }
+          "bankName": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bankCode": {
+            "type": "string",
+            "example": "000014"
+          }
         }
       },
       "LookupRequest": {
         "type": "object",
-        "required": ["bankCode", "accountNumber"],
+        "required": [
+          "bankCode",
+          "accountNumber"
+        ],
         "properties": {
           "bankCode": {
             "type": "string",
@@ -252,19 +3393,35 @@
       "LookupResponse": {
         "type": "object",
         "properties": {
-          "accountNumber": { "type": "string", "example": "0123456789" },
-          "accountName": { "type": "string", "example": "JOHN DOE" },
-          "bankCode": { "type": "string", "example": "000014" },
-          "bankName": { "type": "string", "example": "Access Bank" }
+          "accountNumber": {
+            "type": "string",
+            "example": "0123456789"
+          },
+          "accountName": {
+            "type": "string",
+            "example": "JOHN DOE"
+          },
+          "bankCode": {
+            "type": "string",
+            "example": "000014"
+          },
+          "bankName": {
+            "type": "string",
+            "example": "Access Bank"
+          }
         }
       },
       "PayoutRequest": {
         "type": "object",
-        "required": ["amount", "currency", "beneficiary"],
+        "required": [
+          "amount",
+          "currency",
+          "beneficiary"
+        ],
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount to send (in major units, e.g., 1000 for ₦1,000)",
+            "description": "Amount to send (in major units, e.g., 1000 for \u20a61,000)",
             "example": 5000
           },
           "currency": {
@@ -272,7 +3429,9 @@
             "description": "Currency code",
             "example": "NGN"
           },
-          "beneficiary": { "$ref": "#/components/schemas/Beneficiary" },
+          "beneficiary": {
+            "$ref": "#/components/schemas/Beneficiary"
+          },
           "remark": {
             "type": "string",
             "description": "Transaction description",
@@ -287,12 +3446,29 @@
       },
       "Beneficiary": {
         "type": "object",
-        "required": ["accountName", "accountNumber", "bankName", "bankCode"],
+        "required": [
+          "accountName",
+          "accountNumber",
+          "bankName",
+          "bankCode"
+        ],
         "properties": {
-          "accountName": { "type": "string", "example": "JOHN DOE" },
-          "accountNumber": { "type": "string", "example": "0123456789" },
-          "bankName": { "type": "string", "example": "Access Bank" },
-          "bankCode": { "type": "string", "example": "000014" },
+          "accountName": {
+            "type": "string",
+            "example": "JOHN DOE"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "0123456789"
+          },
+          "bankName": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bankCode": {
+            "type": "string",
+            "example": "000014"
+          },
           "email": {
             "type": "string",
             "format": "email",
@@ -308,14 +3484,23 @@
             "format": "uuid",
             "description": "Unique transaction ID"
           },
-          "remark": { "type": "string", "example": "Vendor payment" },
-          "external_reference": { "type": "string", "example": "INV-2024-001" },
+          "remark": {
+            "type": "string",
+            "example": "Vendor payment"
+          },
+          "external_reference": {
+            "type": "string",
+            "example": "INV-2024-001"
+          },
           "fee_amount": {
             "type": "integer",
             "description": "Fee charged (in smallest unit)",
             "example": 5000
           },
-          "created_at": { "type": "string", "format": "date-time" },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
           "destination_amount": {
             "type": "integer",
             "description": "Amount received by beneficiary (in smallest unit)",
@@ -329,9 +3514,15 @@
           "beneficiary": {
             "type": "object",
             "properties": {
-              "bank_code": { "type": "string" },
-              "bank_name": { "type": "string" },
-              "account_name": { "type": "string" }
+              "bank_code": {
+                "type": "string"
+              },
+              "bank_name": {
+                "type": "string"
+              },
+              "account_name": {
+                "type": "string"
+              }
             }
           }
         }
@@ -341,38 +3532,1176 @@
         "properties": {
           "transactions": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Transaction" }
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            }
           },
           "pagination": {
-            "type": "object",
-            "properties": {
-              "page": { "type": "integer" },
-              "pageSize": { "type": "integer" },
-              "total": { "type": "integer" }
-            }
+            "$ref": "#/components/schemas/Pagination"
           }
         }
       },
       "Transaction": {
         "type": "object",
         "properties": {
-          "id": { "type": "string", "format": "uuid" },
-          "type": { "type": "string", "enum": ["deposit", "withdrawal"] },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transaction identifier"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "withdrawal",
+              "swap"
+            ],
+            "description": "Transaction type"
+          },
           "status": {
             "type": "string",
-            "enum": ["pending", "completed", "failed"]
+            "enum": [
+              "pending",
+              "completed",
+              "failed",
+              "rejected",
+              "sent"
+            ],
+            "description": "Transaction status"
           },
-          "amount": { "type": "integer" },
-          "currency": { "type": "string" },
-          "description": { "type": "string" },
-          "created_at": { "type": "string", "format": "date-time" }
+          "amount": {
+            "type": "integer",
+            "description": "Transaction amount (in smallest unit)"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Transaction currency"
+          },
+          "description": {
+            "type": "string",
+            "description": "Transaction description"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Transaction timestamp"
+          }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "Current page number"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Results per page"
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total number of results"
+          }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique wallet identifier"
+          },
+          "currency": {
+            "type": "string",
+            "example": "NGN",
+            "description": "Wallet currency code"
+          },
+          "balance": {
+            "type": "number",
+            "example": 1000000,
+            "description": "Total wallet balance"
+          },
+          "available_balance": {
+            "type": "number",
+            "example": 950000,
+            "description": "Available balance for transactions"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Wallet creation timestamp"
+          }
+        }
+      },
+      "ExchangeRate": {
+        "type": "object",
+        "properties": {
+          "fromCurrency": {
+            "type": "string",
+            "example": "USD"
+          },
+          "toCurrency": {
+            "type": "string",
+            "example": "NGN"
+          },
+          "rate": {
+            "type": "number",
+            "example": 1550.0
+          },
+          "rateToken": {
+            "type": "string",
+            "description": "Token to lock in this rate for a swap"
+          }
+        }
+      },
+      "PaymentAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Payment account identifier"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Account holder name"
+          },
+          "accountNumber": {
+            "type": "string",
+            "description": "Account number"
+          },
+          "bankName": {
+            "type": "string",
+            "description": "Bank name"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Account currency"
+          },
+          "type": {
+            "type": "string",
+            "description": "Payment account type"
+          }
+        }
+      },
+      "AddFundsRequest": {
+        "type": "object",
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount to deposit (positive number)",
+            "example": 10000
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "NGN"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description for the deposit",
+            "maxLength": 500
+          },
+          "externalReference": {
+            "type": "string",
+            "description": "Your unique reference",
+            "maxLength": 255
+          },
+          "virtualAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Specific virtual account to fund"
+          }
+        }
+      },
+      "SwapRequest": {
+        "type": "object",
+        "required": [
+          "fromCurrency",
+          "toCurrency",
+          "fromAmount"
+        ],
+        "properties": {
+          "fromCurrency": {
+            "type": "string",
+            "description": "Source currency code",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "USD"
+          },
+          "toCurrency": {
+            "type": "string",
+            "description": "Destination currency code (must differ from fromCurrency)",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "NGN"
+          },
+          "fromAmount": {
+            "type": "number",
+            "description": "Amount to swap from source currency",
+            "example": 1000
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description",
+            "maxLength": 500
+          },
+          "rateToken": {
+            "type": "string",
+            "description": "Rate token from /wallet/rates to lock in a specific rate"
+          }
+        }
+      },
+      "WithdrawalRequest": {
+        "type": "object",
+        "required": [
+          "amount",
+          "currency"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "description": "Amount to withdraw (positive number)",
+            "example": 5000
+          },
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "NGN"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description",
+            "maxLength": 500
+          },
+          "beneficiaryId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of a saved beneficiary"
+          },
+          "inlineBeneficiary": {
+            "$ref": "#/components/schemas/InlineBeneficiary"
+          },
+          "saveBeneficiary": {
+            "type": "boolean",
+            "description": "Whether to save the inline beneficiary for future use"
+          },
+          "deductFeesFromBalance": {
+            "type": "boolean",
+            "description": "Whether to deduct fees from wallet balance instead of the withdrawal amount"
+          }
+        }
+      },
+      "InlineBeneficiary": {
+        "type": "object",
+        "description": "One-time beneficiary details (use instead of beneficiaryId)",
+        "properties": {
+          "account_name": {
+            "type": "string",
+            "example": "JOHN DOE"
+          },
+          "account_number": {
+            "type": "string",
+            "example": "0123456789"
+          },
+          "bank_name": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bank_code": {
+            "type": "string",
+            "example": "000014"
+          },
+          "bank_address": {
+            "type": "string"
+          },
+          "swift_code": {
+            "type": "string"
+          },
+          "beneficiary_address": {
+            "type": "string"
+          },
+          "withdrawal_method": {
+            "type": "string",
+            "enum": [
+              "domestic_wire",
+              "international_wire",
+              "crypto_usdt",
+              "crypto_usdc"
+            ]
+          },
+          "routing_number": {
+            "type": "string"
+          },
+          "wallet_address": {
+            "type": "string",
+            "description": "Crypto wallet address (for crypto withdrawals)"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "contact_person": {
+            "type": "string"
+          },
+          "intermediary_bank_name": {
+            "type": "string"
+          },
+          "intermediary_bank_routing_number": {
+            "type": "string"
+          }
+        }
+      },
+      "TransactionFeeRequest": {
+        "type": "object",
+        "required": [
+          "currency",
+          "transactionType",
+          "amount"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "3-letter currency code",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "NGN"
+          },
+          "transactionType": {
+            "type": "string",
+            "enum": [
+              "deposit",
+              "withdrawal",
+              "swap"
+            ],
+            "description": "Type of transaction"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Transaction amount (positive number)",
+            "example": 5000
+          }
+        }
+      },
+      "VirtualAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Virtual account identifier"
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Account holder name"
+          },
+          "accountNumber": {
+            "type": "string",
+            "description": "Virtual account number"
+          },
+          "bankName": {
+            "type": "string",
+            "description": "Bank name"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Account currency"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "static",
+              "dynamic"
+            ],
+            "description": "Account type (static or dynamic)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Account status"
+          }
+        }
+      },
+      "LoanAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Loan account identifier"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Loan currency"
+          },
+          "limit": {
+            "type": "number",
+            "description": "Total credit limit"
+          },
+          "balance": {
+            "type": "number",
+            "description": "Current amount drawn"
+          },
+          "available_balance": {
+            "type": "number",
+            "description": "Remaining available credit"
+          },
+          "status": {
+            "type": "string",
+            "description": "Loan account status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Account creation timestamp"
+          }
+        }
+      },
+      "DrawLoanRequest": {
+        "type": "object",
+        "required": [
+          "loanAccountId",
+          "destinationWalletId",
+          "amount"
+        ],
+        "properties": {
+          "loanAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the loan account to draw from"
+          },
+          "destinationWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the wallet to receive funds"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount to draw (positive number)",
+            "example": 50000
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description",
+            "maxLength": 500
+          }
+        }
+      },
+      "RepayLoanRequest": {
+        "type": "object",
+        "required": [
+          "loanAccountId",
+          "sourceWalletId",
+          "amount"
+        ],
+        "properties": {
+          "loanAccountId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the loan account to repay"
+          },
+          "sourceWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the wallet to pay from"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount to repay (positive number)",
+            "example": 25000
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description",
+            "maxLength": 500
+          }
+        }
+      },
+      "SavedBeneficiary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string",
+            "example": "NGN"
+          },
+          "label": {
+            "type": "string",
+            "example": "Office rent"
+          },
+          "account_name": {
+            "type": "string",
+            "example": "JOHN DOE"
+          },
+          "account_number": {
+            "type": "string",
+            "example": "0123456789"
+          },
+          "bank_name": {
+            "type": "string",
+            "example": "Access Bank"
+          },
+          "bank_code": {
+            "type": "string",
+            "example": "000014"
+          },
+          "bank_address": {
+            "type": "string"
+          },
+          "swift_code": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "contact_person": {
+            "type": "string"
+          },
+          "beneficiary_address": {
+            "type": "string"
+          },
+          "withdrawal_method": {
+            "type": "string",
+            "enum": [
+              "domestic_wire",
+              "international_wire",
+              "crypto_usdt",
+              "crypto_usdc"
+            ]
+          },
+          "routing_number": {
+            "type": "string"
+          },
+          "wallet_address": {
+            "type": "string"
+          },
+          "wallet_chain": {
+            "type": "string"
+          },
+          "intermediary_bank_name": {
+            "type": "string"
+          },
+          "intermediary_bank_routing_number": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BeneficiaryRequest": {
+        "type": "object",
+        "required": [
+          "currency"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "description": "Currency code (e.g., NGN, USD)",
+            "example": "NGN"
+          },
+          "label": {
+            "type": "string",
+            "description": "Friendly label for the beneficiary"
+          },
+          "account_name": {
+            "type": "string",
+            "description": "Account holder name",
+            "maxLength": 100,
+            "example": "JOHN DOE"
+          },
+          "account_number": {
+            "type": "string",
+            "description": "Bank account number",
+            "maxLength": 50,
+            "example": "0123456789"
+          },
+          "bank_name": {
+            "type": "string",
+            "description": "Bank name",
+            "maxLength": 100,
+            "example": "Access Bank"
+          },
+          "bank_code": {
+            "type": "string",
+            "description": "Bank code (required for NGN beneficiaries)",
+            "maxLength": 20,
+            "example": "000014"
+          },
+          "bank_address": {
+            "type": "string",
+            "description": "Bank address (for international wires)",
+            "maxLength": 500
+          },
+          "swift_code": {
+            "type": "string",
+            "description": "SWIFT/BIC code (for international wires)",
+            "maxLength": 20
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Beneficiary email",
+            "maxLength": 100
+          },
+          "contact_person": {
+            "type": "string",
+            "description": "Contact person name",
+            "maxLength": 100
+          },
+          "beneficiary_address": {
+            "type": "string",
+            "description": "Beneficiary address",
+            "maxLength": 500
+          },
+          "withdrawal_method": {
+            "type": "string",
+            "description": "Withdrawal method",
+            "enum": [
+              "domestic_wire",
+              "international_wire",
+              "crypto_usdt",
+              "crypto_usdc"
+            ]
+          },
+          "routing_number": {
+            "type": "string",
+            "description": "Routing number (for US wires)",
+            "maxLength": 20
+          },
+          "wallet_address": {
+            "type": "string",
+            "description": "Crypto wallet address (for crypto withdrawals)"
+          },
+          "wallet_chain": {
+            "type": "string",
+            "description": "Blockchain network (for crypto withdrawals)",
+            "maxLength": 50
+          },
+          "intermediary_bank_name": {
+            "type": "string",
+            "description": "Intermediary bank name",
+            "maxLength": 255
+          },
+          "intermediary_bank_routing_number": {
+            "type": "string",
+            "description": "Intermediary bank routing number",
+            "maxLength": 50
+          }
+        }
+      },
+      "TeamRole": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Role identifier"
+          },
+          "name": {
+            "type": "string",
+            "example": "Admin",
+            "description": "Role name"
+          },
+          "description": {
+            "type": "string",
+            "description": "Role description"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of permissions granted by this role"
+          }
+        }
+      },
+      "TeamInviteRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "fullname"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the person to invite",
+            "example": "jane@example.com"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "Full name of the person to invite",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Jane Doe"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Role to assign (from /teams/roles)"
+          }
+        }
+      },
+      "TeamMember": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Member user identifier"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Member email address"
+          },
+          "fullname": {
+            "type": "string",
+            "description": "Member full name"
+          },
+          "role": {
+            "type": "string",
+            "description": "Assigned role name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive",
+              "pending"
+            ],
+            "description": "Member status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date member was added"
+          }
+        }
+      },
+      "UpdateMemberStatusRequest": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ],
+            "description": "New status for the team member"
+          }
+        }
+      },
+      "ReferralLink": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "REF-ABCD1234"
+          },
+          "inviteUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://app.rolla.xyz/register?code=REF-ABCD1234"
+          }
+        }
+      },
+      "ReferredBusiness": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Business identifier"
+          },
+          "businessName": {
+            "type": "string",
+            "description": "Referred business name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Business email"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "started",
+              "completed",
+              "created",
+              "approved"
+            ],
+            "description": "Referral status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Referral date"
+          }
+        }
+      },
+      "Commission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Commission identifier"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Commission amount"
+          },
+          "currency": {
+            "type": "string",
+            "description": "Commission currency"
+          },
+          "businessName": {
+            "type": "string",
+            "description": "Referred business name"
+          },
+          "businessEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Referred business email"
+          },
+          "transactionAmount": {
+            "type": "number",
+            "description": "Original transaction amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Commission date"
+          }
+        }
+      },
+      "KybApplication": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "changes_requested"
+            ]
+          },
+          "current_step": {
+            "type": "integer"
+          },
+          "is_complete": {
+            "type": "boolean"
+          },
+          "business_info": {
+            "$ref": "#/components/schemas/BusinessInfo"
+          },
+          "business_address": {
+            "$ref": "#/components/schemas/BusinessAddress"
+          },
+          "contact_info": {
+            "$ref": "#/components/schemas/ContactInfo"
+          },
+          "related_persons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedPerson"
+            }
+          },
+          "banking_info": {
+            "$ref": "#/components/schemas/BankingInfo"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "KybApplicationRequest": {
+        "type": "object",
+        "properties": {
+          "business_info": {
+            "$ref": "#/components/schemas/BusinessInfo"
+          },
+          "business_address": {
+            "$ref": "#/components/schemas/BusinessAddress"
+          },
+          "contact_info": {
+            "$ref": "#/components/schemas/ContactInfo"
+          },
+          "related_persons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RelatedPerson"
+            }
+          },
+          "banking_info": {
+            "$ref": "#/components/schemas/BankingInfo"
+          },
+          "current_step": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "is_complete": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "changes_requested"
+            ]
+          }
+        }
+      },
+      "BusinessInfo": {
+        "type": "object",
+        "properties": {
+          "legalName": {
+            "type": "string",
+            "example": "Acme Corp Ltd"
+          },
+          "tradingName": {
+            "type": "string"
+          },
+          "businessType": {
+            "type": "string",
+            "example": "Limited Company"
+          },
+          "incorporationDate": {
+            "type": "string",
+            "example": "2020-01-15"
+          },
+          "incorporationCountry": {
+            "type": "string",
+            "example": "NG"
+          },
+          "registrationNumber": {
+            "type": "string",
+            "example": "RC-1234567"
+          },
+          "taxId": {
+            "type": "string",
+            "example": "12345678-0001"
+          },
+          "website": {
+            "type": "string",
+            "format": "uri"
+          },
+          "description": {
+            "type": "string"
+          },
+          "monthlyVolume": {
+            "type": "string"
+          },
+          "annualRevenue": {
+            "type": "string"
+          },
+          "primaryFundingSource": {
+            "type": "string"
+          }
+        }
+      },
+      "BusinessAddress": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "123 Main Street"
+          },
+          "city": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "100001"
+          },
+          "country": {
+            "type": "string",
+            "example": "NG"
+          }
+        }
+      },
+      "ContactInfo": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "contact@acmecorp.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "+2341234567890"
+          }
+        }
+      },
+      "RelatedPerson": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "example": "Doe"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "Beneficial Owner",
+                "Director"
+              ]
+            }
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "example": "1990-01-15"
+          },
+          "ownershipPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "currentAddress": {
+            "$ref": "#/components/schemas/BusinessAddress"
+          },
+          "sourceOfWealthExplanation": {
+            "type": "string"
+          },
+          "bvn": {
+            "type": "string",
+            "description": "Bank Verification Number"
+          },
+          "nin": {
+            "type": "string",
+            "description": "National Identification Number"
+          }
+        }
+      },
+      "BankingInfo": {
+        "type": "object",
+        "properties": {
+          "bankName": {
+            "type": "string"
+          },
+          "accountNumber": {
+            "type": "string"
+          },
+          "routingNumber": {
+            "type": "string"
+          },
+          "accountType": {
+            "type": "string",
+            "enum": [
+              "checking",
+              "savings"
+            ]
+          },
+          "currency": {
+            "type": "string"
+          }
+        }
+      },
+      "KybDocument": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Document identifier"
+          },
+          "applicationId": {
+            "type": "string",
+            "description": "Associated KYB application ID"
+          },
+          "documentType": {
+            "type": "string",
+            "description": "Type of document"
+          },
+          "fileName": {
+            "type": "string",
+            "description": "Uploaded file name"
+          },
+          "fileUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Document download URL"
+          },
+          "relatedPersonKey": {
+            "type": "string",
+            "description": "Associated related person"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Upload timestamp"
+          }
         }
       },
       "Error": {
         "type": "object",
         "properties": {
-          "status": { "type": "boolean", "example": false },
-          "message": { "type": "string" }
+          "success": {
+            "type": "boolean",
+            "example": false
+          },
+          "message": {
+            "type": "string"
+          }
         }
       }
     },

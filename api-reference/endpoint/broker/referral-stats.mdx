@@ -1,0 +1,33 @@
+---
+title: 'Get Referral Stats'
+openapi: 'GET /broker/referral-stats'
+---
+
+Retrieve aggregate referral statistics including total commissions by currency and total referral count.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referral-stats" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Referral stats retrieved successfully",
+  "data": {
+    "totalCommissions": {
+      "USD": 1500.50,
+      "NGN": 250000
+    },
+    "totalReferrals": 15
+  }
+}
+```
+
+<Info>
+  The `totalCommissions` object contains your lifetime earnings broken down by currency. The `totalReferrals` is the total number of businesses you have referred.
+</Info>

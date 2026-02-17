@@ -1,0 +1,27 @@
+---
+title: 'Get Individual Application'
+openapi: 'GET /kyb/individual'
+---
+
+Retrieve the individual KYB application details for sole proprietors or individual accounts.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/individual" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Individual application retrieved successfully",
+  "data": {}
+}
+```
+
+<Note>
+  This endpoint is for businesses registered as sole proprietors or individual accounts. For corporate entities, use the standard `/kyb` endpoints.
+</Note>

@@ -1,0 +1,48 @@
+---
+title: 'Get Virtual Accounts'
+openapi: 'GET /wallet/virtual-accounts'
+---
+
+Retrieve virtual accounts for receiving payments. Filter by currency, account type, or integration type.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts?currency=NGN&virtualAccountType=static" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `currency` | string | Filter by 3-letter currency code |
+| `virtualAccountType` | string | Filter by type: `static` or `dynamic` |
+| `amount` | number | Amount for dynamic virtual accounts |
+| `integrationType` | string | Filter by integration type |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Virtual accounts retrieved successfully",
+  "data": {
+    "virtualAccounts": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "accountName": "Acme Corp Ltd",
+        "accountNumber": "9876543210",
+        "bankName": "Wema Bank",
+        "currency": "NGN",
+        "type": "static",
+        "status": "active"
+      }
+    ]
+  }
+}
+```
+
+<Info>
+  **Static** virtual accounts are permanent and can receive multiple payments. **Dynamic** virtual accounts are created for a specific amount and expire after use.
+</Info>

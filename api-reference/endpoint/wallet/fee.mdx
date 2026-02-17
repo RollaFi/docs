@@ -1,0 +1,36 @@
+---
+title: 'Get Transaction Fee'
+openapi: 'POST /wallet/fee'
+---
+
+Calculate the fee for a given transaction type, currency, and amount before executing the transaction.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "transactionType": "withdrawal",
+    "amount": 5000
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Fee calculated successfully",
+  "data": {
+    "fee": 50,
+    "currency": "NGN"
+  }
+}
+```
+
+<Tip>
+  Call this endpoint before initiating a withdrawal or swap to show your users the exact fee they'll be charged. Fees vary by currency and transaction type.
+</Tip>

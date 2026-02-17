@@ -1,0 +1,38 @@
+---
+title: 'Invite Team Member'
+openapi: 'POST /teams/invite'
+---
+
+Send an invitation to a new team member via email. If the user already has a Rolla account, they will be added directly. New users will receive a registration link.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/teams/invite" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane@example.com",
+    "fullname": "Jane Doe",
+    "roleId": "e5f6a7b8-c9d0-1234-efgh-567890123456"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Invitation sent successfully",
+  "data": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "email": "jane@example.com",
+    "fullname": "Jane Doe",
+    "isNewUser": true
+  }
+}
+```
+
+<Info>
+  The `roleId` is optional. If omitted, the invited member will receive a default role. Use `/teams/roles` to get available role IDs.
+</Info>

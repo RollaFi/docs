@@ -1,0 +1,47 @@
+---
+title: 'Get Related Persons'
+openapi: 'GET /kyb/related-persons'
+---
+
+Retrieve the list of related persons (directors and beneficial owners) associated with your KYB application.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/related-persons" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Related persons retrieved successfully",
+  "data": {
+    "relatedPersons": [
+      {
+        "id": "rp-001",
+        "firstName": "John",
+        "lastName": "Doe",
+        "roles": ["Director", "Beneficial Owner"],
+        "email": "john@acmecorp.com",
+        "phone": "+2341234567890",
+        "dateOfBirth": "1990-01-15",
+        "ownershipPercentage": 60,
+        "currentAddress": {
+          "street": "456 Oak Avenue",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "100001",
+          "country": "NG"
+        }
+      }
+    ]
+  }
+}
+```
+
+<Info>
+  Related persons include anyone with a **Beneficial Owner** or **Director** role. All persons with 25% or more ownership must be declared as beneficial owners.
+</Info>

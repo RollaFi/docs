@@ -1,0 +1,38 @@
+---
+title: 'Get Payment Accounts'
+openapi: 'GET /wallet/payment-accounts'
+---
+
+Retrieve available payment accounts for a given currency. Use this to determine the funding methods available for depositing funds into your wallet.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/payment-accounts?currency=NGN" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Payment accounts retrieved successfully",
+  "data": {
+    "paymentAccounts": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "accountName": "Rolla Finance Ltd",
+        "accountNumber": "0123456789",
+        "bankName": "Access Bank",
+        "currency": "NGN",
+        "type": "bank_transfer"
+      }
+    ]
+  }
+}
+```
+
+<Note>
+  The `currency` query parameter is required. Available payment methods vary by currency.
+</Note>

@@ -1,0 +1,76 @@
+---
+title: 'Create Beneficiary'
+openapi: 'POST /beneficiaries'
+---
+
+Create a new saved beneficiary for your business. The required fields depend on the withdrawal method and currency.
+
+## Example Request (NGN Domestic Wire)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "label": "Office rent",
+    "account_name": "JOHN DOE",
+    "account_number": "0123456789",
+    "bank_name": "Access Bank",
+    "bank_code": "000014",
+    "withdrawal_method": "domestic_wire",
+    "email": "john@example.com"
+  }'
+```
+
+## Example Request (Crypto USDT)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "label": "Crypto payout",
+    "account_name": "Jane Doe",
+    "withdrawal_method": "crypto_usdt",
+    "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
+    "wallet_chain": "ethereum"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Beneficiary created successfully",
+  "data": {
+    "beneficiary": {
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "currency": "NGN",
+      "label": "Office rent",
+      "account_name": "JOHN DOE",
+      "account_number": "0123456789",
+      "bank_name": "Access Bank",
+      "bank_code": "000014",
+      "withdrawal_method": "domestic_wire",
+      "email": "john@example.com",
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:00.000Z"
+    }
+  }
+}
+```
+
+## Required Fields by Withdrawal Method
+
+| Method | Required Fields |
+|--------|----------------|
+| `domestic_wire` (NGN) | `account_name`, `account_number`, `bank_name`, `bank_code` |
+| `international_wire` | `account_name`, `account_number`, `bank_name` |
+| `crypto_usdt` / `crypto_usdc` | `account_name`, `wallet_address` |
+
+<Warning>
+  For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account and retrieve the correct account name.
+</Warning>

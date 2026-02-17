@@ -1,0 +1,50 @@
+---
+title: 'Update Beneficiary'
+openapi: 'PUT /beneficiaries/{beneficiaryId}'
+---
+
+Update the details of an existing saved beneficiary.
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8-9012-cdef-123456789012" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "label": "Updated label",
+    "account_name": "JOHN DOE",
+    "account_number": "0123456789",
+    "bank_name": "Access Bank",
+    "bank_code": "000014",
+    "email": "john.updated@example.com"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Beneficiary updated successfully",
+  "data": {
+    "beneficiary": {
+      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+      "currency": "NGN",
+      "label": "Updated label",
+      "account_name": "JOHN DOE",
+      "account_number": "0123456789",
+      "bank_name": "Access Bank",
+      "bank_code": "000014",
+      "email": "john.updated@example.com",
+      "created_at": "2024-01-10T08:00:00.000Z",
+      "updated_at": "2024-01-15T12:00:00.000Z"
+    }
+  }
+}
+```
+
+<Note>
+  The same validation rules apply as when creating a beneficiary. See the Create Beneficiary endpoint for required fields by withdrawal method.
+</Note>

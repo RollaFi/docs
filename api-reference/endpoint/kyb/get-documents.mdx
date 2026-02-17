@@ -1,0 +1,42 @@
+---
+title: 'Get KYB Documents'
+openapi: 'GET /kyb/documents'
+---
+
+Retrieve documents associated with a KYB application. Filter by document type or related person.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/documents?applicationId=f6a7b8c9-d0e1-2345-fghi-678901234567" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `applicationId` | string | **Required.** KYB application ID |
+| `relatedPersonKey` | string | Filter by related person |
+| `documentType` | string | Filter by document type |
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Documents retrieved successfully",
+  "data": {
+    "documents": [
+      {
+        "id": "a7b8c9d0-e1f2-3456-ghij-789012345678",
+        "applicationId": "f6a7b8c9-d0e1-2345-fghi-678901234567",
+        "documentType": "certificate_of_incorporation",
+        "fileName": "cert_of_inc.pdf",
+        "fileUrl": "https://storage.rolla.xyz/documents/cert_of_inc.pdf",
+        "created_at": "2024-01-12T09:00:00.000Z"
+      }
+    ]
+  }
+}
+```
