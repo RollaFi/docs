@@ -3,7 +3,11 @@ title: 'Get Referral Link'
 openapi: 'GET /broker/referral-link'
 ---
 
-Retrieve your existing referral link. Your business must be activated as a broker to use this endpoint.
+Retrieve your existing referral link.
+
+<Warning>
+  **Broker activation is required.** Broker accounts are activated by the Rolla admin team — you cannot activate a broker account yourself through the API. Once your business has been activated as a broker by Rolla, all broker endpoints become available. Until then, all requests will return a `403 Forbidden` error. Contact [support@rolla.xyz](mailto:support@rolla.xyz) to request broker activation.
+</Warning>
 
 ## Example Request
 
@@ -25,6 +29,3 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referral-link" \
 }
 ```
 
-<Note>
-  All broker endpoints require your business to be activated as a broker. A `403 Forbidden` error is returned if your business is not activated.
-</Note>

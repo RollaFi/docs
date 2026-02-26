@@ -1159,6 +1159,50 @@
         "operationId": "getStatement",
         "summary": "Get Statement",
         "description": "Retrieves wallet statement data for generating account statements.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["NGN", "USD", "XAF"],
+              "example": "NGN"
+            },
+            "description": "Currency of the wallet to generate the statement for"
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-01-01"
+            },
+            "description": "Start date in YYYY-MM-DD format. Defaults to 1 month ago."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": "2026-02-26"
+            },
+            "description": "End date in YYYY-MM-DD format. Defaults to today."
+          },
+          {
+            "name": "accountType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by account type"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Statement data retrieved successfully",
@@ -3003,7 +3047,14 @@
             "in": "query",
             "description": "Filter by document type",
             "schema": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "certificate_of_incorporation",
+                "articles_of_association",
+                "proof_of_address",
+                "director_register",
+                "shareholder_register"
+              ]
             }
           }
         ],
@@ -3031,6 +3082,30 @@
                           "items": {
                             "$ref": "#/components/schemas/KybDocument"
                           }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed - applicationId is required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "number", "example": 400 },
+                    "message": { "type": "string", "example": "Validation failed" },
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "path": { "type": "array", "items": { "type": "string" } },
+                          "message": { "type": "string" }
                         }
                       }
                     }
@@ -3073,7 +3148,14 @@
                   },
                   "documentType": {
                     "type": "string",
-                    "description": "Type of document being uploaded"
+                    "description": "Type of document being uploaded",
+                    "enum": [
+                      "certificate_of_incorporation",
+                      "articles_of_association",
+                      "proof_of_address",
+                      "director_register",
+                      "shareholder_register"
+                    ]
                   },
                   "relatedPersonKey": {
                     "type": "string",
@@ -3170,27 +3252,40 @@
                           "format": "uuid",
                           "description": "Invite ID"
                         },
-                        "businessId": {
-                          "type": "string",
-                          "format": "uuid",
-                          "description": "Business ID"
-                        },
                         "name": {
                           "type": "string",
                           "description": "Business name",
                           "example": "Acme Corp Ltd"
                         },
-                        "entityType": {
+                        "email": {
+                          "type": "string",
+                          "format": "email",
+                          "description": "Business contact email"
+                        },
+                        "entity_type": {
                           "type": "string",
                           "description": "Entity type",
-                          "example": "limited_company"
+                          "enum": ["business", "individual"]
                         },
                         "status": {
                           "type": "string",
                           "description": "Invite status",
-                          "example": "active"
+                          "enum": ["created", "started", "completed", "expired"]
+                        },
+                        "usd_only": {
+                          "type": "boolean",
+                          "description": "Whether the account is restricted to USD only"
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
                         },
                         "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
                           "type": "string",
                           "format": "date-time"
                         }
@@ -3207,6 +3302,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invite not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "number", "example": 404 },
+                    "message": { "type": "string", "example": "Invalid invite" }
+                  }
                 }
               }
             }
@@ -3288,52 +3397,54 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "string",
-                          "format": "uuid"
+                        "application": {
+                          "type": "object",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "status": {
+                              "type": "string",
+                              "enum": ["draft", "submitted", "approved", "rejected", "changes_requested"]
+                            },
+                            "individual_info": {
+                              "type": "object",
+                              "properties": {
+                                "firstName": { "type": "string", "example": "John" },
+                                "lastName": { "type": "string", "example": "Doe" },
+                                "email": { "type": "string", "format": "email" },
+                                "phone": { "type": "string", "example": "+2341234567890" },
+                                "dateOfBirth": { "type": "string", "example": "1990-01-15" },
+                                "citizenship": { "type": "string", "example": "NG" },
+                                "countryOfResidence": { "type": "string", "example": "NG" },
+                                "bvn": { "type": "string" },
+                                "nin": { "type": "string" },
+                                "address": { "$ref": "#/components/schemas/BusinessAddress" },
+                                "employment": {
+                                  "type": "object",
+                                  "properties": {
+                                    "status": {
+                                      "type": "string",
+                                      "enum": ["employed", "self-employed", "retired", "unemployed", "student"]
+                                    },
+                                    "employerName": { "type": "string" },
+                                    "sourceOfWealth": {
+                                      "type": "string",
+                                      "enum": ["salary", "business_income", "investments", "inheritance", "savings", "other"]
+                                    },
+                                    "annualIncome": {
+                                      "type": "string",
+                                      "enum": ["<25k", "25k-50k", "50k-100k", "100k-250k", "250k-500k", "500k+"]
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "created_at": { "type": "string", "format": "date-time" },
+                            "updated_at": { "type": "string", "format": "date-time" }
+                          }
                         },
-                        "firstName": {
-                          "type": "string",
-                          "example": "John"
-                        },
-                        "lastName": {
-                          "type": "string",
-                          "example": "Doe"
-                        },
-                        "email": {
-                          "type": "string",
-                          "format": "email",
-                          "example": "john@example.com"
-                        },
-                        "phone": {
-                          "type": "string",
-                          "example": "+2341234567890"
-                        },
-                        "dateOfBirth": {
-                          "type": "string",
-                          "example": "1990-01-15"
-                        },
-                        "bvn": {
-                          "type": "string",
-                          "description": "Bank Verification Number"
-                        },
-                        "nin": {
-                          "type": "string",
-                          "description": "National Identification Number"
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "draft",
-                            "submitted",
-                            "approved",
-                            "rejected",
-                            "changes_requested"
-                          ]
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
+                        "documents": {
+                          "type": "array",
+                          "items": { "$ref": "#/components/schemas/KybDocument" }
                         }
                       }
                     }
@@ -3348,6 +3459,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "number", "example": 404 },
+                    "message": { "type": "string", "example": "Application not found" }
+                  }
                 }
               }
             }
@@ -3611,28 +3736,114 @@
           "id": {
             "type": "string",
             "format": "uuid",
-            "description": "Unique wallet identifier"
+            "example": "3c90c3cc-0d44-4b50-8888-8dd25736052a"
+          },
+          "name": {
+            "type": "string",
+            "example": "NGN Wallet"
           },
           "currency": {
             "type": "string",
-            "example": "NGN",
-            "description": "Wallet currency code"
+            "example": "NGN"
+          },
+          "currency_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency_info": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "code": { "type": "string", "example": "NGN" },
+              "name": { "type": "string", "example": "Nigerian Naira" },
+              "symbol": { "type": "string", "example": "₦" },
+              "type": { "type": "string", "enum": ["fiat", "crypto"], "example": "fiat" },
+              "is_active": { "type": "boolean", "example": true }
+            }
+          },
+          "account_type": {
+            "type": "string",
+            "enum": ["wallet", "loan", "pool", "system"],
+            "example": "wallet"
+          },
+          "account_classification": {
+            "type": "string",
+            "example": "business"
+          },
+          "business_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "external_reference": {
+            "type": "string",
+            "example": "rolla-wallet-ngn-3c90c3cc"
           },
           "balance": {
-            "type": "number",
-            "example": 1000000,
-            "description": "Total wallet balance"
+            "type": "object",
+            "properties": {
+              "accountId": { "type": "string", "format": "uuid" },
+              "currency": { "type": "string", "example": "NGN" },
+              "postedBalance": { "type": "number", "example": 1000000 },
+              "pendingBalance": { "type": "number", "example": 50000 },
+              "availableBalance": { "type": "number", "example": 950000 }
+            }
           },
-          "available_balance": {
-            "type": "number",
-            "example": 950000,
-            "description": "Available balance for transactions"
+          "statistics": {
+            "type": "object",
+            "properties": {
+              "balance": {
+                "type": "object",
+                "properties": {
+                  "lastMonth": { "type": "number" },
+                  "currentMonth": { "type": "number" },
+                  "change": { "type": "number" },
+                  "changePercent": { "type": "number" },
+                  "absolutePercent": { "type": "number" },
+                  "trend": { "type": "string", "enum": ["increase", "decrease", "unchanged"] }
+                }
+              },
+              "volume": {
+                "type": "object",
+                "properties": {
+                  "lastMonth": { "type": "number" },
+                  "currentMonth": { "type": "number" },
+                  "change": { "type": "number" },
+                  "changePercent": { "type": "number" },
+                  "absolutePercent": { "type": "number" },
+                  "trend": { "type": "string", "enum": ["increase", "decrease", "unchanged"] }
+                }
+              }
+            }
           },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Wallet creation timestamp"
-          }
+          "virtualAccounts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "string", "format": "uuid" },
+                "currency": { "type": "string", "example": "NGN" },
+                "currency_type": { "type": "string", "enum": ["fiat", "crypto"], "example": "fiat" },
+                "integration_type": { "type": "string", "example": "mono" },
+                "virtual_account_type": { "type": "string", "example": "deposit" },
+                "stablecoin_type": { "type": "string", "nullable": true },
+                "wallet_address": { "type": "string", "nullable": true },
+                "wallet_chain": { "type": "string", "nullable": true },
+                "bank_name": { "type": "string", "nullable": true, "example": "Wema Bank" },
+                "account_number": { "type": "string", "nullable": true, "example": "0123456789" },
+                "account_name": { "type": "string", "nullable": true },
+                "account_id": { "type": "string", "format": "uuid", "nullable": true },
+                "routing_number": { "type": "string", "nullable": true },
+                "bank_address": { "type": "object", "nullable": true },
+                "swift_code": { "type": "string", "nullable": true },
+                "external_account_id": { "type": "string", "nullable": true },
+                "metadata": { "type": "object" },
+                "created_at": { "type": "string", "format": "date-time" },
+                "updated_at": { "type": "string", "format": "date-time" }
+              }
+            }
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
         }
       },
       "ExchangeRate": {
@@ -4670,7 +4881,14 @@
           },
           "documentType": {
             "type": "string",
-            "description": "Type of document"
+            "description": "Type of document",
+            "enum": [
+              "certificate_of_incorporation",
+              "articles_of_association",
+              "proof_of_address",
+              "director_register",
+              "shareholder_register"
+            ]
           },
           "fileName": {
             "type": "string",

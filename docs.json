@@ -139,7 +139,9 @@
     }
   },
   "api": {
-    "baseUrl": "https://api.rolla.xyz/api/v1/external",
+    "baseUrl": [
+      "https://api.rolla.xyz/api/v1/external"
+    ],
     "auth": {
       "method": "key",
       "name": "X-API-Key"

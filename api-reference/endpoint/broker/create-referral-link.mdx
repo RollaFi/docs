@@ -3,7 +3,11 @@ title: 'Create Referral Link'
 openapi: 'POST /broker/referral-link'
 ---
 
-Generate a new referral link for your business. Your business must be activated as a broker to use this endpoint.
+Generate a new referral link for your business.
+
+<Warning>
+  **Broker activation is required.** Broker accounts are activated by the Rolla admin team — you cannot activate a broker account yourself through the API. Once your business has been activated as a broker by Rolla, all broker endpoints become available. Until then, all requests will return a `403 Forbidden` error. Contact [support@rolla.xyz](mailto:support@rolla.xyz) to request broker activation.
+</Warning>
 
 ## Example Request
 

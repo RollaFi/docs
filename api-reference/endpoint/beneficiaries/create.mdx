@@ -3,9 +3,11 @@ title: 'Create Beneficiary'
 openapi: 'POST /beneficiaries'
 ---
 
-Create a new saved beneficiary for your business. The required fields depend on the withdrawal method and currency.
+Create a new saved beneficiary for your business. The required fields depend on the `withdrawal_method` and `currency`.
 
-## Example Request (NGN Domestic Wire)
+## Example Request (NGN Bank Transfer)
+
+For Nigerian Naira transfers, omit `withdrawal_method` (or set it to `null`). `bank_code` is always required for NGN.
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
@@ -18,12 +20,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "account_number": "0123456789",
     "bank_name": "Access Bank",
     "bank_code": "000014",
-    "withdrawal_method": "domestic_wire",
     "email": "john@example.com"
   }'
 ```
 
-## Example Request (Crypto USDT)
+## Example Request (International Wire — USD)
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
@@ -31,11 +32,30 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   -H "Content-Type: application/json" \
   -d '{
     "currency": "USD",
-    "label": "Crypto payout",
-    "account_name": "Jane Doe",
-    "withdrawal_method": "crypto_usdt",
+    "withdrawal_method": "international_wire",
+    "label": "US Supplier",
+    "account_name": "John Doe",
+    "account_number": "123456789",
+    "bank_name": "Chase Bank",
+    "swift_code": "CHASUS33",
+    "routing_number": "021000021",
+    "email": "john@example.com"
+  }'
+```
+
+## Example Request (Crypto USDC)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "withdrawal_method": "crypto_usdc",
+    "label": "Base USDC wallet",
+    "account_name": "My USDC Wallet",
     "wallet_address": "0x1234567890abcdef1234567890abcdef12345678",
-    "wallet_chain": "ethereum"
+    "wallet_chain": "base"
   }'
 ```
 
@@ -54,7 +74,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
       "account_number": "0123456789",
       "bank_name": "Access Bank",
       "bank_code": "000014",
-      "withdrawal_method": "domestic_wire",
+      "withdrawal_method": null,
       "email": "john@example.com",
       "created_at": "2024-01-15T10:30:00.000Z",
       "updated_at": "2024-01-15T10:30:00.000Z"
@@ -65,12 +85,13 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 
 ## Required Fields by Withdrawal Method
 
-| Method | Required Fields |
-|--------|----------------|
-| `domestic_wire` (NGN) | `account_name`, `account_number`, `bank_name`, `bank_code` |
-| `international_wire` | `account_name`, `account_number`, `bank_name` |
-| `crypto_usdt` / `crypto_usdc` | `account_name`, `wallet_address` |
+| Method | Required Fields | Notes |
+|--------|----------------|-------|
+| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code` | `bank_code` always required for NGN |
+| `domestic_wire` | `currency`, `account_name`, `account_number`, `bank_name` | For non-NGN domestic transfers |
+| `international_wire` | `currency`, `account_name`, `account_number`, `bank_name` | Add `swift_code`, `routing_number` as needed |
+| `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address` | `account_name` is used as a display nickname |
 
 <Warning>
-  For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account and retrieve the correct account name.
+  For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account number and retrieve the correct account name before saving.
 </Warning>

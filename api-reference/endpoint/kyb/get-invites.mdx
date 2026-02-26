@@ -16,8 +16,27 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/invites" \
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Invite retrieved successfully",
-  "data": {}
+  "success": true,
+  "data": {
+    "id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
+    "name": "Acme Corp Ltd",
+    "email": "contact@acmecorp.com",
+    "entity_type": "limited_company",
+    "status": "completed",
+    "usd_only": false,
+    "expires_at": null,
+    "created_at": "2024-01-10T08:00:00.000Z",
+    "updated_at": "2024-01-10T08:00:00.000Z"
+  }
 }
 ```
+
+## Status Values
+
+| Status | Meaning |
+|--------|---------|
+| `active` | Invite created, KYB not yet started |
+| `started` | KYB application is in progress |
+| `completed` | KYB submitted and approved — business is fully active |
