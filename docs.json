@@ -140,7 +140,7 @@
   },
   "api": {
     "baseUrl": [
-      "https://api.rolla.xyz/api/v1/external"
+      "https://rolla-platform-server-pr-502.onrender.com/api/v1/external"
     ],
     "auth": {
       "method": "key",
