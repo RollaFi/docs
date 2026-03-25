@@ -3,12 +3,21 @@ title: 'Get Statement'
 openapi: 'GET /wallet/statement'
 ---
 
-Retrieve wallet statement data for generating account statements.
+Retrieve a wallet statement summary including opening/closing balances, totals, and a sanitized transaction list for a given period.
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `currency` | string | Yes | Wallet currency (e.g. `NGN`, `USD`) |
+| `startDate` | string | No | Start of period (`YYYY-MM-DD`). Defaults to 30 days ago. |
+| `endDate` | string | No | End of period (`YYYY-MM-DD`, inclusive). Defaults to today. |
+| `accountType` | string | No | `wallet` (default) or `loan` |
 
 ## Example Request
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/statement?currency=NGN&startDate=2026-01-01&endDate=2026-02-26" \
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/statement?currency=NGN&startDate=2026-01-01&endDate=2026-01-31&accountType=wallet" \
   -H "X-API-Key: your_api_key_here"
 ```
 
@@ -18,10 +27,37 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/statement?currency=NGN
 {
   "success": true,
   "message": "Statement data retrieved successfully",
-  "data": {}
+  "data": {
+    "businessName": "Acme Corp Ltd",
+    "currency": "NGN",
+    "openingBalance": 500000,
+    "closingBalance": 1000000,
+    "totalCredits": 750000,
+    "totalDebits": 250000,
+    "transactions": [
+      {
+        "id": "3c90c3cc-0d44-4b50-8888-8dd25736052a",
+        "transaction_type": "deposit",
+        "status": "completed",
+        "description": "Wallet funding",
+        "external_reference": "ref_abc123",
+        "fee_amount": 0,
+        "source_amount": 750000,
+        "destination_amount": 750000,
+        "source_currency": "NGN",
+        "destination_currency": "NGN",
+        "created_at": "2026-01-10T09:15:00.000Z",
+        "updated_at": "2026-01-10T09:15:30.000Z"
+      }
+    ]
+  }
 }
 ```
 
 <Tip>
   Use this endpoint to generate periodic account statements for your records or for compliance reporting.
 </Tip>
+
+<Info>
+  `accountType` accepts two values: `wallet` (default, for your main wallet) and `loan` (for loan accounts).
+</Info>

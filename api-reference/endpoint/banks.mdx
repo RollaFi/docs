@@ -9,10 +9,11 @@ Retrieve a list of all Nigerian banks supported for payouts. Use the `bankCode` 
 
 ```json
 {
-  "status": true,
+  "status": 200,
+  "success": true,
   "message": "Banks retrieved successfully",
   "data": {
-    "data": [
+    "banks": [
       { "bankName": "Access Bank", "bankCode": "000014" },
       { "bankName": "GTBank", "bankCode": "000013" },
       { "bankName": "Zenith Bank", "bankCode": "000015" }

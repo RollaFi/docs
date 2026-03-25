@@ -5,21 +5,35 @@ openapi: 'POST /wallet/withdraw'
 
 Initiate a withdrawal from your wallet to a beneficiary. You can reference a saved beneficiary by ID or provide inline beneficiary details for a one-time transfer.
 
-## Example Request (Saved Beneficiary)
+Either `beneficiaryId` or `inlineBeneficiary` must be provided. The required fields inside `inlineBeneficiary` depend on the currency and `withdrawal_method`.
 
-```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
-  -H "X-API-Key: your_api_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 5000,
-    "currency": "NGN",
-    "description": "Vendor payment",
-    "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012"
-  }'
-```
+## Top-level Parameters
 
-## Example Request (Inline Beneficiary)
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount` | number | Yes | Amount in the smallest unit (e.g. kobo for NGN, cents for USD) |
+| `currency` | string | Yes | 3-letter currency code — `NGN`, `USD`, or `XAF` |
+| `description` | string | No | Narration for the transaction |
+| `externalReference` | string | No | Your own unique reference for this transaction |
+| `beneficiaryId` | string (UUID) | No* | ID of a saved beneficiary |
+| `inlineBeneficiary` | object | No* | One-time beneficiary details (see per-currency fields below) |
+| `saveBeneficiary` | boolean | No | Save the inline beneficiary for future use |
+| `deductFeesFromBalance` | boolean | No | If `true`, fees are deducted from your wallet; beneficiary receives the exact amount |
+
+\* One of `beneficiaryId` or `inlineBeneficiary` is required.
+
+---
+
+## `inlineBeneficiary` — Required Fields by Currency
+
+### NGN
+
+| Field | Required |
+|-------|----------|
+| `account_number` | Yes |
+| `bank_name` | Yes |
+| `bank_code` | Yes |
+| `account_name` | No (auto-resolved from bank lookup) |
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
@@ -30,30 +44,169 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
     "currency": "NGN",
     "description": "Vendor payment",
     "inlineBeneficiary": {
-      "account_name": "JOHN DOE",
       "account_number": "0123456789",
       "bank_name": "Access Bank",
       "bank_code": "000014"
     },
-    "saveBeneficiary": true,
-    "deductFeesFromBalance": true
+    "saveBeneficiary": true
   }'
 ```
+
+---
+
+### USD — Domestic Wire
+
+| Field | Required |
+|-------|----------|
+| `withdrawal_method` | Yes — `"domestic_wire"` |
+| `account_name` | Yes |
+| `bank_name` | Yes |
+| `account_number` | Yes |
+| `routing_number` | Yes |
+| `beneficiary_address` | Yes — `{ street, city, state, postalCode, country }` |
+| `bank_address` | Yes — `{ street, city, state, postalCode, country }` |
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "currency": "USD",
+    "inlineBeneficiary": {
+      "withdrawal_method": "domestic_wire",
+      "account_name": "Jane Smith",
+      "bank_name": "Chase Bank",
+      "account_number": "123456789",
+      "routing_number": "021000021",
+      "beneficiary_address": { "street": "123 Main St", "city": "New York", "state": "NY", "postalCode": "10001", "country": "US" },
+      "bank_address": { "street": "270 Park Ave", "city": "New York", "state": "NY", "postalCode": "10017", "country": "US" }
+    }
+  }'
+```
+
+---
+
+### USD — International Wire
+
+| Field | Required |
+|-------|----------|
+| `withdrawal_method` | Yes — `"international_wire"` |
+| `account_name` | Yes |
+| `bank_name` | Yes |
+| `account_number` | Yes |
+| `swift_code` | Yes |
+| `beneficiary_address` | Yes — `{ street, city, state, postalCode, country }` |
+| `bank_address` | Yes — `{ street, city, state, postalCode, country }` |
+| `intermediary_bank_name` | No |
+| `intermediary_bank_routing_number` | No |
+
+<Warning>
+  USD international wire requires reference documents/invoices to be attached. Send the request as `multipart/form-data` and include one or more files under the `documents` field alongside your other fields.
+</Warning>
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "amount=1000" \
+  -F "currency=USD" \
+  -F "inlineBeneficiary[withdrawal_method]=international_wire" \
+  -F "inlineBeneficiary[account_name]=Jane Smith" \
+  -F "inlineBeneficiary[bank_name]=Barclays Bank" \
+  -F "inlineBeneficiary[account_number]=12345678" \
+  -F "inlineBeneficiary[swift_code]=BARCGB22" \
+  -F "inlineBeneficiary[beneficiary_address][street]=123 Main Street" \
+  -F "inlineBeneficiary[beneficiary_address][city]=New York" \
+  -F "inlineBeneficiary[beneficiary_address][state]=NY" \
+  -F "inlineBeneficiary[beneficiary_address][postalCode]=10001" \
+  -F "inlineBeneficiary[beneficiary_address][country]=US" \
+  -F "inlineBeneficiary[bank_address][street]=456 Bank Avenue" \
+  -F "inlineBeneficiary[bank_address][city]=New York" \
+  -F "inlineBeneficiary[bank_address][state]=NY" \
+  -F "inlineBeneficiary[bank_address][postalCode]=10001" \
+  -F "inlineBeneficiary[bank_address][country]=US" \
+  -F "documents=@/path/to/invoice.pdf"
+```
+
+---
+
+### USD — Crypto (USDT / USDC)
+
+Crypto withdrawals are sent from your **USD wallet**. Set `withdrawal_method` to `"crypto_usdt"` or `"crypto_usdc"` to send the USD value as a stablecoin to a crypto wallet address.
+
+| Field | Required |
+|-------|----------|
+| `withdrawal_method` | Yes — `"crypto_usdt"` or `"crypto_usdc"` |
+| `account_name` | Yes — used as a display nickname |
+| `wallet_address` | Yes — 26–64 alphanumeric characters |
+| `wallet_chain` | Yes — e.g. `"ethereum"`, `"tron"` |
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "currency": "USD",
+    "inlineBeneficiary": {
+      "withdrawal_method": "crypto_usdt",
+      "account_name": "My USDT Wallet",
+      "wallet_address": "TXyZ1234abcd5678efgh9012ijkl3456mnop",
+      "wallet_chain": "tron"
+    }
+  }'
+```
+
+---
+
+### XAF
+
+| Field | Required |
+|-------|----------|
+| `account_name` | Yes |
+| `bank_name` | Yes |
+| `account_number` | Yes |
+| `swift_code` | Yes |
+| `bank_address` | Yes — `{ street, city, state, country }` |
+
+---
 
 ## Example Response
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Withdrawal initiated successfully",
-  "data": {}
+  "data": {
+    "transaction": {
+      "id": "866b7abd-6cac-40f2-a04f-d6e58bf47d04",
+      "transaction_type": "withdrawal",
+      "status": "pending",
+      "description": "Vendor payment",
+      "external_reference": "NG-NFNUJTUW",
+      "fee_amount": 25,
+      "source_amount": 5000,
+      "destination_amount": 4975,
+      "source_currency": "NGN",
+      "destination_currency": "NGN",
+      "created_at": "2026-03-23T13:45:28.138Z",
+      "updated_at": "2026-03-23T13:45:28.263Z",
+      "beneficiary": {
+        "bank_name": "Access Bank",
+        "bank_code": "000014",
+        "account_name": "John Doe",
+        "account_number": "0123456789"
+      }
+    }
+  }
 }
 ```
 
 <Info>
-  Either `beneficiaryId` or `inlineBeneficiary` must be provided. Set `saveBeneficiary` to `true` to save inline beneficiary details for future use.
+  Use `beneficiaryId` to pay a saved beneficiary. Use `inlineBeneficiary` for one-time transfers. Set `saveBeneficiary: true` to save the inline beneficiary automatically for reuse.
 </Info>
 
 <Warning>
-  **Fees**: Set `deductFeesFromBalance` to `true` to deduct fees from your wallet balance instead of the withdrawal amount. The beneficiary will receive the exact amount specified.
+  **Fees**: By default, fees are deducted from the withdrawal amount (beneficiary receives less). Set `deductFeesFromBalance: true` so fees come out of your wallet balance and the beneficiary receives the exact amount specified.
 </Warning>

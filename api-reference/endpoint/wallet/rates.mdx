@@ -16,21 +16,34 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/rates" \
 
 ```json
 {
+  "status": 200,
   "success": true,
-  "message": "Rates retrieved successfully",
+  "message": "Exchange rates retrieved successfully",
   "data": {
     "rates": [
       {
-        "fromCurrency": "USD",
-        "toCurrency": "NGN",
-        "rate": 1550.00,
-        "rateToken": "rt_abc123def456"
-      },
-      {
         "fromCurrency": "NGN",
         "toCurrency": "USD",
-        "rate": 0.000645,
-        "rateToken": "rt_def456ghi789"
+        "rate": 0.0006292157,
+        "rateToken": "eyJhbGci..."
+      },
+      {
+        "fromCurrency": "XAF",
+        "toCurrency": "USD",
+        "rate": 0.0017606254,
+        "rateToken": "eyJhbGci..."
+      },
+      {
+        "fromCurrency": "USD",
+        "toCurrency": "NGN",
+        "rate": 1405.3992,
+        "rateToken": "eyJhbGci..."
+      },
+      {
+        "fromCurrency": "USD",
+        "toCurrency": "XAF",
+        "rate": 556,
+        "rateToken": "eyJhbGci..."
       }
     ]
   }

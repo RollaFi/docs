@@ -21,15 +21,14 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
 
 ```json
 {
-  "status": true,
+  "status": 200,
+  "success": true,
   "message": "Account details retrieved successfully",
   "data": {
-    "data": {
-      "accountNumber": "0123456789",
-      "accountName": "JOHN DOE",
-      "bankCode": "000014",
-      "bankName": "Access Bank"
-    }
+    "accountNumber": "0123456789",
+    "accountName": "JOHN DOE",
+    "bankCode": "000014",
+    "bankName": "Access Bank"
   }
 }
 ```

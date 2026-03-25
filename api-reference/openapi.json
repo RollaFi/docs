@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://rolla-platform-server-pr-502.onrender.com/api/v1/external",
+      "url": "https://rolla-platform-server-pr-548.onrender.com/api/v1/external",
       "description": "Production server"
     }
   ],
@@ -31,6 +31,10 @@
                   "type": "object",
                   "properties": {
                     "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "success": {
                       "type": "boolean",
                       "example": true
                     },
@@ -41,7 +45,7 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "data": {
+                        "banks": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/Bank"
@@ -91,6 +95,10 @@
                   "type": "object",
                   "properties": {
                     "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "success": {
                       "type": "boolean",
                       "example": true
                     },
@@ -99,12 +107,7 @@
                       "example": "Account details retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/LookupResponse"
-                        }
-                      }
+                      "$ref": "#/components/schemas/LookupResponse"
                     }
                   }
                 }
@@ -271,6 +274,10 @@
                   "type": "object",
                   "properties": {
                     "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "success": {
                       "type": "boolean",
                       "example": true
                     },
@@ -278,8 +285,31 @@
                       "type": "string",
                       "example": "Transactions retrieved successfully"
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/TransactionList"
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Transaction"
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "Total number of transactions",
+                      "example": 150
+                    },
+                    "page": {
+                      "type": "integer",
+                      "description": "Current page number",
+                      "example": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "description": "Results per page",
+                      "example": 20
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "description": "Total number of pages",
+                      "example": 8
                     }
                   }
                 }
@@ -326,6 +356,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -334,15 +368,10 @@
                       "type": "string",
                       "example": "Business wallets retrieved successfully"
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "wallets": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/Wallet"
-                          }
-                        }
+                    "wallets": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Wallet"
                       }
                     }
                   }
@@ -376,23 +405,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
                     },
                     "message": {
                       "type": "string",
-                      "example": "Rates retrieved successfully"
+                      "example": "Exchange rates retrieved successfully"
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "rates": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/ExchangeRate"
-                          }
-                        }
+                    "rates": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ExchangeRate"
                       }
                     }
                   }
@@ -426,6 +454,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -440,157 +472,34 @@
                         "currencies": {
                           "type": "array",
                           "items": {
-                            "type": "string",
-                            "example": "NGN"
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "code": {
+                                "type": "string",
+                                "example": "NGN"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Nigerian Naira"
+                              },
+                              "symbol": {
+                                "type": "string",
+                                "example": "₦"
+                              },
+                              "status": {
+                                "type": "string",
+                                "example": "active"
+                              }
+                            }
                           }
                         }
                       }
                     }
                   }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Invalid or missing API key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/wallet/payment-accounts": {
-      "get": {
-        "operationId": "getPaymentAccounts",
-        "summary": "Get Payment Accounts",
-        "description": "Retrieves available payment accounts for a given currency. Used to determine funding methods.",
-        "parameters": [
-          {
-            "name": "currency",
-            "in": "query",
-            "required": true,
-            "description": "3-letter currency code (e.g. NGN, USD)",
-            "schema": {
-              "type": "string",
-              "minLength": 3,
-              "maxLength": 3,
-              "example": "NGN"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Payment accounts retrieved successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Payment accounts retrieved successfully"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "paymentAccounts": {
-                          "type": "array",
-                          "items": {
-                            "$ref": "#/components/schemas/PaymentAccount"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - Invalid currency",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - Invalid or missing API key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/wallet/add-funds": {
-      "post": {
-        "operationId": "addFunds",
-        "summary": "Add Funds",
-        "description": "Initiates a deposit to add funds to your wallet.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddFundsRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Funds addition initiated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean",
-                      "example": true
-                    },
-                    "message": {
-                      "type": "string",
-                      "example": "Funds addition initiated successfully"
-                    },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "transaction": {
-                          "$ref": "#/components/schemas/Transaction"
-                        },
-                        "paymentAccount": {
-                          "$ref": "#/components/schemas/PaymentAccount"
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request - Invalid input",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -694,7 +603,7 @@
       "post": {
         "operationId": "withdraw",
         "summary": "Withdraw Funds",
-        "description": "Initiates a withdrawal from your wallet to a beneficiary.",
+        "description": "Initiates a withdrawal from your wallet to a beneficiary. Either `beneficiaryId` or `inlineBeneficiary` must be provided. For USD international_wire, send as multipart/form-data and attach reference documents under the `documents` field.",
         "requestBody": {
           "required": true,
           "content": {
@@ -713,6 +622,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "number",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -721,21 +634,29 @@
                       "type": "string",
                       "example": "Withdrawal initiated successfully"
                     },
-                    "data": {
+                    "transaction": {
                       "type": "object",
                       "properties": {
-                        "transaction": {
-                          "$ref": "#/components/schemas/Transaction"
-                        },
-                        "fee_amount": {
-                          "type": "number",
-                          "description": "Fee charged for the withdrawal",
-                          "example": 50
-                        },
-                        "destination_amount": {
-                          "type": "number",
-                          "description": "Amount received by beneficiary",
-                          "example": 5000
+                        "id": { "type": "string", "format": "uuid" },
+                        "transaction_type": { "type": "string", "example": "withdrawal" },
+                        "status": { "type": "string", "example": "pending" },
+                        "description": { "type": "string" },
+                        "external_reference": { "type": "string" },
+                        "fee_amount": { "type": "number", "example": 25 },
+                        "source_amount": { "type": "number", "example": 5000 },
+                        "destination_amount": { "type": "number", "example": 4975 },
+                        "source_currency": { "type": "string", "example": "NGN" },
+                        "destination_currency": { "type": "string", "example": "NGN" },
+                        "created_at": { "type": "string", "format": "date-time" },
+                        "updated_at": { "type": "string", "format": "date-time" },
+                        "beneficiary": {
+                          "type": "object",
+                          "properties": {
+                            "bank_name": { "type": "string" },
+                            "bank_code": { "type": "string" },
+                            "account_name": { "type": "string" },
+                            "account_number": { "type": "string" }
+                          }
                         }
                       }
                     }
@@ -939,16 +860,43 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
                     },
                     "message": {
                       "type": "string",
-                      "example": "Transactions retrieved successfully"
+                      "example": "Transaction history retrieved successfully"
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/TransactionList"
+                    "transactions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Transaction"
+                      }
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "description": "Total number of transactions",
+                      "example": 150
+                    },
+                    "page": {
+                      "type": "integer",
+                      "description": "Current page number",
+                      "example": 1
+                    },
+                    "pageSize": {
+                      "type": "integer",
+                      "description": "Results per page",
+                      "example": 20
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "description": "Total number of pages",
+                      "example": 8
                     }
                   }
                 }
@@ -1118,13 +1066,47 @@
                       "type": "string",
                       "example": "Transaction retrieved successfully"
                     },
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "transaction": {
-                          "$ref": "#/components/schemas/Transaction"
-                        }
-                      }
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "transaction_type": {
+                      "type": "string",
+                      "enum": ["deposit", "withdrawal", "swap"]
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["pending", "completed", "failed", "rejected", "sent", "processing"]
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "external_reference": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "fee_amount": {
+                      "type": "number"
+                    },
+                    "source_amount": {
+                      "type": "number"
+                    },
+                    "destination_amount": {
+                      "type": "number"
+                    },
+                    "source_currency": {
+                      "type": "string"
+                    },
+                    "destination_currency": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
                     }
                   }
                 }
@@ -1277,6 +1259,107 @@
         }
       }
     },
+    "/wallet/virtual-accounts/generate/dynamic": {
+      "post": {
+        "operationId": "generateDynamicVirtualAccount",
+        "summary": "Generate Dynamic Virtual Account",
+        "description": "Generates a dynamic (one-time) NGN virtual account. If an active dynamic account already exists and hasn't expired, it will be returned instead.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": { "type": "number", "example": 500000, "description": "Expected deposit amount in kobo. Recommended for amount-specific accounts." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dynamic virtual account generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "integer", "example": 201 },
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Dynamic virtual account generated successfully" },
+                    "virtualAccount": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "status": { "type": "string", "example": "active" },
+                        "virtual_account_type": { "type": "string", "example": "dynamic" },
+                        "currency_type": { "type": "string", "example": "fiat" },
+                        "bank_name": { "type": "string", "example": "VFD MFB" },
+                        "account_number": { "type": "string", "example": "1234567890" },
+                        "account_name": { "type": "string", "example": "Rolla / Your Business Name" },
+                        "expires_at": { "type": "string", "format": "date-time", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/wallet/virtual-accounts/generate/static": {
+      "post": {
+        "operationId": "generateStaticVirtualAccount",
+        "summary": "Generate Static Virtual Account",
+        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist — this will return an error if one already exists.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Static virtual account generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "integer", "example": 201 },
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Static virtual account generated successfully" },
+                    "virtualAccount": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "status": { "type": "string", "example": "active" },
+                        "virtual_account_type": { "type": "string", "example": "static" },
+                        "currency_type": { "type": "string", "example": "fiat" },
+                        "bank_name": { "type": "string", "example": "VFD MFB" },
+                        "account_number": { "type": "string", "example": "1234567890" },
+                        "account_name": { "type": "string", "example": "Rolla / Your Business Name" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Bad request or account already exists", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "description": "Unauthorized", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
     "/wallet/virtual-accounts": {
       "get": {
         "operationId": "getVirtualAccounts",
@@ -1305,22 +1388,6 @@
               ]
             }
           },
-          {
-            "name": "amount",
-            "in": "query",
-            "description": "Amount for dynamic virtual accounts",
-            "schema": {
-              "type": "number"
-            }
-          },
-          {
-            "name": "integrationType",
-            "in": "query",
-            "description": "Filter by integration type",
-            "schema": {
-              "type": "string"
-            }
-          }
         ],
         "responses": {
           "200": {
@@ -1956,6 +2023,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -1967,7 +2038,7 @@
                     "data": {
                       "type": "object",
                       "properties": {
-                        "data": {
+                        "banks": {
                           "type": "array",
                           "items": {
                             "$ref": "#/components/schemas/Bank"
@@ -2016,6 +2087,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
                     "success": {
                       "type": "boolean",
                       "example": true
@@ -2025,12 +2100,7 @@
                       "example": "Account details retrieved successfully"
                     },
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "data": {
-                          "$ref": "#/components/schemas/LookupResponse"
-                        }
-                      }
+                      "$ref": "#/components/schemas/LookupResponse"
                     }
                   }
                 }
@@ -2344,6 +2414,77 @@
           },
           "404": {
             "description": "Team member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/teams/members/{userId}/role": {
+      "post": {
+        "operationId": "assignTeamMemberRole",
+        "summary": "Assign Role to Member",
+        "description": "Assigns a role to an existing team member. Use `GET /teams/roles` to retrieve available role IDs.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "description": "User UUID of the team member",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignMemberRoleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role assigned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Role assigned successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid role ID or user not a member of this business",
             "content": {
               "application/json": {
                 "schema": {
@@ -3674,7 +3815,7 @@
             "format": "uuid",
             "description": "Transaction identifier"
           },
-          "type": {
+          "transaction_type": {
             "type": "string",
             "enum": [
               "deposit",
@@ -3690,26 +3831,49 @@
               "completed",
               "failed",
               "rejected",
-              "sent"
+              "sent",
+              "processing"
             ],
             "description": "Transaction status"
-          },
-          "amount": {
-            "type": "integer",
-            "description": "Transaction amount (in smallest unit)"
-          },
-          "currency": {
-            "type": "string",
-            "description": "Transaction currency"
           },
           "description": {
             "type": "string",
             "description": "Transaction description"
           },
+          "external_reference": {
+            "type": "string",
+            "nullable": true,
+            "description": "External reference ID"
+          },
+          "fee_amount": {
+            "type": "number",
+            "description": "Fee charged for this transaction"
+          },
+          "source_amount": {
+            "type": "number",
+            "description": "Amount debited from the source wallet"
+          },
+          "destination_amount": {
+            "type": "number",
+            "description": "Amount credited to the destination wallet"
+          },
+          "source_currency": {
+            "type": "string",
+            "description": "Currency of the source wallet"
+          },
+          "destination_currency": {
+            "type": "string",
+            "description": "Currency of the destination wallet"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
-            "description": "Transaction timestamp"
+            "description": "Transaction creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
           }
         }
       },
@@ -3746,73 +3910,12 @@
             "type": "string",
             "example": "NGN"
           },
-          "currency_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "currency_info": {
-            "type": "object",
-            "properties": {
-              "id": { "type": "string", "format": "uuid" },
-              "code": { "type": "string", "example": "NGN" },
-              "name": { "type": "string", "example": "Nigerian Naira" },
-              "symbol": { "type": "string", "example": "₦" },
-              "type": { "type": "string", "enum": ["fiat", "crypto"], "example": "fiat" },
-              "is_active": { "type": "boolean", "example": true }
-            }
-          },
-          "account_type": {
-            "type": "string",
-            "enum": ["wallet", "loan", "pool", "system"],
-            "example": "wallet"
-          },
-          "account_classification": {
-            "type": "string",
-            "example": "business"
-          },
-          "business_id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "external_reference": {
-            "type": "string",
-            "example": "rolla-wallet-ngn-3c90c3cc"
-          },
           "balance": {
             "type": "object",
             "properties": {
-              "accountId": { "type": "string", "format": "uuid" },
-              "currency": { "type": "string", "example": "NGN" },
+              "availableBalance": { "type": "number", "example": 950000 },
               "postedBalance": { "type": "number", "example": 1000000 },
-              "pendingBalance": { "type": "number", "example": 50000 },
-              "availableBalance": { "type": "number", "example": 950000 }
-            }
-          },
-          "statistics": {
-            "type": "object",
-            "properties": {
-              "balance": {
-                "type": "object",
-                "properties": {
-                  "lastMonth": { "type": "number" },
-                  "currentMonth": { "type": "number" },
-                  "change": { "type": "number" },
-                  "changePercent": { "type": "number" },
-                  "absolutePercent": { "type": "number" },
-                  "trend": { "type": "string", "enum": ["increase", "decrease", "unchanged"] }
-                }
-              },
-              "volume": {
-                "type": "object",
-                "properties": {
-                  "lastMonth": { "type": "number" },
-                  "currentMonth": { "type": "number" },
-                  "change": { "type": "number" },
-                  "changePercent": { "type": "number" },
-                  "absolutePercent": { "type": "number" },
-                  "trend": { "type": "string", "enum": ["increase", "decrease", "unchanged"] }
-                }
-              }
+              "pendingBalance": { "type": "number", "example": 50000 }
             }
           },
           "virtualAccounts": {
@@ -3821,29 +3924,22 @@
               "type": "object",
               "properties": {
                 "id": { "type": "string", "format": "uuid" },
-                "currency": { "type": "string", "example": "NGN" },
-                "currency_type": { "type": "string", "enum": ["fiat", "crypto"], "example": "fiat" },
-                "integration_type": { "type": "string", "example": "mono" },
+                "status": { "type": "string", "example": "active" },
                 "virtual_account_type": { "type": "string", "example": "deposit" },
-                "stablecoin_type": { "type": "string", "nullable": true },
-                "wallet_address": { "type": "string", "nullable": true },
-                "wallet_chain": { "type": "string", "nullable": true },
-                "bank_name": { "type": "string", "nullable": true, "example": "Wema Bank" },
-                "account_number": { "type": "string", "nullable": true, "example": "0123456789" },
-                "account_name": { "type": "string", "nullable": true },
-                "account_id": { "type": "string", "format": "uuid", "nullable": true },
-                "routing_number": { "type": "string", "nullable": true },
-                "bank_address": { "type": "object", "nullable": true },
-                "swift_code": { "type": "string", "nullable": true },
-                "external_account_id": { "type": "string", "nullable": true },
-                "metadata": { "type": "object" },
-                "created_at": { "type": "string", "format": "date-time" },
-                "updated_at": { "type": "string", "format": "date-time" }
+                "currency_type": { "type": "string", "enum": ["fiat", "crypto"], "example": "fiat" },
+                "bank_name": { "type": "string", "example": "Wema Bank", "description": "Fiat accounts only" },
+                "account_number": { "type": "string", "example": "0123456789", "description": "Fiat accounts only" },
+                "account_name": { "type": "string", "description": "Fiat accounts only" },
+                "routing_number": { "type": "string", "nullable": true, "description": "USD fiat accounts only" },
+                "bank_address": { "type": "object", "nullable": true, "description": "USD fiat accounts only" },
+                "swift_code": { "type": "string", "nullable": true, "description": "USD fiat accounts only" },
+                "expires_at": { "type": "string", "format": "date-time", "nullable": true },
+                "stablecoin_type": { "type": "string", "example": "USDT", "description": "Crypto accounts only" },
+                "wallet_address": { "type": "string", "description": "Crypto accounts only" },
+                "wallet_chain": { "type": "string", "example": "ethereum", "description": "Crypto accounts only" }
               }
             }
-          },
-          "created_at": { "type": "string", "format": "date-time" },
-          "updated_at": { "type": "string", "format": "date-time" }
+          }
         }
       },
       "ExchangeRate": {
@@ -3977,10 +4073,11 @@
           "amount",
           "currency"
         ],
+        "description": "Either `beneficiaryId` or `inlineBeneficiary` must be provided.",
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount to withdraw (positive number)",
+            "description": "Amount in the smallest unit (e.g. kobo for NGN, cents for USD)",
             "example": 5000
           },
           "currency": {
@@ -3992,84 +4089,141 @@
           },
           "description": {
             "type": "string",
-            "description": "Optional description",
+            "description": "Narration for the transaction",
             "maxLength": 500
+          },
+          "externalReference": {
+            "type": "string",
+            "description": "Your own unique reference for this transaction",
+            "maxLength": 255
           },
           "beneficiaryId": {
             "type": "string",
             "format": "uuid",
-            "description": "ID of a saved beneficiary"
+            "description": "ID of a saved beneficiary. Use this OR inlineBeneficiary."
           },
           "inlineBeneficiary": {
-            "$ref": "#/components/schemas/InlineBeneficiary"
+            "$ref": "#/components/schemas/InlineBeneficiary",
+            "description": "One-time beneficiary details (use instead of beneficiaryId)"
           },
           "saveBeneficiary": {
             "type": "boolean",
-            "description": "Whether to save the inline beneficiary for future use"
+            "description": "Save the inline beneficiary for future use",
+            "default": false
           },
           "deductFeesFromBalance": {
             "type": "boolean",
-            "description": "Whether to deduct fees from wallet balance instead of the withdrawal amount"
+            "description": "If true, fees are taken from your wallet balance so the beneficiary receives the exact amount",
+            "default": false
           }
         }
       },
       "InlineBeneficiary": {
         "type": "object",
-        "description": "One-time beneficiary details (use instead of beneficiaryId)",
+        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method — see the endpoint docs for per-currency examples.",
         "properties": {
-          "account_name": {
-            "type": "string",
-            "example": "JOHN DOE"
-          },
-          "account_number": {
-            "type": "string",
-            "example": "0123456789"
-          },
-          "bank_name": {
-            "type": "string",
-            "example": "Access Bank"
-          },
-          "bank_code": {
-            "type": "string",
-            "example": "000014"
-          },
-          "bank_address": {
-            "type": "string"
-          },
-          "swift_code": {
-            "type": "string"
-          },
-          "beneficiary_address": {
-            "type": "string"
-          },
           "withdrawal_method": {
             "type": "string",
+            "description": "Required for USD, GBP, EUR, and crypto. NGN defaults to local transfer.",
             "enum": [
+              "local_transfer",
               "domestic_wire",
               "international_wire",
               "crypto_usdt",
               "crypto_usdc"
             ]
           },
+          "account_name": {
+            "type": "string",
+            "description": "Account holder name. Required for all currencies except EUR SEPA. For crypto, used as a display nickname.",
+            "example": "John Doe"
+          },
+          "account_number": {
+            "type": "string",
+            "description": "Required for NGN, USD, GBP local (8 digits), GBP international, EUR international. Not required for EUR SEPA or crypto.",
+            "example": "0123456789"
+          },
+          "bank_name": {
+            "type": "string",
+            "description": "Required for NGN, USD, GBP. Not required for EUR SEPA or crypto.",
+            "example": "Access Bank"
+          },
+          "bank_code": {
+            "type": "string",
+            "description": "Required for NGN (e.g. '000014' for Access Bank).",
+            "example": "000014"
+          },
           "routing_number": {
-            "type": "string"
+            "type": "string",
+            "description": "Required for USD domestic_wire."
+          },
+          "swift_code": {
+            "type": "string",
+            "description": "Required for USD international_wire, GBP international_wire, EUR international_wire, and other currencies."
+          },
+          "sort_code": {
+            "type": "string",
+            "description": "Required for GBP local_transfer. Must be exactly 6 digits.",
+            "example": "400515"
+          },
+          "iban": {
+            "type": "string",
+            "description": "Required for EUR local_transfer (SEPA).",
+            "example": "DE89370400440532013000"
+          },
+          "bic": {
+            "type": "string",
+            "description": "Required for EUR local_transfer (SEPA).",
+            "example": "COBADEFFXXX"
+          },
+          "bank_address": {
+            "type": "object",
+            "description": "Required for USD, GBP (international), EUR (international), and XAF/other currencies.",
+            "properties": {
+              "street": { "type": "string", "example": "456 Bank Avenue" },
+              "city": { "type": "string", "example": "New York" },
+              "state": { "type": "string", "example": "NY" },
+              "postalCode": { "type": "string", "example": "10001" },
+              "country": { "type": "string", "example": "US" }
+            }
+          },
+          "beneficiary_address": {
+            "type": "object",
+            "description": "Required for USD and GBP. Street, city, state, postalCode, and country.",
+            "properties": {
+              "street": { "type": "string", "example": "123 Main Street" },
+              "city": { "type": "string", "example": "New York" },
+              "state": { "type": "string", "example": "NY" },
+              "postalCode": { "type": "string", "example": "10001" },
+              "country": { "type": "string", "example": "US" }
+            }
           },
           "wallet_address": {
             "type": "string",
-            "description": "Crypto wallet address (for crypto withdrawals)"
+            "description": "Required for crypto_usdt and crypto_usdc. Must be 26–64 alphanumeric characters. Use with currency: USD.",
+            "example": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
+          },
+          "wallet_chain": {
+            "type": "string",
+            "description": "Required for crypto_usdt and crypto_usdc. The blockchain network (e.g. 'ethereum', 'tron'). Use with currency: USD.",
+            "example": "tron"
+          },
+          "intermediary_bank_name": {
+            "type": "string",
+            "description": "Optional. Intermediary bank for USD international_wire."
+          },
+          "intermediary_bank_routing_number": {
+            "type": "string",
+            "description": "Optional. Intermediary bank routing number for USD international_wire."
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Optional. Beneficiary email address."
           },
           "contact_person": {
-            "type": "string"
-          },
-          "intermediary_bank_name": {
-            "type": "string"
-          },
-          "intermediary_bank_routing_number": {
-            "type": "string"
+            "type": "string",
+            "description": "Optional. Contact person at the beneficiary."
           }
         }
       },
@@ -4358,13 +4512,19 @@
             "example": "000014"
           },
           "bank_address": {
-            "type": "string",
-            "description": "Bank address (for international wires)",
-            "maxLength": 500
+            "type": "object",
+            "description": "Bank's physical address. Required for USD domestic and international wire transfers.",
+            "properties": {
+              "street": { "type": "string", "example": "270 Park Ave" },
+              "city": { "type": "string", "example": "New York" },
+              "state": { "type": "string", "example": "NY" },
+              "postalCode": { "type": "string", "example": "10017" },
+              "country": { "type": "string", "example": "US" }
+            }
           },
           "swift_code": {
             "type": "string",
-            "description": "SWIFT/BIC code (for international wires)",
+            "description": "SWIFT/BIC code (required for international wire)",
             "maxLength": 20
           },
           "email": {
@@ -4379,9 +4539,15 @@
             "maxLength": 100
           },
           "beneficiary_address": {
-            "type": "string",
-            "description": "Beneficiary address",
-            "maxLength": 500
+            "type": "object",
+            "description": "Beneficiary's physical address. Required for USD domestic and international wire transfers.",
+            "properties": {
+              "street": { "type": "string", "example": "123 Main St" },
+              "city": { "type": "string", "example": "New York" },
+              "state": { "type": "string", "example": "NY" },
+              "postalCode": { "type": "string", "example": "10001" },
+              "country": { "type": "string", "example": "US" }
+            }
           },
           "withdrawal_method": {
             "type": "string",
@@ -4506,6 +4672,19 @@
             "type": "string",
             "format": "date-time",
             "description": "Date member was added"
+          }
+        }
+      },
+      "AssignMemberRoleRequest": {
+        "type": "object",
+        "required": [
+          "role_id"
+        ],
+        "properties": {
+          "role_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the role to assign. Retrieve available roles from `GET /teams/roles`."
           }
         }
       },

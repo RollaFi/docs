@@ -22,11 +22,14 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
 
 ```json
 {
+  "status": 200,
   "success": true,
-  "message": "Fee calculated successfully",
+  "message": "Transaction fee retrieved successfully",
   "data": {
-    "fee": 50,
-    "currency": "NGN"
+    "fee": {
+      "amount": 50,
+      "currency": "NGN"
+    }
   }
 }
 ```

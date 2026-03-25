@@ -16,21 +16,20 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
 
 ```json
 {
+  "status": 200,
   "success": true,
-  "message": "Roles retrieved successfully",
+  "message": "Available roles retrieved successfully",
   "data": {
     "roles": [
       {
-        "id": "e5f6a7b8-c9d0-1234-efgh-567890123456",
-        "name": "Admin",
-        "description": "Full access to all features",
-        "permissions": ["manage_team", "manage_wallets", "manage_payouts", "manage_api_keys"]
+        "id": "fc4cd36d-f81c-4971-a23f-688162e14d21",
+        "name": "business_admin",
+        "description": "Full access to business operations, same as business owner"
       },
       {
-        "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
-        "name": "Finance",
-        "description": "Access to wallet and payout features",
-        "permissions": ["manage_wallets", "manage_payouts"]
+        "id": "21302ed1-0e63-44e6-bb02-8db6baa2efcd",
+        "name": "collaborator",
+        "description": "Can create transactions but not approve (limited permissions)"
       }
     ]
   }

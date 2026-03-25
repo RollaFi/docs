@@ -1,0 +1,51 @@
+---
+title: 'Generate Dynamic Virtual Account'
+openapi: 'POST /wallet/virtual-accounts/generate/dynamic'
+---
+
+Generate a dynamic (one-time) NGN virtual account for your business. If an active dynamic account already exists and hasn't expired, it will be returned instead of creating a new one.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/dynamic" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 500000 }'
+```
+
+## Request Body
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `amount` | number | No | Expected deposit amount in kobo. Recommended for amount-specific accounts. |
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Dynamic virtual account generated successfully",
+  "data": {
+    "virtualAccount": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "status": "active",
+      "virtual_account_type": "dynamic",
+      "currency_type": "fiat",
+      "bank_name": "VFD MFB",
+      "account_number": "1234567890",
+      "account_name": "Rolla / Your Business Name",
+      "expires_at": "2024-01-16T10:30:00.000Z"
+    }
+  }
+}
+```
+
+<Note>
+  Dynamic virtual accounts expire after a set period. Always check `expires_at` and generate a new one if the account has expired. Passing an `amount` pre-configures the account for that exact deposit.
+</Note>
+
+<Warning>
+  Only NGN is currently supported for dynamic virtual account generation.
+</Warning>

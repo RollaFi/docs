@@ -26,25 +26,30 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=
 
 ```json
 {
-  "status": true,
+  "status": 200,
+  "success": true,
   "message": "Transactions retrieved successfully",
   "data": {
     "transactions": [
       {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "type": "withdrawal",
+        "transaction_type": "withdrawal",
         "status": "completed",
-        "amount": 500000,
-        "currency": "NGN",
         "description": "Vendor payment",
-        "created_at": "2024-01-15T10:30:00.000Z"
+        "external_reference": "ref-abc123",
+        "fee_amount": 53,
+        "source_amount": 500000,
+        "destination_amount": 499947,
+        "source_currency": "NGN",
+        "destination_currency": "NGN",
+        "created_at": "2024-01-15T10:30:00.000Z",
+        "updated_at": "2024-01-15T10:30:45.000Z"
       }
     ],
-    "pagination": {
-      "page": 1,
-      "pageSize": 20,
-      "total": 150
-    }
+    "totalCount": 150,
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 8
   }
 }
 ```

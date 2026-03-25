@@ -24,6 +24,37 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   }'
 ```
 
+## Example Request (Domestic Wire — USD)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "withdrawal_method": "domestic_wire",
+    "label": "US Supplier",
+    "account_name": "John Doe",
+    "account_number": "123456789",
+    "bank_name": "Chase Bank",
+    "routing_number": "021000021",
+    "beneficiary_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "bank_address": {
+      "street": "270 Park Ave",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10017",
+      "country": "US"
+    }
+  }'
+```
+
 ## Example Request (International Wire — USD)
 
 ```bash
@@ -36,10 +67,22 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "label": "US Supplier",
     "account_name": "John Doe",
     "account_number": "123456789",
-    "bank_name": "Chase Bank",
-    "swift_code": "CHASUS33",
-    "routing_number": "021000021",
-    "email": "john@example.com"
+    "bank_name": "Barclays Bank",
+    "swift_code": "BARCGB22",
+    "beneficiary_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "bank_address": {
+      "street": "1 Churchill Place",
+      "city": "London",
+      "state": "England",
+      "postalCode": "E14 5HP",
+      "country": "GB"
+    }
   }'
 ```
 
@@ -63,34 +106,43 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 
 ```json
 {
+  "status": 201,
   "success": true,
   "message": "Beneficiary created successfully",
   "data": {
-    "beneficiary": {
-      "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-      "currency": "NGN",
-      "label": "Office rent",
-      "account_name": "JOHN DOE",
-      "account_number": "0123456789",
-      "bank_name": "Access Bank",
-      "bank_code": "000014",
-      "withdrawal_method": null,
-      "email": "john@example.com",
-      "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T10:30:00.000Z"
-    }
+    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "currency": "NGN",
+    "label": "Office rent",
+    "account_name": "JOHN DOE",
+    "account_number": "0123456789",
+    "bank_name": "Access Bank",
+    "bank_code": "000014",
+    "withdrawal_method": null,
+    "email": "john@example.com",
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "updated_at": "2024-01-15T10:30:00.000Z"
   }
 }
 ```
 
 ## Required Fields by Withdrawal Method
 
-| Method | Required Fields | Notes |
-|--------|----------------|-------|
-| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code` | `bank_code` always required for NGN |
-| `domestic_wire` | `currency`, `account_name`, `account_number`, `bank_name` | For non-NGN domestic transfers |
-| `international_wire` | `currency`, `account_name`, `account_number`, `bank_name` | Add `swift_code`, `routing_number` as needed |
-| `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address` | `account_name` is used as a display nickname |
+| Method | Required Fields |
+|--------|----------------|
+| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code` |
+| `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address` |
+| `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address` |
+| `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address`, `wallet_chain` |
+
+Both `beneficiary_address` and `bank_address` are objects with the following fields:
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| `street` | Yes | Street address |
+| `city` | Yes | City |
+| `state` | Yes | State or province |
+| `postalCode` | Yes | Zip/postal code |
+| `country` | Yes | 2-letter country code (e.g. `US`, `GB`) |
 
 <Warning>
   For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account number and retrieve the correct account name before saving.

@@ -26,12 +26,25 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions/export?cu
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Transactions exported successfully",
-  "data": {}
+  "data": {
+    "url": "https://fpqdjdeslwryrsertmji.supabase.co/storage/v1/object/sign/transaction_documents/exports/4f7d3522-3a52-4402-8a0e-f1bd041c3eec/1774432456044.csv?token=eyJr...",
+    "format": "csv",
+    "totalRecords": 317
+  }
 }
 ```
 
 <Tip>
   Use `startDate` and `endDate` to export transactions for a specific period, such as a monthly reconciliation report.
 </Tip>
+
+<Info>
+  The `url` is a signed download link that expires after **1 hour**. Download the file promptly after receiving the response.
+</Info>
+
+<Warning>
+  If no transactions match the selected filters, the endpoint returns a `404` error instead of an empty file.
+</Warning>

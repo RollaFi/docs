@@ -18,25 +18,24 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts?curre
 |-----------|------|-------------|
 | `currency` | string | Filter by 3-letter currency code |
 | `virtualAccountType` | string | Filter by type: `static` or `dynamic` |
-| `amount` | number | Amount for dynamic virtual accounts |
-| `integrationType` | string | Filter by integration type |
 
 ## Example Response
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Virtual accounts retrieved successfully",
   "data": {
     "virtualAccounts": [
       {
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        "accountName": "Acme Corp Ltd",
-        "accountNumber": "9876543210",
-        "bankName": "Wema Bank",
-        "currency": "NGN",
-        "type": "static",
-        "status": "active"
+        "status": "active",
+        "virtual_account_type": "static",
+        "currency_type": "fiat",
+        "bank_name": "Wema Bank",
+        "account_number": "9876543210",
+        "account_name": "Rolla / Your Business Name"
       }
     ]
   }

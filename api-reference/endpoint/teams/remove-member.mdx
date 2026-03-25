@@ -16,8 +16,12 @@ curl -X DELETE "https://api.rolla.xyz/api/v1/external/teams/members/a1b2c3d4-e5f
 
 ```json
 {
+  "status": 200,
   "success": true,
-  "message": "Team member removed successfully"
+  "message": "Team member removed successfully",
+  "data": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  }
 }
 ```
 

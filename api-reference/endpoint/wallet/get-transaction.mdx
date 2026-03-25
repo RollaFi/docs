@@ -16,17 +16,30 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/a1b2c3d4-e
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Transaction retrieved successfully",
   "data": {
     "transaction": {
       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "type": "withdrawal",
+      "transaction_type": "withdrawal",
       "status": "completed",
-      "amount": 500000,
-      "currency": "NGN",
       "description": "Vendor payment",
-      "created_at": "2024-01-15T10:30:00.000Z"
+      "external_reference": "ref-abc123",
+      "fee_amount": "53.00",
+      "source_amount": "500000.00",
+      "destination_amount": null,
+      "source_currency": "NGN",
+      "destination_currency": null,
+      "exchange_rate": null,
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:45.000Z",
+      "beneficiary": {
+        "account_name": "JOHN DOE",
+        "bank_name": "Access Bank",
+        "bank_code": "000014",
+        "account_number": "0123456789"
+      }
     }
   }
 }

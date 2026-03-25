@@ -16,6 +16,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Business wallets retrieved successfully",
   "data": {
@@ -24,69 +25,73 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "name": "NGN Wallet",
         "currency": "NGN",
-        "currency_id": "c1d2e3f4-0000-0000-0000-000000000001",
-        "currency_info": {
-          "id": "c1d2e3f4-0000-0000-0000-000000000001",
-          "code": "NGN",
-          "name": "Nigerian Naira",
-          "symbol": "₦",
-          "type": "fiat",
-          "is_active": true
-        },
-        "account_type": "wallet",
-        "account_classification": "business",
-        "business_id": "biz-uuid-here",
-        "external_reference": "rolla-wallet-ngn-a1b2c3d4",
         "balance": {
-          "accountId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-          "currency": "NGN",
+          "availableBalance": 950000,
           "postedBalance": 1000000,
-          "pendingBalance": 50000,
-          "availableBalance": 950000
-        },
-        "statistics": {
-          "balance": {
-            "lastMonth": 800000,
-            "currentMonth": 1000000,
-            "change": 200000,
-            "changePercent": 25,
-            "absolutePercent": 25,
-            "trend": "increase"
-          },
-          "volume": {
-            "lastMonth": 500000,
-            "currentMonth": 650000,
-            "change": 150000,
-            "changePercent": 30,
-            "absolutePercent": 30,
-            "trend": "increase"
-          }
+          "pendingBalance": 50000
         },
         "virtualAccounts": [
           {
             "id": "va-uuid-here",
-            "currency": "NGN",
-            "currency_type": "fiat",
-            "integration_type": "mono",
+            "status": "active",
             "virtual_account_type": "deposit",
-            "stablecoin_type": null,
-            "wallet_address": null,
-            "wallet_chain": null,
+            "currency_type": "fiat",
             "bank_name": "Wema Bank",
             "account_number": "0123456789",
-            "account_name": "Rolla / Your Business Name",
-            "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-            "routing_number": null,
-            "bank_address": null,
-            "swift_code": null,
-            "external_account_id": null,
-            "metadata": {},
-            "created_at": "2024-01-10T08:00:00.000Z",
-            "updated_at": "2024-01-10T08:00:00.000Z"
+            "account_name": "Rolla / Your Business Name"
           }
-        ],
-        "created_at": "2024-01-10T08:00:00.000Z",
-        "updated_at": "2024-01-10T08:00:00.000Z"
+        ]
+      },
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "name": "USD Wallet",
+        "currency": "USD",
+        "balance": {
+          "availableBalance": 5000,
+          "postedBalance": 5000,
+          "pendingBalance": 0
+        },
+        "virtualAccounts": [
+          {
+            "id": "va-uuid-usd",
+            "status": "active",
+            "virtual_account_type": "deposit",
+            "currency_type": "fiat",
+            "bank_name": "Lead Bank",
+            "account_number": "9876543210",
+            "account_name": "Rolla / Your Business Name",
+            "routing_number": "101019644",
+            "bank_address": {
+              "street": "1801 Main St",
+              "city": "Kansas City",
+              "state": "MO",
+              "postalCode": "64108",
+              "country": "US"
+            },
+            "swift_code": "LEADUS44"
+          }
+        ]
+      },
+      {
+        "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+        "name": "USDT Wallet",
+        "currency": "USDT",
+        "balance": {
+          "availableBalance": 1200,
+          "postedBalance": 1200,
+          "pendingBalance": 0
+        },
+        "virtualAccounts": [
+          {
+            "id": "va-uuid-usdt",
+            "status": "active",
+            "virtual_account_type": "deposit",
+            "currency_type": "crypto",
+            "stablecoin_type": "USDT",
+            "wallet_address": "0xAbCdEf1234567890abcdef1234567890AbCdEf12",
+            "wallet_chain": "ethereum"
+          }
+        ]
       }
     ]
   }

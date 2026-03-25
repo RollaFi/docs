@@ -16,10 +16,47 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/supported-currencies" 
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Supported currencies retrieved successfully",
   "data": {
-    "currencies": ["NGN", "USD", "GBP", "EUR"]
+    "currencies": [
+      {
+        "id": "ec215945-2f96-4199-8908-202796cc60c6",
+        "code": "NGN",
+        "name": "Nigerian Naira",
+        "symbol": "₦",
+        "status": "active"
+      },
+      {
+        "id": "d9628547-2973-4e03-bcb9-ea141c65b727",
+        "code": "USD",
+        "name": "US Dollar",
+        "symbol": "$",
+        "status": "active"
+      },
+      {
+        "id": "99a9df9b-7c1c-40ba-81a5-c6ac752c0904",
+        "code": "USDC",
+        "name": "USD Coin",
+        "symbol": "$",
+        "status": "active"
+      },
+      {
+        "id": "07114127-c2d7-4022-b978-42eafdc433e6",
+        "code": "USDT",
+        "name": "Tether",
+        "symbol": "$",
+        "status": "active"
+      },
+      {
+        "id": "e9c1b4cf-efe6-489d-b1ed-7eb89dfd23dd",
+        "code": "XAF",
+        "name": "Central African CFA Franc",
+        "symbol": "FCFA",
+        "status": "active"
+      }
+    ]
   }
 }
 ```

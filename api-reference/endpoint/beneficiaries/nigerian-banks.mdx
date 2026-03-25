@@ -16,10 +16,11 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/beneficiaries/nigerian-banks"
 
 ```json
 {
+  "status": 200,
   "success": true,
   "message": "Banks retrieved successfully",
   "data": {
-    "data": [
+    "banks": [
       { "bankName": "Access Bank", "bankCode": "000014" },
       { "bankName": "GTBank", "bankCode": "000013" },
       { "bankName": "Zenith Bank", "bankCode": "000015" }

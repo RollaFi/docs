@@ -1,0 +1,46 @@
+---
+title: 'Generate Static Virtual Account'
+openapi: 'POST /wallet/virtual-accounts/generate/static'
+---
+
+Generate a permanent static NGN virtual account for your business. Unlike dynamic accounts, static accounts don't expire and are intended for regular incoming payments.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/static" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Request Body
+
+No request body required.
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Static virtual account generated successfully",
+  "data": {
+    "virtualAccount": {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "status": "active",
+      "virtual_account_type": "static",
+      "currency_type": "fiat",
+      "bank_name": "VFD MFB",
+      "account_number": "0987654321",
+      "account_name": "Rolla / Your Business Name"
+    }
+  }
+}
+```
+
+<Warning>
+  Only one static virtual account can exist per business. This endpoint will return an error if one already exists. Use the [Get Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts) endpoint to check first.
+</Warning>
+
+<Note>
+  Your business KYB must be approved before a static virtual account can be generated. Account details are automatically derived from your KYB application.
+</Note>
