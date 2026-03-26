@@ -1,0 +1,120 @@
+---
+title: 'Rolla Transfer'
+openapi: 'POST /wallet/transfer'
+---
+
+Send funds to another Rolla business instantly and fee-free. You can identify the recipient by their registered email address, Rolla tag, or a saved `beneficiaryId` with `withdrawal_method: rolla_transfer`.
+
+## Example Request (by email)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "currency": "USD",
+    "destinationCurrency": "USD",
+    "recipient": "partner@example.com",
+    "description": "Invoice payment",
+    "saveBeneficiary": true
+  }'
+```
+
+## Example Request (by saved beneficiary)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "currency": "USD",
+    "destinationCurrency": "USD",
+    "beneficiaryId": "d4e5f6a7-b8c9-0123-defa-456789012345",
+    "description": "Invoice payment"
+  }'
+```
+
+## Example Request (cross-currency)
+
+Cross-currency transfers require a `rateToken` from the [`GET /wallet/rates`](/api-reference/endpoint/wallet/rates) endpoint first.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100,
+    "currency": "USD",
+    "destinationCurrency": "NGN",
+    "recipient": "partner@example.com",
+    "rateToken": "rate_token_from_rates_endpoint",
+    "description": "Cross-currency payment"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "success": true,
+  "message": "Transfer initiated successfully",
+  "data": {
+    "transfer_reference": "TRANSFER-1712345678-abc12345",
+    "sender_transaction": {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "transaction_type": "withdrawal",
+      "status": "completed",
+      "description": "Invoice payment",
+      "fee_amount": 0,
+      "source_amount": 10000,
+      "destination_amount": 10000,
+      "source_currency": "USD",
+      "destination_currency": "USD",
+      "created_at": "2024-01-15T10:30:00.000Z"
+    },
+    "recipient_transaction": {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "transaction_type": "deposit",
+      "status": "completed",
+      "description": "Invoice payment",
+      "fee_amount": 0,
+      "source_amount": 10000,
+      "destination_amount": 10000,
+      "source_currency": "USD",
+      "destination_currency": "USD",
+      "created_at": "2024-01-15T10:30:00.000Z"
+    },
+    "pending_claim": null
+  }
+}
+```
+
+## Key Behaviours
+
+<Info>
+  **Free transfers** — Rolla-to-Rolla transfers have zero fees.
+</Info>
+
+<Info>
+  **`pending_claim`** — If the recipient email matches multiple Rolla businesses, funds are held in escrow and a `pending_claim` object is returned. The recipient must log in and claim the funds.
+</Info>
+
+<Warning>
+  **IP whitelisting** — This endpoint requires your API key to have IP whitelisting configured, or the request must originate from a whitelisted IP.
+</Warning>
+
+## Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | number | Yes | Amount in major units (e.g. 100 = $100) |
+| `currency` | string | Yes | Source currency code (e.g. `USD`) |
+| `destinationCurrency` | string | Yes | Recipient's currency code |
+| `recipient` | string | Conditional | Recipient's email or Rolla tag. Required if `beneficiaryId` not provided |
+| `beneficiaryId` | string (UUID) | Conditional | Saved beneficiary ID with `withdrawal_method: rolla_transfer`. Required if `recipient` not provided |
+| `description` | string | No | Transfer description (max 500 chars) |
+| `saveBeneficiary` | boolean | No | Auto-save the recipient as a beneficiary for future transfers |
+| `rateToken` | string | Conditional | Required for cross-currency transfers — obtain from `GET /wallet/rates` |

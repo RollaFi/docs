@@ -8,7 +8,7 @@
   "servers": [
     {
       "url": "https://rolla-platform-server-pr-529.onrender.com/api/v1/external",
-      "description": "Production server"
+      "description": "Staging server"
     }
   ],
   "security": [
@@ -511,6 +511,124 @@
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/transfer": {
+      "post": {
+        "operationId": "rollaTransfer",
+        "summary": "Rolla Transfer",
+        "description": "Send funds to another Rolla business instantly and fee-free. Identify the recipient by email, Rolla tag, or a saved beneficiaryId.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount", "currency", "destinationCurrency"],
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "description": "Amount in major units (e.g. 100 = $100)",
+                    "example": 100
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Source currency code",
+                    "example": "USD"
+                  },
+                  "destinationCurrency": {
+                    "type": "string",
+                    "description": "Recipient currency code",
+                    "example": "USD"
+                  },
+                  "recipient": {
+                    "type": "string",
+                    "description": "Recipient email or Rolla tag. Required if beneficiaryId not provided.",
+                    "example": "partner@example.com"
+                  },
+                  "beneficiaryId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Saved beneficiary ID with withdrawal_method rolla_transfer. Required if recipient not provided."
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Transfer description",
+                    "maxLength": 500,
+                    "example": "Invoice payment"
+                  },
+                  "saveBeneficiary": {
+                    "type": "boolean",
+                    "description": "Auto-save the recipient as a beneficiary for future transfers"
+                  },
+                  "rateToken": {
+                    "type": "string",
+                    "description": "Required for cross-currency transfers. Obtain from GET /wallet/rates."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Transfer initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "integer", "example": 200 },
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Transfer initiated successfully" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transfer_reference": { "type": "string", "example": "TRANSFER-1712345678-abc12345" },
+                        "sender_transaction": { "$ref": "#/components/schemas/Transaction" },
+                        "recipient_transaction": {
+                          "oneOf": [
+                            { "$ref": "#/components/schemas/Transaction" },
+                            { "type": "null" }
+                          ],
+                          "description": "Null if pending_claim is set"
+                        },
+                        "pending_claim": {
+                          "type": "object",
+                          "nullable": true,
+                          "description": "Set when the recipient email matches multiple Rolla businesses. Funds are held until claimed.",
+                          "properties": {
+                            "id": { "type": "string", "format": "uuid" },
+                            "recipient_email": { "type": "string" },
+                            "amount": { "type": "integer" },
+                            "currency": { "type": "string" },
+                            "status": { "type": "string", "enum": ["pending", "claimed", "expired"] }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — insufficient balance, invalid recipient, or missing fields",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
@@ -1387,7 +1505,7 @@
                 "dynamic"
               ]
             }
-          },
+          }
         ],
         "responses": {
           "200": {
@@ -4130,7 +4248,8 @@
               "domestic_wire",
               "international_wire",
               "crypto_usdt",
-              "crypto_usdc"
+              "crypto_usdc",
+              "rolla_transfer"
             ]
           },
           "account_name": {
@@ -4444,7 +4563,8 @@
               "domestic_wire",
               "international_wire",
               "crypto_usdt",
-              "crypto_usdc"
+              "crypto_usdc",
+              "rolla_transfer"
             ]
           },
           "routing_number": {
@@ -4461,6 +4581,11 @@
           },
           "intermediary_bank_routing_number": {
             "type": "string"
+          },
+          "recipient_business_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required for rolla_transfer. The UUID of the destination Rolla business."
           },
           "created_at": {
             "type": "string",
@@ -4556,7 +4681,8 @@
               "domestic_wire",
               "international_wire",
               "crypto_usdt",
-              "crypto_usdc"
+              "crypto_usdc",
+              "rolla_transfer"
             ]
           },
           "routing_number": {
@@ -4582,6 +4708,12 @@
             "type": "string",
             "description": "Intermediary bank routing number",
             "maxLength": 50
+          },
+          "recipient_business_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required for rolla_transfer. The UUID of the destination Rolla business.",
+            "example": "d4e5f6a7-b8c9-0123-defa-456789012345"
           }
         }
       },

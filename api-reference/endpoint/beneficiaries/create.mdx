@@ -102,6 +102,27 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   }'
 ```
 
+## Example Request (Rolla Transfer)
+
+For sending funds to another Rolla business. Use `recipient_business_id` to identify the target business. You can send in any supported currency.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "withdrawal_method": "rolla_transfer",
+    "label": "Partner company",
+    "account_name": "Acme Corp",
+    "recipient_business_id": "d4e5f6a7-b8c9-0123-defa-456789012345"
+  }'
+```
+
+<Info>
+  `recipient_business_id` is the Rolla-assigned UUID of the destination business. Each currency requires a separate beneficiary record — you cannot reuse the same `recipient_business_id` + `currency` combination.
+</Info>
+
 ## Example Response
 
 ```json
@@ -133,6 +154,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 | `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address` |
 | `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address` |
 | `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address`, `wallet_chain` |
+| `rolla_transfer` | `currency`, `account_name`, `recipient_business_id` |
 
 Both `beneficiary_address` and `bank_address` are objects with the following fields:
 

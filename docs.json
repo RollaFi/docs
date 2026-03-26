@@ -53,6 +53,7 @@
               "api-reference/endpoint/wallet/virtual-accounts-generate",
               "api-reference/endpoint/wallet/virtual-accounts-generate-static",
 
+              "api-reference/endpoint/wallet/transfer",
               "api-reference/endpoint/wallet/swap",
               "api-reference/endpoint/wallet/withdraw",
               "api-reference/endpoint/wallet/fee",
