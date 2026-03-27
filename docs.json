@@ -118,7 +118,7 @@
   },
   "api": {
     "baseUrl": [
-      "https://rolla-platform-server-pr-529.onrender.com/api/v1/external"
+      "https://api.rolla.xyz/api/v1/external"
     ],
     "auth": {
       "method": "key",

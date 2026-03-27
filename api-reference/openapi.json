@@ -7,8 +7,8 @@
   },
   "servers": [
     {
-      "url": "https://rolla-platform-server-pr-529.onrender.com/api/v1/external",
-      "description": "Staging server"
+      "url": "https://api.rolla.xyz/api/v1/external",
+      "description": "Production server"
     }
   ],
   "security": [
