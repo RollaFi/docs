@@ -9,7 +9,7 @@ Before you begin, make sure you have:
 
 - A Rolla business account at [app.rolla.xyz](https://app.rolla.xyz)
 - An API key from your dashboard (**Settings → API Keys**)
-- NGN balance in your wallet for payouts
+- NGN balance in your wallet
 
 ## Step 1: Get Your API Key
 
@@ -55,7 +55,7 @@ You should receive a response like:
 
 ## Step 3: Validate an Account
 
-Before sending a payout, validate the recipient's account:
+Validate a bank account using the lookup endpoint:
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
@@ -67,42 +67,12 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
   }'
 ```
 
-## Step 4: Send Your First Payout
-
-With validated account details, initiate a payout:
-
-```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/payouts" \
-  -H "X-API-Key: your_api_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 1000,
-    "currency": "NGN",
-    "beneficiary": {
-      "accountName": "JOHN DOE",
-      "accountNumber": "0123456789",
-      "bankName": "Access Bank",
-      "bankCode": "000014"
-    },
-    "remark": "Test payout",
-    "externalReference": "test-001"
-  }'
-```
-
-<Info>
-  The `amount` is in Naira (1000 = ₦1,000). Fees are automatically deducted from your balance.
-</Info>
-
 ## Next Steps
 
 <CardGroup cols={2}>
 
 <Card title="API Reference" icon="book" href="/api-reference/introduction">
   Explore all available endpoints and parameters.
-</Card>
-
-<Card title="Payouts Guide" icon="money-bill-transfer" href="/api-reference/endpoint/payouts">
-  Learn about payout options and best practices.
 </Card>
 
 <Card title="Transactions" icon="list" href="/api-reference/endpoint/transactions">

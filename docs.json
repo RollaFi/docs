@@ -35,10 +35,6 @@
             "pages": ["api-reference/endpoint/lookup"]
           },
           {
-            "group": "Payouts",
-            "pages": ["api-reference/endpoint/payouts"]
-          },
-          {
             "group": "Transactions",
             "pages": ["api-reference/endpoint/transactions"]
           },
