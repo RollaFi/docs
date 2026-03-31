@@ -67,12 +67,60 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
   }'
 ```
 
+## Step 4: Create a Beneficiary
+
+Save the validated account as a beneficiary so you can send payments to it:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "label": "Test beneficiary",
+    "account_name": "JOHN DOE",
+    "account_number": "0123456789",
+    "bank_name": "Access Bank",
+    "bank_code": "000014"
+  }'
+```
+
+Copy the `id` from the response — you'll use it in the next step.
+
+<Info>
+  You can also skip this step and provide inline beneficiary details directly in the withdrawal request. See the [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) reference for details.
+</Info>
+
+## Step 5: Withdraw from Your Wallet
+
+Use the beneficiary ID to withdraw funds from your wallet to their bank account:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100000,
+    "currency": "NGN",
+    "beneficiaryId": "BENEFICIARY_ID_FROM_STEP_4",
+    "description": "Test withdrawal"
+  }'
+```
+
+<Info>
+  The `amount` is in minor units (kobo for NGN). So `100000` = ₦1,000. Fees are deducted from the withdrawal amount by default.
+</Info>
+
 ## Next Steps
 
 <CardGroup cols={2}>
 
 <Card title="API Reference" icon="book" href="/api-reference/introduction">
   Explore all available endpoints and parameters.
+</Card>
+
+<Card title="Wallet Withdrawals" icon="money-bill-transfer" href="/api-reference/endpoint/wallet/withdraw">
+  Explore withdrawal options including USD wires and crypto.
 </Card>
 
 <Card title="Transactions" icon="list" href="/api-reference/endpoint/transactions">
