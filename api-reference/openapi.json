@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Rolla Developer API",
-    "description": "API for programmatic transaction management on the Rolla platform.",
+    "description": "API for programmatic transaction management on the Rolla platform. Monetary `amount` fields use the smallest unit of the referenced currency unless an endpoint says otherwise (e.g. NGN = kobo, USD = cents, where **100 cents = USD 1.00**).",
     "version": "1.0.0"
   },
   "servers": [
@@ -474,7 +474,7 @@
                 "properties": {
                   "amount": {
                     "type": "number",
-                    "description": "Amount in major units (e.g. 100 = $100)",
+                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD — 100 cents = $1.00 USD).",
                     "example": 100
                   },
                   "currency": {
@@ -4414,7 +4414,7 @@
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount in the smallest unit (e.g. kobo for NGN, cents for USD)",
+            "description": "Amount in smallest units (kobo for NGN; US cents for USD — 100 = 1 USD).",
             "example": 5000
           },
           "currency": {

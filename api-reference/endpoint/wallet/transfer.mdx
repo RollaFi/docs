@@ -5,6 +5,8 @@ openapi: 'POST /wallet/transfer'
 
 Send funds to another Rolla business instantly and fee-free. You can identify the recipient by their registered email address, Rolla tag, or a saved `beneficiaryId` with `withdrawal_method: rolla_transfer`.
 
+The request `amount` is always in the **smallest currency unit** for `currency` (USD = cents — **100** = **\$1.00** USD; NGN = kobo).
+
 ## Example Request (by email)
 
 ```bash
@@ -56,6 +58,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
 
 ## Example Response
 
+The `amount` you send uses the smallest unit of `currency` (USD = cents below). Ledger fields such as `source_amount` mirror that unit.
+
 ```json
 {
   "status": 200,
@@ -69,8 +73,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
       "status": "completed",
       "description": "Invoice payment",
       "fee_amount": 0,
-      "source_amount": 10000,
-      "destination_amount": 10000,
+      "source_amount": 100,
+      "destination_amount": 100,
       "source_currency": "USD",
       "destination_currency": "USD",
       "created_at": "2024-01-15T10:30:00.000Z"
@@ -81,8 +85,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
       "status": "completed",
       "description": "Invoice payment",
       "fee_amount": 0,
-      "source_amount": 10000,
-      "destination_amount": 10000,
+      "source_amount": 100,
+      "destination_amount": 100,
       "source_currency": "USD",
       "destination_currency": "USD",
       "created_at": "2024-01-15T10:30:00.000Z"
@@ -110,7 +114,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `amount` | number | Yes | Amount in major units (e.g. 100 = $100) |
+| `amount` | number | Yes | Amount in the smallest currency unit for `currency` (e.g. cents for USD: **100** = \$1.00 USD; kobo for NGN) |
 | `currency` | string | Yes | Source currency code (e.g. `USD`) |
 | `destinationCurrency` | string | Yes | Recipient's currency code |
 | `recipient` | string | Conditional | Recipient's email or Rolla tag. Required if `beneficiaryId` not provided |

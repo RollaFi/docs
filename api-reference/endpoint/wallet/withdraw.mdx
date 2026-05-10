@@ -7,11 +7,15 @@ Initiate a withdrawal from your wallet to a beneficiary. You can reference a sav
 
 Either `beneficiaryId` or `inlineBeneficiary` must be provided. The required fields inside `inlineBeneficiary` depend on the currency and `withdrawal_method`.
 
+<Info>
+For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents = **\$1.00** USD transferred (consistent with ledger `*_amount` fields returned on transactions).
+</Info>
+
 ## Top-level Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `amount` | number | Yes | Amount in the smallest unit (e.g. kobo for NGN, cents for USD) |
+| `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD — **100 cents = \$1.00 USD**) |
 | `currency` | string | Yes | 3-letter currency code — `NGN`, `USD`, or `XAF` |
 | `description` | string | No | Narration for the transaction |
 | `externalReference` | string | No | Your own unique reference for this transaction |
