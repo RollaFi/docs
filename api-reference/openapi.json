@@ -5006,8 +5006,13 @@
           },
           "name": {
             "type": "string",
-            "example": "Admin",
-            "description": "Role name"
+            "enum": [
+              "business_admin",
+              "initiator",
+              "approver"
+            ],
+            "example": "initiator",
+            "description": "Role name. `business_owner` and `individual_owner` are reserved and never returned by this endpoint."
           },
           "description": {
             "type": "string",
@@ -5045,7 +5050,7 @@
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "Role to assign (from /teams/roles)"
+            "description": "Role to assign (from /teams/roles). Optional — defaults to the initiator role when omitted."
           }
         }
       },
@@ -5068,7 +5073,13 @@
           },
           "role": {
             "type": "string",
-            "description": "Assigned role name"
+            "enum": [
+              "business_owner",
+              "business_admin",
+              "initiator",
+              "approver"
+            ],
+            "description": "Assigned role name. The former `collaborator` value is now returned as `initiator`."
           },
           "status": {
             "type": "string",
