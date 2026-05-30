@@ -3,7 +3,9 @@ title: 'Get Available Roles'
 openapi: 'GET /teams/roles'
 ---
 
-Retrieve the list of roles available for assignment when inviting team members.
+Retrieve the list of roles available for assignment when inviting team members or assigning a role to an existing member.
+
+The roles returned depend on the caller's own role. Business Owners and Business Admins receive the full assignable set (`initiator`, `approver`, `business_admin`); other roles only see `initiator`. The `business_owner` and `individual_owner` roles are reserved and never returned by this endpoint.
 
 ## Example Request
 
@@ -28,8 +30,13 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
       },
       {
         "id": "21302ed1-0e63-44e6-bb02-8db6baa2efcd",
-        "name": "collaborator",
-        "description": "Can create transactions but not approve (limited permissions)"
+        "name": "initiator",
+        "description": "Can initiate transactions including sending money, but cannot approve them."
+      },
+      {
+        "id": "9a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+        "name": "approver",
+        "description": "Can approve transactions and manage beneficiaries, but cannot initiate outbound sends."
       }
     ]
   }
@@ -37,5 +44,25 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
 ```
 
 <Tip>
-  Use the role `id` from this response when inviting a team member via the `/teams/invite` endpoint.
+  Use the role `id` from this response when inviting a team member via the [`/teams/invite`](/api-reference/endpoint/teams/invite) endpoint or assigning a role via [`/teams/members/{userId}/role`](/api-reference/endpoint/teams/assign-role).
 </Tip>
+
+## Role Reference
+
+| Role | Send money | Approve withdrawals | Approve payments | Manage beneficiaries | Manage team | Assignable by |
+|------|:----------:|:-------------------:|:----------------:|:--------------------:|:-----------:|---------------|
+| **Business Owner** | ✓ | ✓ | ✓ | ✓ | ✓ | — (set at signup) |
+| **Business Admin** | ✓ | ✓ | ✓ | ✓ | ✓ | Owner |
+| **Approver** | — | ✓ | ✓ | ✓ | — | Owner, Admin |
+| **Initiator** | ✓ | — | — | ✓ | — | Owner, Admin, Initiator |
+
+- **Initiator** — Can initiate transactions including sending money, but cannot approve them. (Formerly named **Collaborator**.)
+- **Approver** — Can approve transactions and manage beneficiaries, but cannot initiate outbound sends. Only Business Owners and Business Admins can assign this role.
+
+<Note>
+  Approving a transaction (via `POST /wallet/approve-transaction`) is gated on the `approve_withdrawals` permission, not on a specific role name. Business Owners, Business Admins, **and Approvers** all satisfy it.
+</Note>
+
+<Info>
+  **Migration note:** The `collaborator` role has been renamed to `initiator` — permissions are unchanged. A new `approver` role is now available. If you string-match on role names anywhere in your integration, map `"collaborator"` to `"initiator"` and add an `"approver"` branch. `GET /teams/roles` no longer returns `individual_owner` in business contexts.
+</Info>
