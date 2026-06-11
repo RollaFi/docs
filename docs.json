@@ -81,6 +81,16 @@
               "api-reference/endpoint/teams/update-status",
               "api-reference/endpoint/teams/assign-role"
             ]
+          },
+          {
+            "group": "Webhooks",
+            "pages": [
+              "api-reference/webhooks/overview",
+              "api-reference/webhooks/events",
+              "api-reference/webhooks/payloads",
+              "api-reference/webhooks/signatures",
+              "api-reference/webhooks/delivery"
+            ]
           }
         ]
       }
@@ -114,7 +124,7 @@
   },
   "api": {
     "baseUrl": [
-      "https://api.rolla.xyz/api/v1/external"
+      "https://4470-102-134-21-38.ngrok-free.app/api/v1/external"
     ],
     "auth": {
       "method": "key",

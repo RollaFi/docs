@@ -1,0 +1,77 @@
+---
+title: 'Delivery & Retries'
+description: 'Retry behavior, idempotency, delivery logs, and manual replay'
+---
+
+## Retry behavior
+
+If a delivery fails, Rolla automatically retries it with exponential backoff.
+
+| | |
+|---|---|
+| **Attempts** | Up to 6 |
+| **Backoff** | Exponential, starting at ~10 seconds (≈ 10s, 20s, 40s, 80s, 160s, 320s) |
+| **Timeout** | 10 seconds per attempt |
+
+### What counts as a failure
+
+| Response | Retried? |
+|----------|----------|
+| `2xx` | No — treated as success |
+| `5xx` | Yes |
+| `429 Too Many Requests` | Yes |
+| Connection error / timeout | Yes |
+| Other `4xx` (e.g. `400`, `401`, `404`, `410`) | **No** — treated as a permanent misconfiguration |
+
+<Warning>
+  A non-`429` `4xx` response is considered a permanent failure and is **not** retried. If your endpoint returns `4xx` while you fix a bug, those events will not be re-sent automatically — use [manual replay](#manual-replay) afterwards.
+</Warning>
+
+## Idempotency
+
+The same logical event may be delivered more than once (for example, if your server returns `2xx` but the connection drops before Rolla records it). Every delivery for a given logical event carries the **same** `event_id` (also in the `X-Rolla-Event-Id` header).
+
+Make your handler idempotent by recording processed `event_id`s and ignoring duplicates:
+
+```js
+if (await alreadyProcessed(event.event_id)) {
+  return res.sendStatus(200); // ack without reprocessing
+}
+await process(event);
+await markProcessed(event.event_id);
+```
+
+## Delivery logs
+
+Every delivery attempt is logged and visible from your [Rolla Dashboard](https://app.rolla.xyz) under **API → Webhooks → ⋯ → Deliveries**. Each entry can be expanded to show the exact **payload sent**, the request's target URL, and the **response** (status + body). It records:
+
+- The event type and `event_id`
+- The target URL, payload, and HTTP response (status + body)
+- Number of attempts and the last error (if any)
+- Delivery status: `pending`, `success`, or `failed`
+- Timestamps
+
+Use these logs to troubleshoot failing integrations.
+
+## Manual replay
+
+You can re-send any failed delivery from the dashboard (**Deliveries → Retry**) — useful after fixing an outage or a bug that caused `4xx` responses. Replaying re-queues the original payload to your endpoint.
+
+You can also send a **test event** to a configured endpoint at any time to confirm it is reachable and your signature verification works, before any real transactions occur.
+
+## Best practices
+
+<CardGroup cols={2}>
+  <Card title="Acknowledge fast" icon="bolt">
+    Return `2xx` immediately and process asynchronously to avoid timeouts.
+  </Card>
+  <Card title="Be idempotent" icon="fingerprint">
+    Deduplicate on `event_id` — events may arrive more than once.
+  </Card>
+  <Card title="Verify signatures" icon="shield-check">
+    Confirm authenticity with the `X-Rolla-Signature` header.
+  </Card>
+  <Card title="Don't trust order" icon="arrow-down-up-across-line">
+    Events may arrive out of order; treat `status` as the source of truth.
+  </Card>
+</CardGroup>

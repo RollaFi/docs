@@ -1,0 +1,42 @@
+---
+title: 'Events'
+description: 'Webhook event types and the transaction lifecycle'
+---
+
+## Event types
+
+| Event | When it's sent |
+|-------|----------------|
+| `transaction.pending` | A deposit or payout has been created and is processing. |
+| `transaction.completed` | A deposit or payout has successfully finalized. |
+| `transaction.failed` | A payout failed or was rejected. |
+
+You choose which of these to subscribe to per endpoint.
+
+## Transaction lifecycle
+
+A typical transaction emits a `transaction.pending` event followed by a terminal event:
+
+<Steps>
+  <Step title="transaction.pending">
+    The transaction has entered processing. For a payout, funds have been debited and the payout is on its way. For a deposit, the incoming funds have been detected.
+  </Step>
+  <Step title="transaction.completed (success path)">
+    The transaction has finalized. For a deposit, funds are now available in your wallet. For a payout, the beneficiary has been paid.
+  </Step>
+  <Step title="transaction.failed (failure path)">
+    The transaction could not be completed. Funds for a failed payout are returned to your wallet.
+  </Step>
+</Steps>
+
+<Info>
+  Not every transaction emits every event. A deposit that is auto-confirmed may move from pending to completed almost immediately; a payout that fails will emit `transaction.pending` then `transaction.failed`.
+</Info>
+
+## The `event_id` field
+
+Each logical event has a stable `event_id`. The **same** logical event (for example, "transaction X completed") always carries the **same** `event_id`, even if it is delivered more than once. Use it to make your handler [idempotent](/api-reference/webhooks/delivery#idempotency).
+
+## Distinguishing deposits from payouts
+
+The payload's `data.type` field is either `deposit` or `payout`. The `data.rail` field tells you whether it's `fiat` or `stablecoin`. See [Payloads](/api-reference/webhooks/payloads) for the full schema and samples.
