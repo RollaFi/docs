@@ -1,0 +1,126 @@
+---
+title: 'Signature Verification'
+description: 'Verify that webhook events genuinely came from Rolla'
+---
+
+When signing is enabled for an endpoint, every request includes an `X-Rolla-Signature` header. Verifying it lets you confirm the request came from Rolla and was not tampered with in transit.
+
+<Info>
+  Signing is **optional** and enabled per endpoint. If you disable it, requests are sent without the `X-Rolla-Signature` header. We strongly recommend keeping it on for production.
+</Info>
+
+## The signature header
+
+```
+X-Rolla-Signature: t=1749556805,v1=4f1d2c...e9b7
+```
+
+| Part | Meaning |
+|------|---------|
+| `t` | Unix timestamp (seconds) when the signature was generated |
+| `v1` | Hex-encoded HMAC-SHA256 signature |
+
+## How the signature is computed
+
+Rolla builds a signed string by concatenating the timestamp, a literal `.`, and the **raw request body**:
+
+```
+signed_payload = "{t}" + "." + "{raw_request_body}"
+signature      = HMAC_SHA256(signing_secret, signed_payload)   // hex
+```
+
+## Verifying
+
+<Steps>
+  <Step title="Read the raw body">
+    Verify against the **exact raw bytes** of the request body, before any JSON parsing or re-serialization.
+  </Step>
+  <Step title="Recompute the HMAC">
+    Concatenate `t`, `.`, and the raw body, then compute `HMAC_SHA256` with your endpoint's signing secret.
+  </Step>
+  <Step title="Compare in constant time">
+    Compare your computed value against `v1` using a constant-time comparison.
+  </Step>
+  <Step title="(Recommended) Check the timestamp">
+    Reject requests whose `t` is too old (for example, more than 5 minutes) to mitigate replay.
+  </Step>
+</Steps>
+
+### Node.js (Express)
+
+```js
+import crypto from 'crypto';
+import express from 'express';
+
+const app = express();
+const SIGNING_SECRET = process.env.ROLLA_WEBHOOK_SECRET;
+
+// Capture the raw body so the signature can be verified.
+app.use('/webhooks/rolla', express.raw({ type: 'application/json' }));
+
+app.post('/webhooks/rolla', (req, res) => {
+  const header = req.header('X-Rolla-Signature') || '';
+  const parts = Object.fromEntries(header.split(',').map((p) => p.split('=')));
+  const { t, v1 } = parts;
+
+  const rawBody = req.body.toString('utf8');
+  const expected = crypto
+    .createHmac('sha256', SIGNING_SECRET)
+    .update(`${t}.${rawBody}`)
+    .digest('hex');
+
+  const valid =
+    v1 &&
+    crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected));
+
+  if (!valid) {
+    return res.status(400).send('Invalid signature');
+  }
+
+  // Optional: reject stale events (replay protection)
+  if (Math.abs(Date.now() / 1000 - Number(t)) > 300) {
+    return res.status(400).send('Stale signature');
+  }
+
+  const event = JSON.parse(rawBody);
+  // Acknowledge immediately, then process asynchronously.
+  res.sendStatus(200);
+  handleEvent(event);
+});
+```
+
+### Python (Flask)
+
+```python
+import hmac, hashlib, time
+from flask import Flask, request, abort
+
+app = Flask(__name__)
+SIGNING_SECRET = "whsec_..."
+
+@app.post("/webhooks/rolla")
+def rolla_webhook():
+    header = request.headers.get("X-Rolla-Signature", "")
+    parts = dict(p.split("=") for p in header.split(",") if "=" in p)
+    t, v1 = parts.get("t"), parts.get("v1")
+
+    raw_body = request.get_data(as_text=True)
+    expected = hmac.new(
+        SIGNING_SECRET.encode(),
+        f"{t}.{raw_body}".encode(),
+        hashlib.sha256,
+    ).hexdigest()
+
+    if not v1 or not hmac.compare_digest(v1, expected):
+        abort(400, "Invalid signature")
+
+    if abs(time.time() - int(t)) > 300:
+        abort(400, "Stale signature")
+
+    # Acknowledge, then process.
+    return "", 200
+```
+
+<Warning>
+  Always verify against the **raw** request body. If your framework parses JSON and you re-serialize it, the bytes may differ (key order, whitespace) and the signature will not match.
+</Warning>

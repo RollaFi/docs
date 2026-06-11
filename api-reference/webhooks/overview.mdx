@@ -1,0 +1,87 @@
+---
+title: 'Webhooks Overview'
+description: 'Receive real-time deposit and payout status updates instead of polling'
+---
+
+## What are webhooks?
+
+Webhooks let Rolla notify **your** server in real time whenever one of your deposits or payouts changes status — so you no longer need to poll the transaction endpoints. When an event occurs, Rolla sends an HTTP `POST` request to a URL you configure, with a JSON payload describing the transaction.
+
+Webhooks cover **all supported transaction types and corridors**:
+
+- Fiat deposits and payouts (e.g. NGN, USD, XAF)
+- Stablecoin deposits and payouts (USDC, USDT) across supported chains
+
+<Info>
+  Webhooks are available to businesses using the Rolla external API. Events are sent for **your** deposits and payouts only.
+</Info>
+
+## Setting up an endpoint
+
+Configure webhook endpoints from your [Rolla Dashboard](https://app.rolla.xyz) under **API → Webhooks**. For each endpoint you provide:
+
+| Field | Description |
+|-------|-------------|
+| **URL** | An `https://` endpoint on your server that will receive events |
+| **Events** | Which events to subscribe to (see [Events](/api-reference/webhooks/events)) |
+| **Signing secret** | Generated for you on creation. Used to [verify signatures](/api-reference/webhooks/signatures) |
+
+You can register multiple endpoints (for example, separate URLs per environment), enable or disable each one, and rotate its signing secret at any time.
+
+<Info>
+  Your signing secret can be viewed any time from the dashboard (**API → Webhooks → ⋯ → Reveal secret**), so you don't need to store it elsewhere. If you suspect it's compromised, rotate it with **Regenerate secret** — the old secret stops working immediately.
+</Info>
+
+## How delivery works
+
+<Steps>
+  <Step title="A transaction changes status">
+    One of your deposits or payouts is created, completes, or fails.
+  </Step>
+  <Step title="Rolla builds and signs the event">
+    A JSON payload is assembled with the full transaction details and (optionally) signed with your endpoint's secret.
+  </Step>
+  <Step title="Rolla POSTs to your URL">
+    Your server receives the event. Respond with a `2xx` status code as quickly as possible to acknowledge receipt.
+  </Step>
+  <Step title="Failed deliveries are retried">
+    If your endpoint is unreachable or returns a `5xx`/`429`, Rolla [retries with backoff](/api-reference/webhooks/delivery).
+  </Step>
+</Steps>
+
+## Responding to webhooks
+
+Your endpoint should return a `2xx` HTTP status code to acknowledge receipt. Anything else is treated as a failed delivery.
+
+<Tip>
+  Acknowledge first, process later. Return `200` immediately and do any heavy work (database writes, downstream calls) asynchronously, so slow processing doesn't cause a timeout and unnecessary retries. Rolla considers a request failed if it doesn't complete within **10 seconds**.
+</Tip>
+
+## Request headers
+
+Every webhook request includes these headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Rolla-Event` | The event type, e.g. `transaction.completed` |
+| `X-Rolla-Event-Id` | Stable id for this logical event — use it to [deduplicate](/api-reference/webhooks/delivery#idempotency) |
+| `X-Rolla-Delivery` | Unique id for this specific delivery attempt |
+| `X-Rolla-Signature` | HMAC signature for [verification](/api-reference/webhooks/signatures) (only when signing is enabled) |
+| `User-Agent` | `Rolla-Webhooks/1.0` |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Events" icon="bolt" href="/api-reference/webhooks/events">
+    The event types and transaction lifecycle.
+  </Card>
+  <Card title="Payloads" icon="code" href="/api-reference/webhooks/payloads">
+    The payload schema and sample events.
+  </Card>
+  <Card title="Signature Verification" icon="shield-check" href="/api-reference/webhooks/signatures">
+    Verify that events genuinely came from Rolla.
+  </Card>
+  <Card title="Delivery & Retries" icon="rotate" href="/api-reference/webhooks/delivery">
+    Retry behavior, logs, and replay.
+  </Card>
+</CardGroup>

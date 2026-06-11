@@ -1,0 +1,238 @@
+---
+title: 'Payloads'
+description: 'Webhook payload schema and sample events for every transaction type'
+---
+
+## Payload structure
+
+Every webhook has the same envelope. Transaction details live under `data`.
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "8f2a1c44-9b3e-5d61-a2f7-1e9c0b4d6a55",
+  "created_at": "2026-06-10T12:00:05.000Z",
+  "data": {
+    "transaction_id": "…",
+    "reference": "…",
+    "type": "deposit | payout",
+    "status": "pending | completed | failed",
+    "rail": "fiat | stablecoin",
+    "currency": "…",
+    "amount": 0,
+    "source_amount": 0,
+    "source_currency": "…",
+    "destination_amount": 0,
+    "destination_currency": "…",
+    "fee_amount": 0,
+    "description": "…",
+    "timestamp": "…",
+    "sender": { },
+    "beneficiary": { },
+    "network": { },
+    "metadata": { }
+  }
+}
+```
+
+### Field reference
+
+| Field | Description |
+|-------|-------------|
+| `event` | Event type — see [Events](/api-reference/webhooks/events) |
+| `event_id` | Stable id for the logical event (use to deduplicate) |
+| `created_at` | When the event was generated (ISO 8601) |
+| `data.transaction_id` | Rolla transaction id |
+| `data.reference` | Transaction reference (the external reference) |
+| `data.type` | `deposit` or `payout` |
+| `data.status` | `pending`, `completed`, or `failed` |
+| `data.rail` | `fiat` or `stablecoin` |
+| `data.amount` / `data.currency` | The **net** amount the counterparty receives, and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
+| `data.source_amount` / `data.source_currency` | The debit leg. For a **payout** this is the **gross** amount, i.e. `amount` **+ fee**; for FX it's the source-currency amount. |
+| `data.destination_amount` / `data.destination_currency` | The credit leg — what the beneficiary/wallet actually receives. |
+| `data.fee_amount` | Fee applied, in smallest units |
+| `data.sender` | Sender details — present for **deposits**, otherwise `null` |
+| `data.beneficiary` | Beneficiary details — present for **payouts**, otherwise `null` (see below) |
+| `data.network` | On-chain details — present for **stablecoin** transactions, otherwise `null` |
+| `data.metadata` | Any metadata you supplied when creating the transaction |
+
+<Info>
+  **Amounts** are in each currency's **smallest unit** — NGN kobo, USD cents (**100 = \$1.00**), and the base unit for stablecoins — consistent with the rest of the Rolla API.
+</Info>
+
+<Tip>
+  For a payout, **`amount`** is what you asked to send (the beneficiary's amount). **`source_amount`** is what's debited from your wallet, including the fee. So `source_amount = amount + fee_amount` (when fees are charged on top).
+</Tip>
+
+### The `beneficiary` object (payouts)
+
+Always contains this whitelisted set; fields are `null` when not applicable. Internal fields (your `business_id`, row timestamps) are never included.
+
+`id` · `account_name` · `account_number` · `bank_name` · `bank_code` · `bank_address` · `currency` · `withdrawal_method` · `routing_number` · `swift_code` · `iban` · `bic` · `sort_code` · `intermediary_bank_name` · `intermediary_bank_routing_number` · `wallet_address` · `wallet_chain` · `email` · `contact_person` · `label` · `beneficiary_address`
+
+<Note>
+  For a one-time (inline) beneficiary, `id` is the literal string `"inline-temp"`. For a saved beneficiary it's the beneficiary's UUID. The samples below trim `null` fields for readability — the live payload includes all of the above.
+</Note>
+
+---
+
+## Sample: Fiat deposit completed
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "0a7b5e21-3c44-5f88-9a1d-77c2e6b0f312",
+  "created_at": "2026-06-10T12:00:05.000Z",
+  "data": {
+    "transaction_id": "866b7abd-6cac-40f2-a04f-d6e58bf47d04",
+    "reference": "NG-DEP-9F2K1A",
+    "type": "deposit",
+    "status": "completed",
+    "rail": "fiat",
+    "currency": "NGN",
+    "amount": 500000,
+    "source_amount": 500000,
+    "source_currency": "NGN",
+    "destination_amount": 500000,
+    "destination_currency": "NGN",
+    "fee_amount": 0,
+    "description": "Deposit from John Doe",
+    "timestamp": "2026-06-10T12:00:04.812Z",
+    "sender": {
+      "name": "John Doe",
+      "account_number": "0123456789",
+      "bank": "Access Bank",
+      "narration": "Invoice 4821",
+      "country": "Nigeria"
+    },
+    "beneficiary": null,
+    "network": null,
+    "metadata": null
+  }
+}
+```
+
+---
+
+## Sample: Fiat payout completed
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "1b8c6f32-4d55-5a99-8b2e-88d3f7c1a423",
+  "created_at": "2026-06-10T12:01:10.000Z",
+  "data": {
+    "transaction_id": "a1f2e3d4-5b6c-7d8e-9f01-23456789abcd",
+    "reference": "NG-NFNUJTUW",
+    "type": "payout",
+    "status": "completed",
+    "rail": "fiat",
+    "currency": "NGN",
+    "amount": 100000,
+    "source_amount": 102500,
+    "source_currency": "NGN",
+    "destination_amount": 100000,
+    "destination_currency": "NGN",
+    "fee_amount": 2500,
+    "description": "Vendor payment",
+    "timestamp": "2026-06-10T12:01:09.500Z",
+    "sender": null,
+    "beneficiary": {
+      "id": "b9f1c2d3-4e5a-6b7c-8d9e-0f1a2b3c4d5e",
+      "account_name": "Jane Smith",
+      "account_number": "0123456789",
+      "bank_name": "Access Bank",
+      "bank_code": "000014",
+      "currency": "NGN",
+      "withdrawal_method": "local_transfer"
+    },
+    "network": null,
+    "metadata": { "invoice_id": "INV-2026-042" }
+  }
+}
+```
+
+---
+
+## Sample: Stablecoin deposit completed
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "2c9d7a43-5e66-5baa-9c3f-99e4a8d2b534",
+  "created_at": "2026-06-10T12:02:30.000Z",
+  "data": {
+    "transaction_id": "b2c3d4e5-6f70-8192-a3b4-c5d6e7f80912",
+    "reference": "5h2k...onchain-signature",
+    "type": "deposit",
+    "status": "completed",
+    "rail": "stablecoin",
+    "currency": "USDC",
+    "amount": 100000,
+    "source_amount": 100000,
+    "source_currency": "USDC",
+    "destination_amount": 100000,
+    "destination_currency": "USDC",
+    "fee_amount": 0,
+    "description": "USDC deposit",
+    "timestamp": "2026-06-10T12:02:29.100Z",
+    "sender": {
+      "type": "crypto",
+      "wallet_address": "0x9aA1f3...c0De",
+      "chain": "base"
+    },
+    "beneficiary": null,
+    "network": {
+      "chain": "base",
+      "tx_hash": "5h2k...onchain-signature",
+      "source_address": "0x9aA1f3...c0De",
+      "destination_address": "0x44Bc...91Fe"
+    },
+    "metadata": null
+  }
+}
+```
+
+---
+
+## Sample: Stablecoin payout pending
+
+```json
+{
+  "event": "transaction.pending",
+  "event_id": "3da08b54-6f77-5cbb-ad40-aaf5b9e3c645",
+  "created_at": "2026-06-10T12:03:00.000Z",
+  "data": {
+    "transaction_id": "c3d4e5f6-7081-9203-b4c5-d6e7f8091234",
+    "reference": "USD-WD-7H3M2B",
+    "type": "payout",
+    "status": "pending",
+    "rail": "stablecoin",
+    "currency": "USD",
+    "amount": 10000,
+    "source_amount": 10000,
+    "source_currency": "USD",
+    "destination_amount": 10000,
+    "destination_currency": "USD",
+    "fee_amount": 0,
+    "description": "Supplier settlement",
+    "timestamp": "2026-06-10T12:02:59.700Z",
+    "sender": null,
+    "beneficiary": {
+      "id": "c3d4e5f6-7081-9203-b4c5-d6e7f8091234",
+      "account_name": "My USDT Wallet",
+      "currency": "USD",
+      "withdrawal_method": "crypto_usdt",
+      "wallet_address": "TXyZ1234abcd5678efgh9012ijkl3456mnop",
+      "wallet_chain": "tron"
+    },
+    "network": {
+      "chain": "tron",
+      "tx_hash": "USD-WD-7H3M2B",
+      "source_address": null,
+      "destination_address": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
+    },
+    "metadata": { "po_number": "PO-99812" }
+  }
+}
+```
