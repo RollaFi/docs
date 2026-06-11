@@ -1,0 +1,399 @@
+{
+  "info": {
+    "_postman_id": "rolla-api-collection-v1",
+    "name": "Rolla API",
+    "description": "Postman collection for the Rolla Developer API.\n\n**Setup:**\n1. Import `Rolla_API.postman_environment.json` and select the **Rolla API — Local** environment.\n2. Paste your API key into the `apiKey` environment variable.\n\n**Amount convention:** All `amount` fields use the **smallest currency unit** — e.g. cents for USD (`100` = $1.00), kobo for NGN (`5000` = ₦50.00).\n\n**International Wire:** Must be sent as `multipart/form-data` with at least one file attached under the `documents` field.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/v1/external",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Wallet",
+      "item": [
+        {
+          "name": "Get Wallets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/wallets",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "wallets"]
+            },
+            "description": "Returns all wallets and balances for your business."
+          }
+        },
+        {
+          "name": "Get Supported Currencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/supported-currencies",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "supported-currencies"]
+            },
+            "description": "Returns the list of currencies supported by the Rolla platform."
+          }
+        },
+        {
+          "name": "Get Rates",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/rates",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "rates"]
+            },
+            "description": "Returns current FX rates. Use the returned `rateToken` for cross-currency transfers or swaps."
+          }
+        },
+        {
+          "name": "Get Transaction Fee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"USD\",\n  \"inlineBeneficiary\": {\n    \"withdrawal_method\": \"international_wire\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/fee",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "fee"]
+            },
+            "description": "Returns the fee for a withdrawal before committing it."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Withdraw",
+      "item": [
+        {
+          "name": "NGN — Bank Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000,\n  \"currency\": \"NGN\",\n  \"description\": \"Vendor payment\",\n  \"inlineBeneficiary\": {\n    \"account_number\": \"0123456789\",\n    \"bank_name\": \"Access Bank\",\n    \"bank_code\": \"000014\"\n  },\n  \"saveBeneficiary\": false,\n  \"deductFeesFromBalance\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Withdraw NGN to a Nigerian bank account.\n\n`amount` is in **kobo** — 5000 kobo = ₦50.00.\n\nOmit `account_name`; it is auto-resolved via bank lookup."
+          }
+        },
+        {
+          "name": "NGN — Saved Beneficiary",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000,\n  \"currency\": \"NGN\",\n  \"description\": \"Monthly vendor payment\",\n  \"beneficiaryId\": \"replace-with-beneficiary-uuid\",\n  \"deductFeesFromBalance\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Withdraw to a previously saved beneficiary using their UUID."
+          }
+        },
+        {
+          "name": "USD — Domestic Wire",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"USD\",\n  \"description\": \"Invoice payment\",\n  \"externalReference\": \"INV-2026-001\",\n  \"inlineBeneficiary\": {\n    \"withdrawal_method\": \"domestic_wire\",\n    \"account_name\": \"Jane Smith\",\n    \"bank_name\": \"Chase Bank\",\n    \"account_number\": \"123456789\",\n    \"routing_number\": \"021000021\",\n    \"beneficiary_address\": {\n      \"street\": \"123 Main St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"postalCode\": \"10001\",\n      \"country\": \"US\"\n    },\n    \"bank_address\": {\n      \"street\": \"270 Park Ave\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"postalCode\": \"10017\",\n      \"country\": \"US\"\n    }\n  },\n  \"saveBeneficiary\": false,\n  \"deductFeesFromBalance\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Withdraw USD via domestic wire (within the US).\n\n`amount` is in **cents** — 1000 cents = $10.00 USD."
+          }
+        },
+        {
+          "name": "USD — International Wire (multipart + document)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "amount",
+                  "value": "1000",
+                  "description": "Amount in cents — 1000 = $10.00 USD",
+                  "type": "text"
+                },
+                {
+                  "key": "currency",
+                  "value": "USD",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "International wire payment",
+                  "type": "text"
+                },
+                {
+                  "key": "externalReference",
+                  "value": "INV-2026-INTL-001",
+                  "description": "Your own unique reference (optional)",
+                  "type": "text"
+                },
+                {
+                  "key": "inlineBeneficiary",
+                  "value": "{\"withdrawal_method\":\"international_wire\",\"account_name\":\"Jane Smith\",\"bank_name\":\"Barclays Bank\",\"account_number\":\"12345678\",\"swift_code\":\"BARCGB22\",\"beneficiary_address\":{\"street\":\"123 Main Street\",\"city\":\"London\",\"state\":\"England\",\"postalCode\":\"EC2V 8RT\",\"country\":\"GB\"},\"bank_address\":{\"street\":\"1 Churchill Place\",\"city\":\"London\",\"state\":\"England\",\"postalCode\":\"E14 5HP\",\"country\":\"GB\"}}",
+                  "description": "Send as a JSON string.",
+                  "type": "text"
+                },
+                {
+                  "key": "saveBeneficiary",
+                  "value": "false",
+                  "type": "text"
+                },
+                {
+                  "key": "deductFeesFromBalance",
+                  "value": "false",
+                  "type": "text"
+                },
+                {
+                  "key": "documents",
+                  "description": "REQUIRED — attach at least one file (invoice, contract, etc.). Accepted: PDF, JPEG, PNG, DOCX. Max 10 MB each.",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Withdraw USD via international wire.\n\n**MUST be sent as multipart/form-data. MUST include at least one document attached under `documents`.**\n\n`inlineBeneficiary` is a JSON string. Add `intermediary_bank_name` / `intermediary_bank_routing_number` inside it if needed."
+          }
+        },
+        {
+          "name": "USD — Crypto (USDT / USDC)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"currency\": \"USD\",\n  \"description\": \"USDT payout\",\n  \"inlineBeneficiary\": {\n    \"withdrawal_method\": \"crypto_usdt\",\n    \"account_name\": \"My USDT Wallet\",\n    \"wallet_address\": \"TXyZ1234abcd5678efgh9012ijkl3456mnop\",\n    \"wallet_chain\": \"tron\"\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Send USD wallet balance as USDT or USDC to a crypto wallet.\n\nChange `withdrawal_method` to `crypto_usdc` for USDC. Supported chains: `ethereum`, `tron`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transfer (Rolla-to-Rolla)",
+      "item": [
+        {
+          "name": "Transfer — By Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"currency\": \"USD\",\n  \"destinationCurrency\": \"USD\",\n  \"recipient\": \"partner@example.com\",\n  \"description\": \"Invoice payment\",\n  \"saveBeneficiary\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transfer"]
+            },
+            "description": "Send funds instantly to another Rolla business by their registered email. Fee-free.\n\n`amount` is in cents for USD — 100 = $1.00."
+          }
+        },
+        {
+          "name": "Transfer — By Rolla Tag",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"currency\": \"USD\",\n  \"destinationCurrency\": \"USD\",\n  \"recipient\": \"@partnerTag\",\n  \"description\": \"Invoice payment\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transfer"]
+            },
+            "description": "Send funds to another Rolla business using their Rolla tag."
+          }
+        },
+        {
+          "name": "Transfer — By Beneficiary ID",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"currency\": \"USD\",\n  \"destinationCurrency\": \"USD\",\n  \"beneficiaryId\": \"replace-with-beneficiary-uuid\",\n  \"description\": \"Invoice payment\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transfer"]
+            },
+            "description": "Send funds to a saved beneficiary with `withdrawal_method: rolla_transfer`."
+          }
+        },
+        {
+          "name": "Transfer — Cross-Currency (USD → NGN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"currency\": \"USD\",\n  \"destinationCurrency\": \"NGN\",\n  \"recipient\": \"partner@example.com\",\n  \"rateToken\": \"replace-with-rate-token-from-GET-/wallet/rates\",\n  \"description\": \"Cross-currency payment\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transfer"]
+            },
+            "description": "Cross-currency Rolla-to-Rolla transfer. Get `rateToken` first from `GET /wallet/rates`."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transactions?currency=USD&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transactions"],
+              "query": [
+                { "key": "currency", "value": "USD", "description": "Filter by currency (optional)" },
+                { "key": "transactionType", "value": "withdrawal", "description": "deposit | withdrawal | swap | card_funding | payin", "disabled": true },
+                { "key": "status", "value": "pending", "description": "pending | completed | failed | rejected | sent | negotiating | cancelled", "disabled": true },
+                { "key": "startDate", "value": "2026-01-01", "description": "YYYY-MM-DD", "disabled": true },
+                { "key": "endDate", "value": "2026-05-25", "description": "YYYY-MM-DD", "disabled": true },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20", "description": "1–100" }
+              ]
+            },
+            "description": "Returns paginated transaction history for your business."
+          }
+        },
+        {
+          "name": "Get Transaction by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/wallet/transaction/replace-with-transaction-uuid",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "transaction", "replace-with-transaction-uuid"]
+            },
+            "description": "Retrieve a single transaction by its UUID."
+          }
+        }
+      ]
+    }
+  ]
+}

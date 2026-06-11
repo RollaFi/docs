@@ -124,7 +124,7 @@
   },
   "api": {
     "baseUrl": [
-      "https://4470-102-134-21-38.ngrok-free.app/api/v1/external"
+     "https://api.rolla.xyz/api/v1/external"
     ],
     "auth": {
       "method": "key",
