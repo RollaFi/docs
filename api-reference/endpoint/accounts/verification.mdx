@@ -1,0 +1,50 @@
+---
+title: 'Create Verification Token'
+openapi: 'POST /accounts/{accountId}/verification'
+---
+
+Creates an identity verification access token for an **individual** account, so the account holder can complete ID document upload and a liveness check using the Sumsub WebSDK embedded in your application.
+
+For related persons on business accounts, use [Generate KYC Link](/api-reference/endpoint/accounts/kyc-link) instead — it provides a hosted page and requires no SDK integration.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/verification" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Verification token created successfully",
+  "data": {
+    "sumsubToken": {
+      "token": "_act-sbx-jwt-eyJhbGciOiJub25lIn0...",
+      "userId": "2b51a9ce-c391-4751-b10c-18b18b256018"
+    },
+    "externalUserId": "2b51a9ce-c391-4751-b10c-18b18b256018"
+  }
+}
+```
+
+## Using the token
+
+Pass the token to the [Sumsub WebSDK](https://docs.sumsub.com/docs/get-started-with-web-sdk) in your frontend. The SDK walks the user through document capture and liveness:
+
+```javascript
+import SumsubWebSdk from '@sumsub/websdk-react';
+
+<SumsubWebSdk
+  accessToken={data.sumsubToken.token}
+  expirationHandler={() => fetchNewToken()}
+/>
+```
+
+<Info>
+  Tokens expire after **30 minutes**. Use the SDK's expiration handler to request a fresh token from this endpoint.
+</Info>
+
+Poll [Get Verification Status](/api-reference/endpoint/accounts/verification-status) to confirm the result before submitting the application.

@@ -1,0 +1,70 @@
+---
+title: 'Update Business Details'
+openapi: 'PUT /accounts/{accountId}/business'
+---
+
+Updates the application of a business account. Each section you send (`business_info`, `business_address`, `contact_info`, `banking_info`) is merged into the stored application, so you can save progress incrementally — one section per call or everything at once.
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/business" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "business_info": {
+      "legalName": "Beta Logistics LLC",
+      "businessType": "Limited Liability Company",
+      "incorporationDate": "2020-03-01",
+      "incorporationCountry": "US",
+      "registrationNumber": "LLC-123987",
+      "taxId": "98-7654321",
+      "description": "Freight and logistics services across West Africa",
+      "monthlyVolume": "100000",
+      "annualRevenue": "1200000",
+      "primaryFundingSource": "Business Revenue"
+    },
+    "business_address": {
+      "street": "77 Commerce Ave",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19801",
+      "country": "US"
+    },
+    "contact_info": {
+      "email": "ops@betalogistics.com",
+      "phone": "+13025550123"
+    }
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Application updated successfully",
+  "data": {
+    "application": {
+      "id": "fbb45236-881a-4c58-8954-22759499eab4",
+      "status": "draft",
+      "entity_type": "business",
+      "business_info": {
+        "legalName": "Beta Logistics LLC",
+        "businessType": "Limited Liability Company"
+      }
+    },
+    "documents": []
+  }
+}
+```
+
+## Key Behaviours
+
+<Info>
+  Sections are **merged**, not replaced: fields you omit keep their stored values.
+</Info>
+
+<Warning>
+  Applications can no longer be edited once their status is `submitted` or `approved`. If the review team requests changes, the application becomes editable again.
+</Warning>

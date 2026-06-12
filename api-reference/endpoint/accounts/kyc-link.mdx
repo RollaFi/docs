@@ -1,0 +1,39 @@
+---
+title: 'Generate KYC Link'
+openapi: 'POST /accounts/{accountId}/related-persons/{personId}/kyc-link'
+---
+
+Generates a hosted identity verification link for a related person. Share the link with the person — it opens a Rolla-hosted page where they upload an ID document and complete a liveness check. Their verification status is reflected in [Get Requirements](/api-reference/endpoint/accounts/requirements).
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/related-persons/a3d4f21e-f499-488f-8508-43228dfea485/kyc-link" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "KYC link generated successfully",
+  "data": {
+    "token": "969e35c36f99f9d511863c89cea0d4082bc3bf66b5484d9a70d79a7c39d6fe74",
+    "url": "https://app.rolla.xyz/en/kyc/director/969e35c36f99f9d511863c89cea0d4082bc3bf66b5484d9a70d79a7c39d6fe74",
+    "status": "active",
+    "expiresAt": "2026-06-15T23:32:12.902Z",
+    "relatedPersonId": "a3d4f21e-f499-488f-8508-43228dfea485"
+  }
+}
+```
+
+## Key Behaviours
+
+<Info>
+  Links expire after **72 hours**. Generating a new link for the same person invalidates the previous one.
+</Info>
+
+<Tip>
+  The link `status` becomes `completed` once the person passes verification, or `rejected` if it fails — in which case you can generate a fresh link for a retry.
+</Tip>

@@ -1,0 +1,71 @@
+---
+title: 'Add Related Person'
+openapi: 'POST /accounts/{accountId}/related-persons'
+---
+
+Adds a beneficial owner or director to a business account's application. Every related person must complete identity verification — via a [KYC link](/api-reference/endpoint/accounts/kyc-link) — before the application can be submitted.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/related-persons" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "roles": ["Beneficial Owner", "Director"],
+    "email": "jane@betalogistics.com",
+    "phone": "+13025550124",
+    "dateOfBirth": "1985-09-21",
+    "ownershipPercentage": 60,
+    "currentAddress": {
+      "street": "5 Oak St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19801",
+      "country": "US"
+    }
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Related person added successfully",
+  "data": {
+    "id": "a3d4f21e-f499-488f-8508-43228dfea485",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "roles": ["Beneficial Owner", "Director"],
+    "email": "jane@betalogistics.com",
+    "phone": "+13025550124",
+    "dateOfBirth": "1985-09-21",
+    "ownershipPercentage": 60,
+    "currentAddress": {
+      "street": "5 Oak St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19801",
+      "country": "US"
+    }
+  }
+}
+```
+
+## Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `firstName` | string | Yes | First name |
+| `lastName` | string | Yes | Last name |
+| `roles` | string[] | No | `Beneficial Owner` and/or `Director` (defaults to `Beneficial Owner`) |
+| `email` | string | Yes | Email address |
+| `phone` | string | Yes | Phone number |
+| `dateOfBirth` | string | Yes | Date of birth (`YYYY-MM-DD`) |
+| `ownershipPercentage` | number | No | Ownership stake, 0–100 |
+| `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`) |
+| `sourceOfWealthExplanation` | string | No | Free-text source of wealth |
+| `bvn` / `nin` | string | No | Nigerian identifiers, if applicable |

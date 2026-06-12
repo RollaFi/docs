@@ -1,0 +1,35 @@
+---
+title: 'Get Verification Status'
+openapi: 'GET /accounts/{accountId}/verification'
+---
+
+Returns the identity verification status of an individual account holder.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/verification" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Verification status retrieved successfully",
+  "data": {
+    "verified": true,
+    "reviewStatus": "completed",
+    "reviewAnswer": "GREEN"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `verified` | boolean | `true` once the review completed with a positive result |
+| `reviewStatus` | string | Provider review state, e.g. `init`, `pending`, `completed`; `null` if verification hasn't started |
+| `reviewAnswer` | string | `GREEN` (passed) or `RED` (failed); `null` while in progress |

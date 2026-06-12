@@ -394,6 +394,460 @@
           }
         }
       ]
+    },
+    {
+      "name": "Account Onboarding",
+      "description": "Onboard additional business or individual accounts under the same owner as your API key's business. Set {{accountId}} after creating an account.",
+      "item": [
+        {
+          "name": "Create Business Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            },
+            "description": "Creates an additional business account as a draft application.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"business\",\n  \"name\": \"Beta Logistics LLC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Create Individual Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            },
+            "description": "Creates the owner's individual (personal) account. Only one individual account is allowed per owner.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"individual\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts?page=1&pageSize=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts?page=1&pageSize=20"
+              ]
+            },
+            "description": "Lists all accounts owned by the same user as your API key's business."
+          }
+        },
+        {
+          "name": "Get Account",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}"
+              ]
+            },
+            "description": "Retrieves an account with its full application and documents."
+          }
+        },
+        {
+          "name": "Get Requirements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/requirements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "requirements"
+              ]
+            },
+            "description": "Checklist of missing fields, documents and verifications before submission."
+          }
+        },
+        {
+          "name": "Update Business Details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/business",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "business"
+              ]
+            },
+            "description": "Updates a business account's application. Sections are merged, so progress can be saved incrementally.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"business_info\": {\n    \"legalName\": \"Beta Logistics LLC\",\n    \"businessType\": \"Limited Liability Company\",\n    \"incorporationDate\": \"2020-03-01\",\n    \"incorporationCountry\": \"US\",\n    \"registrationNumber\": \"LLC-123987\",\n    \"taxId\": \"98-7654321\",\n    \"description\": \"Freight and logistics services\",\n    \"monthlyVolume\": \"100000\",\n    \"annualRevenue\": \"1200000\",\n    \"primaryFundingSource\": \"Business Revenue\"\n  },\n  \"business_address\": {\n    \"street\": \"77 Commerce Ave\",\n    \"city\": \"Wilmington\",\n    \"state\": \"DE\",\n    \"postalCode\": \"19801\",\n    \"country\": \"US\"\n  },\n  \"contact_info\": {\n    \"email\": \"ops@betalogistics.com\",\n    \"phone\": \"+13025550123\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Individual Details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/individual",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "individual"
+              ]
+            },
+            "description": "Updates an individual account's application. Fields are merged into the stored data.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"individualInfo\": {\n    \"phone\": \"+2348012345678\",\n    \"dateOfBirth\": \"1990-05-14\",\n    \"citizenship\": \"NG\",\n    \"address\": {\n      \"street\": \"12 Marina Rd\",\n      \"city\": \"Lagos\",\n      \"state\": \"Lagos\",\n      \"postalCode\": \"101241\",\n      \"country\": \"NG\"\n    },\n    \"employment\": {\n      \"status\": \"self-employed\",\n      \"sourceOfWealth\": \"business_income\",\n      \"annualIncome\": \"50k-100k\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "documents"
+              ]
+            },
+            "description": "Uploads a document as multipart/form-data. Re-uploading the same type replaces the previous file.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "documentType",
+                  "value": "proof_of_address",
+                  "type": "text"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "documents"
+              ]
+            },
+            "description": "Lists documents uploaded for the account's application."
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "documents"
+              ]
+            },
+            "description": "Deletes an uploaded document by type.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentType\": \"bank_statement\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add Related Person",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/related-persons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "related-persons"
+              ]
+            },
+            "description": "Adds a beneficial owner or director to a business account.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\",\n  \"roles\": [\n    \"Beneficial Owner\"\n  ],\n  \"email\": \"jane@betalogistics.com\",\n  \"phone\": \"+13025550124\",\n  \"dateOfBirth\": \"1985-09-21\",\n  \"ownershipPercentage\": 60,\n  \"currentAddress\": {\n    \"street\": \"5 Oak St\",\n    \"city\": \"Wilmington\",\n    \"state\": \"DE\",\n    \"postalCode\": \"19801\",\n    \"country\": \"US\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Generate KYC Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/related-persons/{{personId}}/kyc-link",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "related-persons",
+                "{{personId}}",
+                "kyc-link"
+              ]
+            },
+            "description": "Hosted identity verification link to share with a related person. Expires after 72 hours."
+          }
+        },
+        {
+          "name": "Create Verification Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "verification"
+              ]
+            },
+            "description": "Sumsub WebSDK token for individual account identity verification (ID + liveness)."
+          }
+        },
+        {
+          "name": "Get Verification Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "verification"
+              ]
+            },
+            "description": "Identity verification status of an individual account holder."
+          }
+        },
+        {
+          "name": "Submit Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "submit"
+              ]
+            },
+            "description": "Validates completeness and submits the application for review."
+          }
+        }
+      ]
     }
   ]
 }

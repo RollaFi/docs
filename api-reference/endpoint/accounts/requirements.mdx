@@ -1,0 +1,72 @@
+---
+title: 'Get Requirements'
+openapi: 'GET /accounts/{accountId}/requirements'
+---
+
+Returns a live checklist of everything still required before the account's application can be submitted: missing fields, missing documents and outstanding identity verifications. Use it to drive your own onboarding UI or to verify readiness before calling submit.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/requirements" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+### Business account
+
+```json
+{
+  "success": true,
+  "message": "Requirements retrieved successfully",
+  "data": {
+    "entityType": "business",
+    "status": "draft",
+    "readyToSubmit": false,
+    "missingFields": [],
+    "missingDocuments": [
+      "certificate_of_incorporation",
+      "articles_of_association",
+      "proof_of_address",
+      "director_register",
+      "shareholder_register",
+      "bank_statement"
+    ],
+    "relatedPersons": [
+      {
+        "id": "a3d4f21e-f499-488f-8508-43228dfea485",
+        "name": "Jane Doe",
+        "verification": "pending"
+      }
+    ]
+  }
+}
+```
+
+### Individual account
+
+```json
+{
+  "success": true,
+  "message": "Requirements retrieved successfully",
+  "data": {
+    "entityType": "individual",
+    "status": "draft",
+    "readyToSubmit": true,
+    "missingFields": [],
+    "missingDocuments": [],
+    "identityVerification": "verified"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `readyToSubmit` | boolean | `true` when all required fields and documents are present |
+| `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName` |
+| `missingDocuments` | string[] | Required document types not yet uploaded |
+| `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) |
+| `identityVerification` | string | Individual only: identity verification state (`verified`, `pending`, `unknown`) |
