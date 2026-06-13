@@ -457,7 +457,7 @@
                 "accounts"
               ]
             },
-            "description": "Creates the owner's individual (personal) account. Only one individual account is allowed per owner.",
+            "description": "Creates an individual (personal) account for the owner as a draft application.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"type\": \"individual\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Doe\"\n}",

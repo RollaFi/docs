@@ -60,7 +60,3 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
 | `name` | string | For business | Legal or trading name of the business |
 | `firstName` | string | No | Account holder first name (individual accounts); defaults to the owner's name |
 | `lastName` | string | No | Account holder last name (individual accounts); defaults to the owner's name |
-
-<Warning>
-  An owner can hold only one individual account. Creating a second one returns `409 Conflict`.
-</Warning>

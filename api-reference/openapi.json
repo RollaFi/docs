@@ -3983,7 +3983,7 @@
       "post": {
         "operationId": "createAccount",
         "summary": "Create Account",
-        "description": "Creates an additional business or individual account under the same owner as your API key's business. The new account starts as a draft KYB/KYC application that you complete via the other account onboarding endpoints. A user can own any number of business accounts but only one individual account.",
+        "description": "Creates an additional business or individual account under the same owner as your API key's business. The new account starts as a draft KYB/KYC application that you complete via the other account onboarding endpoints.",
         "requestBody": {
           "required": true,
           "content": {
@@ -4043,16 +4043,6 @@
           },
           "401": {
             "description": "Invalid or missing API key",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "An individual account already exists for this owner",
             "content": {
               "application/json": {
                 "schema": {
