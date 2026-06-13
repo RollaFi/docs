@@ -7768,8 +7768,8 @@
               "VFD",
               "gtbank",
               "NOMBA",
-              "prod_usd",
-              "dev_usd"
+              "portage_usd",
+              "ssb_usd"
             ]
           },
           "bankName": {
