@@ -7,6 +7,10 @@ The Account Onboarding API lets you create and verify additional Rolla accounts 
 
 Every account you create belongs to the same owner as the business your API key was issued for, and shares that owner's email. Accounts created here also appear in the owner's dashboard account switcher.
 
+<Info>
+  **White-label tenants:** a single tenant API key can onboard and manage every account in your tenancy. Pass the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header to scope any request to a specific account you've onboarded.
+</Info>
+
 ## Onboarding a business account
 
 <Steps>
