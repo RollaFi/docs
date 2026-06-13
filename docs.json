@@ -19,6 +19,12 @@
               "index",
               "quickstart"
             ]
+          },
+          {
+            "group": "Cross-Border Payouts",
+            "pages": [
+              "swift-payouts"
+            ]
           }
         ]
       },
