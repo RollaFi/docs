@@ -111,7 +111,10 @@
               "api-reference/endpoint/accounts/kyc-link",
               "api-reference/endpoint/accounts/verification",
               "api-reference/endpoint/accounts/verification-status",
-              "api-reference/endpoint/accounts/submit"
+              "api-reference/endpoint/accounts/submit",
+              "api-reference/endpoint/accounts/bank-account-requirements",
+              "api-reference/endpoint/accounts/issue-bank-account",
+              "api-reference/endpoint/accounts/list-bank-accounts"
             ]
           },
           {

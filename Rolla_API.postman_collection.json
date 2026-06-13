@@ -846,6 +846,129 @@
             },
             "description": "Validates completeness and submits the application for review."
           }
+        },
+        {
+          "name": "Get Bank Account Requirements",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/bank-accounts/requirements?currency=NGN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "bank-accounts",
+                "requirements?currency=NGN"
+              ]
+            },
+            "description": "Provider, prefilled details and missing fields for issuing an NGN or USD bank account."
+          }
+        },
+        {
+          "name": "Issue Bank Account (NGN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "bank-accounts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"NGN\",\n  \"accountData\": {\n    \"bvn\": \"22211122233\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Issues an NGN deposit account immediately. Supply any missing provider details in accountData."
+          }
+        },
+        {
+          "name": "Issue Bank Account (USD)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "bank-accounts"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currency\": \"USD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Submits the account to the USD provider for review; retry after approval to collect the deposit account."
+          }
+        },
+        {
+          "name": "List Bank Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{apiKey}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{accountId}}/bank-accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{accountId}}",
+                "bank-accounts"
+              ]
+            },
+            "description": "Issued bank accounts plus in-flight USD onboarding state."
+          }
         }
       ]
     }

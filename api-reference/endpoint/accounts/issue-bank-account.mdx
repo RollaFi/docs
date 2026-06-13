@@ -1,0 +1,102 @@
+---
+title: 'Issue Bank Account'
+openapi: 'POST /accounts/{accountId}/bank-accounts'
+---
+
+Issues an **NGN** or **USD** deposit account for an approved account. The banking provider is selected automatically based on the currency and whether the account is a business or an individual.
+
+The details each provider needs are prefilled from the account's application. Check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) first to see the prefilled payload and anything missing, then pass the missing pieces in `accountData`.
+
+## NGN accounts
+
+NGN accounts are issued **immediately**.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "accountData": {
+      "bvn": "22211122233"
+    }
+  }'
+```
+
+```json
+{
+  "success": true,
+  "message": "Bank account issued successfully",
+  "data": {
+    "status": "issued",
+    "provider": "HABARI",
+    "bankAccount": {
+      "id": "7f3a2b10-91c4-4f3b-b1d2-0a8e44c10a55",
+      "currency": "NGN",
+      "provider": "HABARI",
+      "bankName": "GTBank",
+      "accountNumber": "1238726395",
+      "accountName": "Beta Logistics LLC",
+      "type": "static",
+      "status": "active"
+    }
+  }
+}
+```
+
+## USD accounts
+
+USD accounts require **provider review**. The first call submits the account's application data (including its documents) to the provider and returns `202 Accepted`:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "accountData": {
+      "onboardingDetails": {
+        "businessInfo": { "tradeName": "Beta Logistics", "website": "https://betalogistics.com" }
+      },
+      "representatives": [{
+        "relatedPersonId": "a3d4f21e-f499-488f-8508-43228dfea485",
+        "taxNumber": "123-45-6789",
+        "idDocument": {
+          "number": "P123456789",
+          "type": "passport",
+          "issueDate": "2020-01-01",
+          "expirationDate": "2030-01-01"
+        }
+      }]
+    }
+  }'
+```
+
+```json
+{
+  "success": true,
+  "message": "Bank account request accepted",
+  "data": {
+    "status": "submitted_for_review",
+    "provider": "INFINITUS",
+    "state": "client_submitted",
+    "message": "Account details were submitted to the provider for review. The deposit account becomes available once the provider approves; retry this endpoint to collect it."
+  }
+}
+```
+
+Call the endpoint again after the provider approves — the response then includes the deposit account with `accountNumber`, `routingNumber` and `swiftCode`. While review is in progress you get `202` with `status: pending_provider_review`.
+
+## Key Behaviours
+
+<Info>
+  Entries in `accountData.representatives` are merged into the prefilled representative with the same `relatedPersonId`, so you only send the fields you're adding — names, addresses and ownership come from the application.
+</Info>
+
+<Warning>
+  The account's application must be **approved** before bank accounts can be issued. If provider-required details are missing, the response lists them under `errors` (USD) or `missingFields` (NGN).
+</Warning>
+
+<Note>
+  One bank account per provider and currency: issuing again returns `409 Conflict` once an account exists.
+</Note>

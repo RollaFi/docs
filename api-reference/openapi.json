@@ -5524,6 +5524,379 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/bank-accounts": {
+      "post": {
+        "operationId": "issueBankAccount",
+        "summary": "Issue Bank Account",
+        "description": "Issues an NGN or USD deposit account for an approved account. The provider is chosen automatically based on currency and account type. NGN accounts are issued immediately. USD accounts require provider review: the first call submits the account's application data to the provider and returns `202`; call again after approval to collect the deposit account details.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueBankAccountRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bank account issued",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Bank account issued successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "example": "issued"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "bankAccount": {
+                          "$ref": "#/components/schemas/BankAccount"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "USD onboarding submitted or pending provider review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Bank account request accepted"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "submitted_for_review",
+                            "pending_provider_review"
+                          ]
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "client_submitted"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Application not approved, missing details, or provider validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A bank account from this provider already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listBankAccounts",
+        "summary": "List Bank Accounts",
+        "description": "Lists the account's issued bank accounts, plus any USD provider onboarding still in review.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NGN",
+                "USD"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bank accounts retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Bank accounts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "bankAccounts": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/BankAccount"
+                          }
+                        },
+                        "usdOnboarding": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "provider": {
+                                "type": "string"
+                              },
+                              "state": {
+                                "type": "string"
+                              },
+                              "updatedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/bank-accounts/requirements": {
+      "get": {
+        "operationId": "getBankAccountRequirements",
+        "summary": "Get Issuance Requirements",
+        "description": "Shows which provider will be used for the given currency, the details prefilled from the account's application, and anything still missing before a bank account can be issued. Use this to know exactly what to pass in `accountData` when issuing.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "NGN",
+                "USD"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Requirements retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Bank account requirements retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "currency": {
+                          "type": "string"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "applicationApproved": {
+                          "type": "boolean"
+                        },
+                        "requiredFields": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "NGN only"
+                        },
+                        "missingFields": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "NGN only"
+                        },
+                        "onboardingState": {
+                          "type": "string",
+                          "nullable": true,
+                          "description": "USD only"
+                        },
+                        "prefilled": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "availableDocuments": {
+                          "type": "object",
+                          "description": "USD only",
+                          "additionalProperties": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid currency",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -7372,6 +7745,98 @@
               "RED",
               null
             ]
+          }
+        }
+      },
+      "BankAccount": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "NGN",
+              "USD"
+            ]
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "VFD",
+              "HABARI",
+              "NOMBA",
+              "ROUTEFUSION",
+              "INFINITUS"
+            ]
+          },
+          "bankName": {
+            "type": "string",
+            "example": "GTBank"
+          },
+          "accountNumber": {
+            "type": "string",
+            "example": "1238726395"
+          },
+          "accountName": {
+            "type": "string",
+            "example": "Beta Logistics LLC"
+          },
+          "routingNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "USD accounts only"
+          },
+          "swiftCode": {
+            "type": "string",
+            "nullable": true,
+            "description": "USD accounts only"
+          },
+          "bankAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "static",
+              "dynamic"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "IssueBankAccountRequest": {
+        "type": "object",
+        "required": [
+          "currency"
+        ],
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": [
+              "NGN",
+              "USD"
+            ]
+          },
+          "accountData": {
+            "type": "object",
+            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider — call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
+            "additionalProperties": true
           }
         }
       }

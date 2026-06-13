@@ -51,6 +51,10 @@ Every account you create belongs to the same owner as the business your API key 
 
 Submitted applications are reviewed by the Rolla compliance team. Track progress with `GET /accounts/{accountId}` — the application status moves from `submitted` to `approved`, `changes_requested` or `rejected`. Once approved, the account is fully active.
 
+## Issuing bank accounts
+
+Approved accounts can be given NGN and USD deposit accounts via [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account). The banking provider is selected automatically by currency and account type, and the details it needs are prefilled from the application — check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) for anything missing. NGN accounts are issued instantly; USD accounts go through a provider review before the deposit details become available.
+
 <Note>
   API access is scoped per account. To call the API *as* a newly approved account, create an API key for it from the dashboard after switching to that account.
 </Note>
