@@ -29,12 +29,12 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
   "message": "Bank account issued successfully",
   "data": {
     "status": "issued",
-    "provider": "HABARI",
+    "provider": "gtbank",
     "bankAccount": {
       "id": "7f3a2b10-91c4-4f3b-b1d2-0a8e44c10a55",
       "currency": "NGN",
-      "provider": "HABARI",
-      "bankName": "GTBank",
+      "provider": "gtbank",
+      "bankName": "Guaranty Trust Bank",
       "accountNumber": "1238726395",
       "accountName": "Beta Logistics LLC",
       "type": "static",
@@ -78,7 +78,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
   "message": "Bank account request accepted",
   "data": {
     "status": "submitted_for_review",
-    "provider": "INFINITUS",
+    "provider": "dev_usd",
     "state": "client_submitted",
     "message": "Account details were submitted to the provider for review. The deposit account becomes available once the provider approves; retry this endpoint to collect it."
   }

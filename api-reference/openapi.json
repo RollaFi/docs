@@ -7766,15 +7766,15 @@
             "type": "string",
             "enum": [
               "VFD",
-              "HABARI",
+              "gtbank",
               "NOMBA",
-              "ROUTEFUSION",
-              "INFINITUS"
+              "prod_usd",
+              "dev_usd"
             ]
           },
           "bankName": {
             "type": "string",
-            "example": "GTBank"
+            "example": "Guaranty Trust Bank"
           },
           "accountNumber": {
             "type": "string",
