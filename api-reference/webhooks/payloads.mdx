@@ -236,3 +236,62 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
   }
 }
 ```
+
+## Account event payloads
+
+Account events (`account.onboarded`, `account.submitted`, `account.approved`, `account.virtual_account.created`) describe an **account** rather than a transaction, so `data` carries the account fields. `transaction_id` is not present.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.account_id` | string | The account (business or individual) the event is about. |
+| `data.name` | string \| null | Account name. |
+| `data.email` | string \| null | Account email. |
+| `data.entity_type` | string \| null | `business` or `individual`. |
+| `data.status` | string \| null | The application status (`draft`, `submitted`, `approved`, ...). |
+| `data.virtual_account` | object \| null | Present on `account.virtual_account.created` — the provisioned deposit account. |
+
+### Sample: Account approved
+
+```json
+{
+  "event": "account.approved",
+  "event_id": "9b1c2d3e-4f50-5a61-b273-c8d9e0f1a2b3",
+  "created_at": "2026-06-13T10:15:00.000Z",
+  "data": {
+    "account_id": "a1b2c3d4-e5f6-7081-9203-b4c5d6e7f809",
+    "name": "Acme Logistics Ltd",
+    "email": "ops@acmelogistics.com",
+    "entity_type": "business",
+    "status": "approved"
+  }
+}
+```
+
+### Sample: Virtual account created
+
+```json
+{
+  "event": "account.virtual_account.created",
+  "event_id": "7c8d9e0f-1a2b-5c3d-9e4f-5a6b7c8d9e0f",
+  "created_at": "2026-06-13T10:16:30.000Z",
+  "data": {
+    "account_id": "a1b2c3d4-e5f6-7081-9203-b4c5d6e7f809",
+    "name": "Acme Logistics Ltd",
+    "email": "ops@acmelogistics.com",
+    "entity_type": "business",
+    "status": "approved",
+    "virtual_account": {
+      "id": "f0e1d2c3-b4a5-6978-8a9b-0c1d2e3f4a5b",
+      "currency": "NGN",
+      "method": "bank_transfer",
+      "provider": "gtbank",
+      "bank_name": "Guaranty Trust Bank",
+      "account_number": "1234567890",
+      "account_name": "Acme Logistics Ltd",
+      "routing_number": null,
+      "swift_code": null,
+      "status": "active"
+    }
+  }
+}
+```

@@ -1,0 +1,36 @@
+---
+title: 'List Related Persons'
+openapi: 'GET /accounts/{accountId}/related-persons'
+---
+
+Lists the beneficial owners and directors registered on a business account's application.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/related-persons" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Related persons retrieved successfully",
+  "data": [
+    {
+      "id": "a3d4f21e-f499-488f-8508-43228dfea485",
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "roles": ["Beneficial Owner", "Director"],
+      "email": "jane@betalogistics.com",
+      "ownershipPercentage": 60
+    }
+  ]
+}
+```
+
+<Tip>
+  Use [Get Requirements](/api-reference/endpoint/accounts/requirements) to see each person's identity verification status alongside the rest of the submission checklist.
+</Tip>

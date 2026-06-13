@@ -1,0 +1,62 @@
+---
+title: 'List Accounts'
+openapi: 'GET /accounts'
+---
+
+Lists every account owned by the same user as your API key's business — including the account your API key belongs to — with each application's status.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts?page=1&pageSize=20" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Accounts retrieved successfully",
+  "data": {
+    "accounts": [
+      {
+        "id": "6adb1c69-f42c-493c-9f66-6e8cfd6d2c35",
+        "name": "Acme Trading Ltd",
+        "email": "owner@example.com",
+        "entityType": "business",
+        "applicationId": "4d4ad44f-8e72-4be8-83f6-1e6c69e77962",
+        "applicationStatus": "approved",
+        "currentStep": 6,
+        "isComplete": true,
+        "createdAt": "2026-06-12T23:28:05.373Z"
+      },
+      {
+        "id": "b6075be0-f1d0-451f-a468-3e94563101d2",
+        "name": "Jane Doe",
+        "email": "owner@example.com",
+        "entityType": "individual",
+        "applicationId": "f436daf8-146b-4949-bf28-9b36440085a4",
+        "applicationStatus": "submitted",
+        "currentStep": 3,
+        "isComplete": true,
+        "createdAt": "2026-06-12T23:30:43.040Z"
+      }
+    ],
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 2,
+    "totalPages": 1,
+    "hasMore": false
+  }
+}
+```
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `page` | integer | No | Page number (default `1`) |
+| `pageSize` | integer | No | Results per page (default `20`, max `100`) |
+| `entityType` | string | No | Filter by `business` or `individual` |
+| `status` | string | No | Filter by application status (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`) |

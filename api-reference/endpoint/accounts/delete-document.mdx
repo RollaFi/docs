@@ -1,0 +1,33 @@
+---
+title: 'Delete Document'
+openapi: 'DELETE /accounts/{accountId}/documents'
+---
+
+Deletes an uploaded document by type. Include `relatedPersonId` to target a document attached to a specific related person.
+
+## Example Request
+
+```bash
+curl -X DELETE "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/documents" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "documentType": "bank_statement"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Document deleted successfully",
+  "data": {
+    "success": true
+  }
+}
+```
+
+<Warning>
+  Deleting a document from an application that was already completed moves it back to `draft`, and it must be re-submitted.
+</Warning>

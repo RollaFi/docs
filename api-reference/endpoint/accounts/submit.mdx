@@ -1,0 +1,76 @@
+---
+title: 'Submit Application'
+openapi: 'POST /accounts/{accountId}/submit'
+---
+
+Validates that the account's application is complete and submits it for compliance review. If anything is missing, the response lists exactly what's outstanding.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/submit" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Application submitted successfully",
+  "data": {
+    "application": {
+      "id": "f436daf8-146b-4949-bf28-9b36440085a4",
+      "status": "submitted",
+      "is_complete": true,
+      "entity_type": "individual"
+    },
+    "documents": [
+      {
+        "document_type": "proof_of_address",
+        "file_name": "bank_statement.pdf"
+      }
+    ]
+  }
+}
+```
+
+## Error Responses
+
+### Application incomplete (`400`)
+
+```json
+{
+  "status": 400,
+  "message": "Application is incomplete",
+  "code": "APPLICATION_INCOMPLETE",
+  "missingFields": [],
+  "missingDocuments": ["proof_of_address"]
+}
+```
+
+### Related persons not verified (`409`)
+
+```json
+{
+  "status": 409,
+  "message": "All beneficial owners must complete KYC before submission",
+  "code": "KYC_INCOMPLETE",
+  "unverified": [
+    {
+      "personId": "a3d4f21e-f499-488f-8508-43228dfea485",
+      "name": "Jane Doe"
+    }
+  ]
+}
+```
+
+## Key Behaviours
+
+<Info>
+  Business accounts: every related person must have completed identity verification before submission. Generate [KYC links](/api-reference/endpoint/accounts/kyc-link) for any `unverified` person and retry once they finish.
+</Info>
+
+<Warning>
+  Submitted applications are locked for editing. If the review team requests changes, the application reopens with a `changes_requested` status and a note explaining what to fix.
+</Warning>

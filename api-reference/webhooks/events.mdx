@@ -5,13 +5,45 @@ description: 'Webhook event types and the transaction lifecycle'
 
 ## Event types
 
+### Transaction events
+
 | Event | When it's sent |
 |-------|----------------|
 | `transaction.pending` | A deposit or payout has been created and is processing. |
 | `transaction.completed` | A deposit or payout has successfully finalized. |
 | `transaction.failed` | A payout failed or was rejected. |
 
+### Account events
+
+These cover the onboarding lifecycle of the accounts you manage via the API (the additional business/individual accounts you create under your profile), plus the deposit accounts provisioned for them.
+
+| Event | When it's sent |
+|-------|----------------|
+| `account.onboarded` | An account was created (onboarding started). |
+| `account.submitted` | The account's KYB/KYC application was submitted for review. |
+| `account.approved` | The account's application was approved and it's ready to transact. |
+| `account.virtual_account.created` | A deposit (virtual) account — bank transfer or crypto — was provisioned for the account. |
+
 You choose which of these to subscribe to per endpoint.
+
+## Account lifecycle
+
+An account onboarded through the API typically moves through:
+
+<Steps>
+  <Step title="account.onboarded">
+    The account has been created and onboarding has begun. Complete its application data and upload the required documents.
+  </Step>
+  <Step title="account.submitted">
+    The application has been submitted for review.
+  </Step>
+  <Step title="account.approved">
+    The application was approved. The account can now transact, and deposit accounts can be issued for it.
+  </Step>
+  <Step title="account.virtual_account.created">
+    A deposit account (NGN/USD bank transfer details, or a crypto address) is now available for funding. The `data.virtual_account` object carries the details — the same shape you'd get from the [funding instructions](/api-reference/endpoint/accounts/funding-instructions) endpoint.
+  </Step>
+</Steps>
 
 ## Transaction lifecycle
 

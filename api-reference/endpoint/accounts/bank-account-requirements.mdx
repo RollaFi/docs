@@ -1,0 +1,79 @@
+---
+title: 'Get Issuance Requirements'
+openapi: 'GET /accounts/{accountId}/bank-accounts/requirements'
+---
+
+Shows everything needed to issue a bank account for the given currency: which provider will be used, the details prefilled from the account's application, and anything still missing. Whatever is missing can be supplied via `accountData` when calling [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts/requirements?currency=NGN" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+### NGN
+
+```json
+{
+  "success": true,
+  "message": "Bank account requirements retrieved successfully",
+  "data": {
+    "currency": "NGN",
+    "provider": "gtbank",
+    "applicationApproved": true,
+    "requiredFields": ["businessName", "businessIdentifier", "mobileNum", "bvn"],
+    "missingFields": ["bvn"],
+    "prefilled": {
+      "businessName": "Beta Logistics LLC",
+      "businessIdentifier": "LLC-123987",
+      "mobileNum": "+13025550124",
+      "bvn": ""
+    }
+  }
+}
+```
+
+### USD
+
+```json
+{
+  "success": true,
+  "message": "Bank account requirements retrieved successfully",
+  "data": {
+    "currency": "USD",
+    "provider": "ssb_usd",
+    "applicationApproved": true,
+    "onboardingState": null,
+    "prefilled": {
+      "onboardingDetails": {
+        "businessInfo": { "name": "Beta Logistics LLC", "taxId": "98-7654321" },
+        "businessAddress": { "line1": "77 Commerce Ave", "city": "Wilmington", "state": "DE", "postalCode": "19801", "country": "US" }
+      },
+      "representatives": [
+        { "firstName": "Jane", "lastName": "Doe", "relatedPersonId": "a3d4f21e-f499-488f-8508-43228dfea485", "ownershipPercentage": 75, "isSigner": true }
+      ],
+      "kybDocs": [
+        { "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11", "type": "certificate_of_incorporation", "source": "rolla" }
+      ]
+    },
+    "availableDocuments": {
+      "business": [],
+      "representatives": []
+    }
+  }
+}
+```
+
+## Response Fields
+
+| Field | Description |
+|-------|-------------|
+| `provider` | Provider that will issue the account, chosen by currency and account type |
+| `applicationApproved` | Bank accounts can only be issued once the application is approved |
+| `requiredFields` / `missingFields` | NGN: fields the provider requires and which are still empty |
+| `onboardingState` | USD: provider onboarding state, `null` until first submission |
+| `prefilled` | The payload that will be sent, built from the account's application |
+| `availableDocuments` | USD: documents that will be attached, from the application and identity verification |

@@ -1,0 +1,72 @@
+---
+title: 'Update Individual Details'
+openapi: 'PUT /accounts/{accountId}/individual'
+---
+
+Updates the KYC application of an individual account. Fields inside `individualInfo` are merged into the stored application, so you can collect personal details, address and employment information across multiple calls.
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/individual" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "individualInfo": {
+      "phone": "+2348012345678",
+      "dateOfBirth": "1990-05-14",
+      "citizenship": "NG",
+      "nin": "12345678901",
+      "bvn": "22212345678",
+      "address": {
+        "street": "12 Marina Rd",
+        "city": "Lagos",
+        "state": "Lagos",
+        "postalCode": "101241",
+        "country": "NG"
+      },
+      "employment": {
+        "status": "self-employed",
+        "employerName": "Acme Trading Ltd",
+        "sourceOfWealth": "business_income",
+        "annualIncome": "50k-100k"
+      }
+    }
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Application updated successfully",
+  "data": {
+    "application": {
+      "id": "f436daf8-146b-4949-bf28-9b36440085a4",
+      "status": "draft",
+      "entity_type": "individual",
+      "individual_info": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "phone": "+2348012345678",
+        "citizenship": "NG"
+      }
+    },
+    "documents": []
+  }
+}
+```
+
+## Country-Specific Identifiers
+
+| Country | Fields |
+|---------|--------|
+| Nigeria | `nin` (11 digits), `bvn` (11 digits) |
+| United States | `ssn` |
+| Canada | `sin` |
+| Other | `nationalId` |
+
+<Warning>
+  Applications can no longer be edited once their status is `submitted` or `approved`.
+</Warning>

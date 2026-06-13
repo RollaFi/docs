@@ -15,7 +15,10 @@
         "groups": [
           {
             "group": "Getting Started",
-            "pages": ["index", "quickstart"]
+            "pages": [
+              "index",
+              "quickstart"
+            ]
           }
         ]
       },
@@ -24,19 +27,27 @@
         "groups": [
           {
             "group": "Overview",
-            "pages": ["api-reference/introduction"]
+            "pages": [
+              "api-reference/introduction"
+            ]
           },
           {
             "group": "Banks",
-            "pages": ["api-reference/endpoint/banks"]
+            "pages": [
+              "api-reference/endpoint/banks"
+            ]
           },
           {
             "group": "Account Lookup",
-            "pages": ["api-reference/endpoint/lookup"]
+            "pages": [
+              "api-reference/endpoint/lookup"
+            ]
           },
           {
             "group": "Transactions",
-            "pages": ["api-reference/endpoint/transactions"]
+            "pages": [
+              "api-reference/endpoint/transactions"
+            ]
           },
           {
             "group": "Wallet",
@@ -44,11 +55,9 @@
               "api-reference/endpoint/wallet/wallets",
               "api-reference/endpoint/wallet/rates",
               "api-reference/endpoint/wallet/supported-currencies",
-
               "api-reference/endpoint/wallet/virtual-accounts",
               "api-reference/endpoint/wallet/virtual-accounts-generate",
               "api-reference/endpoint/wallet/virtual-accounts-generate-static",
-
               "api-reference/endpoint/wallet/transfer",
               "api-reference/endpoint/wallet/swap",
               "api-reference/endpoint/wallet/withdraw",
@@ -80,6 +89,33 @@
               "api-reference/endpoint/teams/remove-member",
               "api-reference/endpoint/teams/update-status",
               "api-reference/endpoint/teams/assign-role"
+            ]
+          },
+          {
+            "group": "Account Onboarding",
+            "pages": [
+              "api-reference/endpoint/accounts/overview",
+              "api-reference/endpoint/accounts/create",
+              "api-reference/endpoint/accounts/list",
+              "api-reference/endpoint/accounts/get",
+              "api-reference/endpoint/accounts/requirements",
+              "api-reference/endpoint/accounts/update-business",
+              "api-reference/endpoint/accounts/update-individual",
+              "api-reference/endpoint/accounts/upload-document",
+              "api-reference/endpoint/accounts/get-documents",
+              "api-reference/endpoint/accounts/delete-document",
+              "api-reference/endpoint/accounts/add-related-person",
+              "api-reference/endpoint/accounts/list-related-persons",
+              "api-reference/endpoint/accounts/update-related-person",
+              "api-reference/endpoint/accounts/delete-related-person",
+              "api-reference/endpoint/accounts/kyc-link",
+              "api-reference/endpoint/accounts/verification",
+              "api-reference/endpoint/accounts/verification-status",
+              "api-reference/endpoint/accounts/submit",
+              "api-reference/endpoint/accounts/bank-account-requirements",
+              "api-reference/endpoint/accounts/issue-bank-account",
+              "api-reference/endpoint/accounts/list-bank-accounts",
+              "api-reference/endpoint/accounts/funding-instructions"
             ]
           },
           {
@@ -124,7 +160,7 @@
   },
   "api": {
     "baseUrl": [
-     "https://api.rolla.xyz/api/v1/external"
+      "https://api.rolla.xyz/api/v1/external"
     ],
     "auth": {
       "method": "key",

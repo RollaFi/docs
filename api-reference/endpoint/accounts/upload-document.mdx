@@ -1,0 +1,52 @@
+---
+title: 'Upload Document'
+openapi: 'POST /accounts/{accountId}/documents'
+---
+
+Uploads a document to an account's application as `multipart/form-data`. Re-uploading the same `documentType` replaces the previous file. To attach a document to a specific beneficial owner or director, include their `relatedPersonId`.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/documents" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "file=@/path/to/certificate.pdf" \
+  -F "documentType=certificate_of_incorporation"
+```
+
+## Form Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `file` | file | Yes | The document file (max 50MB) |
+| `documentType` | string | Yes | One of the document types below |
+| `relatedPersonId` | string | No | Attach the document to a specific related person |
+
+## Document Types
+
+**Required for business accounts:** `certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `director_register`, `shareholder_register`, `bank_statement`
+
+**Required for individual accounts:** `proof_of_address`
+
+**Optional / compliance:** `proof_of_tax_id`, `wolfsberg_questionnaire`, `msb_flow_form`, `flow_of_funds_diagram`, `aml_policy_procedures`, `ach_procedures`, `wire_procedures`, `customer_complaint_procedures`, `prohibited_jurisdictions_industries`
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Document uploaded successfully",
+  "data": {
+    "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
+    "kyb_application_id": "fbb45236-881a-4c58-8954-22759499eab4",
+    "document_type": "certificate_of_incorporation",
+    "file_name": "certificate.pdf",
+    "file_size": 248301,
+    "mime_type": "application/pdf"
+  }
+}
+```
+
+<Tip>
+  Proof of address documents must have been issued within the last 3 months (bank statement, utility bill or lease agreement).
+</Tip>
