@@ -51,10 +51,10 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
 
 | Role | Send money | Approve withdrawals | Approve payments | Manage beneficiaries | Manage team | Assignable by |
 |------|:----------:|:-------------------:|:----------------:|:--------------------:|:-----------:|---------------|
-| **Business Owner** | ✓ | ✓ | ✓ | ✓ | ✓ | — (set at signup) |
-| **Business Admin** | ✓ | ✓ | ✓ | ✓ | ✓ | Owner |
-| **Approver** | — | ✓ | ✓ | ✓ | — | Owner, Admin |
-| **Initiator** | ✓ | — | — | ✓ | — | Owner, Admin, Initiator |
+| **Business Owner** | Yes | Yes | Yes | Yes | Yes | — (set at signup) |
+| **Business Admin** | Yes | Yes | Yes | Yes | Yes | Owner |
+| **Approver** | — | Yes | Yes | Yes | — | Owner, Admin |
+| **Initiator** | Yes | — | — | Yes | — | Owner, Admin, Initiator |
 
 - **Initiator** — Can initiate transactions including sending money, but cannot approve them. (Formerly named **Collaborator**.)
 - **Approver** — Can approve transactions and manage beneficiaries, but cannot initiate outbound sends. Only Business Owners and Business Admins can assign this role.
