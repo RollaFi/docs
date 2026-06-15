@@ -10,7 +10,7 @@ Webhooks let Rolla notify **your** server in real time whenever one of your depo
 Webhooks cover **all supported transaction types and corridors**:
 
 - Fiat deposits and payouts (e.g. NGN, USD, XAF)
-- Stablecoin deposits and payouts (USDC, USDT) across supported chains
+- Stablecoin deposits and payouts (USDC) on Solana
 
 <Info>
   Webhooks are available to businesses using the Rolla external API. Events are sent for **your** deposits and payouts only.
@@ -24,12 +24,12 @@ Configure webhook endpoints from your [Rolla Dashboard](https://app.rolla.xyz) u
 |-------|-------------|
 | **URL** | An `https://` endpoint on your server that will receive events |
 | **Events** | Which events to subscribe to (see [Events](/api-reference/webhooks/events)) |
-| **Signing secret** | Generated for you on creation. Used to [verify signatures](/api-reference/webhooks/signatures) |
+| **Sign requests** | Optional. When enabled, a signing secret is generated so you can [verify signatures](/api-reference/webhooks/signatures). Leave it off and requests are sent unsigned, with no secret |
 
-You can register multiple endpoints (for example, separate URLs per environment), enable or disable each one, and rotate its signing secret at any time.
+You can register multiple endpoints (for example, separate URLs per environment), enable or disable each one, and (while signing is on) rotate its signing secret at any time.
 
 <Info>
-  Your signing secret can be viewed any time from the dashboard (**API → Webhooks → ⋯ → Reveal secret**), so you don't need to store it elsewhere. If you suspect it's compromised, rotate it with **Regenerate secret** — the old secret stops working immediately.
+  A signing secret only exists when **Sign requests** is enabled. If you create an endpoint with signing off and later turn it on, a secret is generated at that point. While signing is enabled, the secret can be viewed any time from the dashboard (**API → Webhooks → ⋯ → Reveal secret**), so you don't need to store it elsewhere. If you suspect it's compromised, rotate it with **Regenerate secret** — the old secret stops working immediately.
 </Info>
 
 ## How delivery works

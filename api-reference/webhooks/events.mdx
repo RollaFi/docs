@@ -5,32 +5,41 @@ description: 'Webhook event types and the transaction lifecycle'
 
 ## Event types
 
-| Event | When it's sent |
-|-------|----------------|
-| `transaction.pending` | A deposit or payout has been created and is processing. |
-| `transaction.completed` | A deposit or payout has successfully finalized. |
-| `transaction.failed` | A payout failed or was rejected. |
+Each event maps 1:1 to a transaction status. You choose which to subscribe to per endpoint, so you can listen only for the ones you care about (most integrations just need `transaction.completed` and `transaction.failed`).
 
-You choose which of these to subscribe to per endpoint.
+| Event | Status | When it's sent |
+|-------|--------|----------------|
+| `transaction.pending` | `pending` | The transaction has been created and is awaiting processing. For a payout, funds have been debited; for a deposit, incoming funds have been detected. |
+| `transaction.processing` | `processing` | The transaction is actively being processed (submitted to the bank/network). |
+| `transaction.negotiating` | `negotiating` | An FX transaction is awaiting an agreed exchange rate before it proceeds. |
+| `transaction.sent` | `sent` | Funds have been dispatched to the provider/network and are in flight (not yet confirmed final). |
+| `transaction.completed` | `completed` | The transaction finalized successfully. For a deposit, funds are available in your wallet; for a payout, the beneficiary has been paid. |
+| `transaction.failed` | `failed` | The transaction could not be completed. Funds for a failed payout are returned to your wallet. |
+| `transaction.rejected` | `rejected` | The transaction was rejected (e.g. declined during approval or compliance review). |
+| `transaction.cancelled` | `cancelled` | The transaction was cancelled (e.g. a pending FX rate negotiation cancelled by the business); reserved funds are released. |
+| `transaction.refunded` | `refunded` | A previously completed transaction was reversed/refunded. |
 
 ## Transaction lifecycle
 
-A typical transaction emits a `transaction.pending` event followed by a terminal event:
+A typical transaction emits `transaction.pending` and then one or more later events as it progresses to a terminal state:
 
 <Steps>
   <Step title="transaction.pending">
-    The transaction has entered processing. For a payout, funds have been debited and the payout is on its way. For a deposit, the incoming funds have been detected.
+    The transaction has been created and is awaiting processing.
+  </Step>
+  <Step title="transaction.processing / transaction.sent (in flight)">
+    The transaction is being processed and dispatched to the bank or network. FX transactions may first pass through `transaction.negotiating` while a rate is agreed.
   </Step>
   <Step title="transaction.completed (success path)">
-    The transaction has finalized. For a deposit, funds are now available in your wallet. For a payout, the beneficiary has been paid.
+    The transaction finalized. For a deposit, funds are now available in your wallet; for a payout, the beneficiary has been paid.
   </Step>
-  <Step title="transaction.failed (failure path)">
-    The transaction could not be completed. Funds for a failed payout are returned to your wallet.
+  <Step title="transaction.failed / rejected / cancelled (failure paths)">
+    The transaction did not complete. Funds for a failed/rejected/cancelled payout are returned to your wallet. A `transaction.refunded` event may follow a completed transaction that is later reversed.
   </Step>
 </Steps>
 
 <Info>
-  Not every transaction emits every event. A deposit that is auto-confirmed may move from pending to completed almost immediately; a payout that fails will emit `transaction.pending` then `transaction.failed`.
+  Not every transaction emits every event, and intermediate events (`processing`, `sent`, `negotiating`) may be skipped depending on the rail and how fast the transaction settles. A deposit that is auto-confirmed may jump from `pending` to `completed`; a payout that fails will emit `transaction.pending` then `transaction.failed`. Always treat the event's status as the source of truth and don't assume ordering.
 </Info>
 
 ## The `event_id` field
