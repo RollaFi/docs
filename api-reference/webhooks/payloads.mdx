@@ -16,7 +16,7 @@ Every webhook has the same envelope. Transaction details live under `data`.
     "transaction_id": "…",
     "reference": "…",
     "type": "deposit | payout",
-    "status": "pending | processing | negotiating | sent | completed | failed | rejected | cancelled | refunded",
+    "status": "pending | processing | sent | completed | failed | rejected | refunded",
     "rail": "fiat | stablecoin",
     "currency": "…",
     "amount": 0,
@@ -50,7 +50,7 @@ Every webhook has the same envelope. Transaction details live under `data`.
 | `data.transaction_id` | Rolla transaction id |
 | `data.reference` | Transaction reference (the external reference) |
 | `data.type` | `deposit` or `payout` |
-| `data.status` | The transaction status this event represents — one of `pending`, `processing`, `negotiating`, `sent`, `completed`, `failed`, `rejected`, `cancelled`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events) |
+| `data.status` | The transaction status this event represents — one of `pending`, `processing`, `sent`, `completed`, `failed`, `rejected`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events) |
 | `data.rail` | `fiat` or `stablecoin` |
 | `data.amount` / `data.currency` | The **net** amount the counterparty receives (in **minor units** — see [Amount format](#amount-format)), and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
 | `data.source_amount` / `data.source_currency` | The debit leg, in **minor units**. For a **payout** this is the **gross** amount, i.e. `amount` **+ fee**; for FX it's the source-currency amount. |
