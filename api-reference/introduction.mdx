@@ -34,6 +34,28 @@ API keys can be generated from your [Rolla Dashboard](https://app.rolla.xyz). Na
 
 For enhanced security, you can optionally whitelist specific IP addresses for your API key. When enabled, requests from non-whitelisted IPs will be rejected.
 
+## Acting on a tenant account (`X-Account-Id`)
+
+If your business is a Rolla **white-label tenant**, a single API key can act on any account inside your tenancy — your own account, or any account you've onboarded under it. Add the optional **`X-Account-Id`** header naming the target account, and the **entire** request is scoped to that account: onboarding, documents, wallets, funding instructions, payouts, beneficiaries — everything runs as that account.
+
+```bash
+# Fetch funding instructions for one of your tenant's accounts
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/funding-instructions" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: 3f1c2d4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+```
+
+| Behaviour | Result |
+|-----------|--------|
+| Header omitted | The request acts as your own (the API key's) account — standard behaviour. |
+| Header set to an account in your tenancy | The request is scoped to that account. |
+| Header set, but your key isn't a tenant key | `403` — `X-Account-Id` is only available to tenant API keys. |
+| Header naming an account outside your tenancy | `404` — Account not found in your tenancy. |
+
+<Info>
+  Accounts you create with a tenant API key (via `POST /accounts`) are automatically added to your tenancy, so you can immediately address them with `X-Account-Id` afterwards. Accounts that onboard themselves through your white-label app are part of your tenancy too.
+</Info>
+
 ## Response Format
 
 All responses follow a consistent JSON structure:
@@ -68,3 +90,4 @@ API requests are rate-limited to ensure fair usage. If you exceed the limit, you
 | `/banks` | GET | List Nigerian banks |
 | `/lookup` | POST | Validate bank account |
 | `/transactions` | GET | Retrieve transactions |
+| `/accounts` | POST / GET | Onboard and manage additional business or individual accounts |

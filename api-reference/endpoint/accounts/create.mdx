@@ -1,0 +1,62 @@
+---
+title: 'Create Account'
+openapi: 'POST /accounts'
+---
+
+Creates an additional business or individual account under the same owner as your API key's business. The new account starts as a draft application that you complete with the other account onboarding endpoints.
+
+## Example Request
+
+### Business account
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "business",
+    "name": "Beta Logistics LLC"
+  }'
+```
+
+### Individual account
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "individual",
+    "firstName": "Jane",
+    "lastName": "Doe"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "account": {
+      "id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+      "name": "Beta Logistics LLC",
+      "email": "owner@example.com",
+      "status": "created",
+      "entityType": "business"
+    },
+    "applicationId": "fbb45236-881a-4c58-8954-22759499eab4",
+    "applicationStatus": "draft"
+  }
+}
+```
+
+## Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | `business` or `individual` |
+| `name` | string | For business | Legal or trading name of the business |
+| `firstName` | string | No | Account holder first name (individual accounts); defaults to the owner's name |
+| `lastName` | string | No | Account holder last name (individual accounts); defaults to the owner's name |

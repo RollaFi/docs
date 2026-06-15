@@ -1,0 +1,32 @@
+---
+title: 'Update Related Person'
+openapi: 'PUT /accounts/{accountId}/related-persons/{personId}'
+---
+
+Updates a related person on a business account's application. Provided fields are merged into the existing record.
+
+## Example Request
+
+```bash
+curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/related-persons/a3d4f21e-f499-488f-8508-43228dfea485" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "ownershipPercentage": 75
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Related person updated successfully",
+  "data": {
+    "id": "a3d4f21e-f499-488f-8508-43228dfea485",
+    "firstName": "Jane",
+    "lastName": "Doe",
+    "ownershipPercentage": 75
+  }
+}
+```

@@ -34,7 +34,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize
         "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
         "email": "jane@example.com",
         "fullname": "Jane Doe",
-        "role": "collaborator",
+        "role": "initiator",
         "role_id": "c3d4e5f6-7890-abcd-ef12-34567890abcd",
         "status": "active",
         "invite_status": "accepted",
@@ -50,3 +50,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize
   }
 }
 ```
+
+<Note>
+  The `role` field returns the role name — one of `business_owner`, `business_admin`, `initiator`, or `approver`. The former `collaborator` value is now returned as `initiator`. If you string-match on role names, map `"collaborator"` to `"initiator"` and add an `"approver"` branch. See [Get Available Roles](/api-reference/endpoint/teams/roles) for the full role reference.
+</Note>

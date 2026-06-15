@@ -1,0 +1,57 @@
+---
+title: 'Get Account'
+openapi: 'GET /accounts/{accountId}'
+---
+
+Retrieves a single account with its full KYB/KYC application and uploaded documents. Use this to track an application's status after submission.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Account retrieved successfully",
+  "data": {
+    "account": {
+      "id": "b6075be0-f1d0-451f-a468-3e94563101d2",
+      "name": "Jane Doe",
+      "email": "owner@example.com",
+      "entityType": "individual",
+      "createdAt": "2026-06-12T23:30:43.040Z"
+    },
+    "application": {
+      "id": "f436daf8-146b-4949-bf28-9b36440085a4",
+      "status": "submitted",
+      "current_step": 3,
+      "is_complete": true,
+      "entity_type": "individual",
+      "individual_info": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "phone": "+2348012345678",
+        "dateOfBirth": "1990-05-14",
+        "citizenship": "NG"
+      }
+    },
+    "documents": [
+      {
+        "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
+        "document_type": "proof_of_address",
+        "file_name": "bank_statement.pdf",
+        "mime_type": "application/pdf"
+      }
+    ]
+  }
+}
+```
+
+<Tip>
+  Application `status` moves from `draft` → `submitted` → `approved` (or `changes_requested` / `rejected`). When changes are requested, the application becomes editable again and `change_request_note` explains what needs fixing.
+</Tip>

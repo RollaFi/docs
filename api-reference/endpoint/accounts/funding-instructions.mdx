@@ -1,0 +1,66 @@
+---
+title: 'Get Funding Instructions'
+description: 'Fetch deposit instructions for an account across its currencies'
+---
+
+Returns the deposit (funding) instructions for an account — how to fund each of its currencies. Each entry is either fiat **bank transfer** details (NGN, USD, ...) or a **crypto** deposit address. Any USD account still being provisioned by the provider is surfaced under `pending`.
+
+<Info>
+  Deposit accounts are provisioned once an account's application is approved. Issue them with [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account); they then appear here. You can also receive an [`account.virtual_account.created`](/api-reference/webhooks/events) webhook when one is added.
+</Info>
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/funding-instructions" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Funding instructions retrieved successfully",
+  "data": {
+    "fundingInstructions": [
+      {
+        "currency": "NGN",
+        "method": "bank_transfer",
+        "status": "active",
+        "provider": "gtbank",
+        "bankName": "Guaranty Trust Bank",
+        "accountNumber": "1234567890",
+        "accountName": "Beta Logistics LLC",
+        "routingNumber": null,
+        "swiftCode": null,
+        "bankAddress": null,
+        "instructions": "Transfer NGN to the bank account below. Deposits are credited to the account's NGN wallet automatically."
+      },
+      {
+        "currency": "USDC",
+        "method": "crypto",
+        "status": "active",
+        "provider": "BLOCKCHAIN",
+        "walletAddress": "0xAbC1234dEf5678901234567890aBcDeF12345678",
+        "network": "base",
+        "instructions": "Send USDC on the base network to the wallet address below. Deposits are credited to the account automatically after network confirmation."
+      }
+    ],
+    "pending": [
+      {
+        "currency": "USD",
+        "provider": "ssb_usd",
+        "state": "client_submitted",
+        "message": "A USD deposit account is being provisioned. Funding details become available once the provider approves."
+      }
+    ]
+  }
+}
+```
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `currency` | string | No | Scope to a single currency (e.g. `NGN`, `USD`, `USDC`). Omit to return every funded currency. |

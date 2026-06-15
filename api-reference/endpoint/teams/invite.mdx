@@ -34,5 +34,5 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/teams/invite" \
 ```
 
 <Info>
-  The `roleId` is optional. If omitted, the invited member will receive a default role. Use `/teams/roles` to get available role IDs.
+  The `roleId` is optional and defaults to the **Initiator** role when omitted. Use [`/teams/roles`](/api-reference/endpoint/teams/roles) to get available role IDs — the assignable set is `initiator`, `approver`, and `business_admin` (the `approver` and `business_admin` roles can only be assigned by Business Owners and Business Admins). The `roleId` UUID model itself is unchanged.
 </Info>

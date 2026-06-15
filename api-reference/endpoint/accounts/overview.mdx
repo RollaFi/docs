@@ -1,0 +1,64 @@
+---
+title: 'Account Onboarding Overview'
+description: 'Onboard additional business or individual accounts programmatically'
+---
+
+The Account Onboarding API lets you create and verify additional Rolla accounts through the API — the same flow the Rolla dashboard uses when you add a new business or personal account to your profile.
+
+Every account you create belongs to the same owner as the business your API key was issued for, and shares that owner's email. Accounts created here also appear in the owner's dashboard account switcher.
+
+<Info>
+  **White-label tenants:** a single tenant API key can onboard and manage every account in your tenancy. Pass the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header to scope any request to a specific account you've onboarded.
+</Info>
+
+## Onboarding a business account
+
+<Steps>
+  <Step title="Create the account">
+    `POST /accounts` with `type: "business"` and the business name. You get back an `accountId` and a draft application.
+  </Step>
+  <Step title="Fill in business details">
+    `PUT /accounts/{accountId}/business` with `business_info`, `business_address`, `contact_info` and optionally `banking_info`. Sections merge, so you can save progress across multiple calls.
+  </Step>
+  <Step title="Upload documents">
+    `POST /accounts/{accountId}/documents` for each required document: certificate of incorporation, articles of association, proof of address, director register, shareholder register and a bank statement.
+  </Step>
+  <Step title="Register related persons">
+    `POST /accounts/{accountId}/related-persons` for each beneficial owner and director, then generate a hosted KYC link for each with `POST .../related-persons/{personId}/kyc-link` and share it with them. Each person must complete ID verification and a liveness check.
+  </Step>
+  <Step title="Submit">
+    Check `GET /accounts/{accountId}/requirements` until `readyToSubmit` is `true` and every related person is `verified`, then call `POST /accounts/{accountId}/submit`.
+  </Step>
+</Steps>
+
+## Onboarding an individual account
+
+<Steps>
+  <Step title="Create the account">
+    `POST /accounts` with `type: "individual"`.
+  </Step>
+  <Step title="Fill in personal details">
+    `PUT /accounts/{accountId}/individual` with personal information, residential address and employment details.
+  </Step>
+  <Step title="Upload proof of address">
+    `POST /accounts/{accountId}/documents` with `documentType: proof_of_address` (bank statement, utility bill or lease agreement issued in the last 3 months).
+  </Step>
+  <Step title="Complete identity verification">
+    `POST /accounts/{accountId}/verification` returns a verification SDK token for ID upload and liveness checks. Poll `GET /accounts/{accountId}/verification` for the result.
+  </Step>
+  <Step title="Submit">
+    Once `GET /accounts/{accountId}/requirements` reports `readyToSubmit: true`, call `POST /accounts/{accountId}/submit`.
+  </Step>
+</Steps>
+
+## After submission
+
+Submitted applications are reviewed by the Rolla compliance team. Track progress with `GET /accounts/{accountId}` — the application status moves from `submitted` to `approved`, `changes_requested` or `rejected`. Once approved, the account is fully active.
+
+## Issuing bank accounts
+
+Approved accounts can be given NGN and USD deposit accounts via [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account). The banking provider is selected automatically by currency and account type, and the details it needs are prefilled from the application — check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) for anything missing. NGN accounts are issued instantly; USD accounts go through a provider review before the deposit details become available.
+
+<Note>
+  API access is scoped per account. To call the API *as* a newly approved account, create an API key for it from the dashboard after switching to that account.
+</Note>
