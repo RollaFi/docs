@@ -16,7 +16,7 @@ Every webhook has the same envelope. Transaction details live under `data`.
     "transaction_id": "…",
     "reference": "…",
     "type": "deposit | payout",
-    "status": "pending | completed | failed",
+    "status": "pending | processing | sent | completed | failed | rejected | refunded",
     "rail": "fiat | stablecoin",
     "currency": "…",
     "amount": 0,
@@ -24,6 +24,7 @@ Every webhook has the same envelope. Transaction details live under `data`.
     "source_currency": "…",
     "destination_amount": 0,
     "destination_currency": "…",
+    "exchange_rate": 0,
     "fee_amount": 0,
     "description": "…",
     "timestamp": "…",
@@ -35,6 +36,10 @@ Every webhook has the same envelope. Transaction details live under `data`.
 }
 ```
 
+<Info>
+  Objects only carry the fields **relevant to the transaction**. Inapplicable fields are omitted, not returned as `null` — e.g. a fiat bank payout's `beneficiary` has no `wallet_address` / `wallet_chain`, and a crypto payout's has no bank fields. Top-level keys (`sender`, `beneficiary`, `network`, `metadata`) are still present as `null` when they don't apply to the transaction.
+</Info>
+
 ### Field reference
 
 | Field | Description |
@@ -45,33 +50,51 @@ Every webhook has the same envelope. Transaction details live under `data`.
 | `data.transaction_id` | Rolla transaction id |
 | `data.reference` | Transaction reference (the external reference) |
 | `data.type` | `deposit` or `payout` |
-| `data.status` | `pending`, `completed`, or `failed` |
+| `data.status` | The transaction status this event represents — one of `pending`, `processing`, `sent`, `completed`, `failed`, `rejected`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events) |
 | `data.rail` | `fiat` or `stablecoin` |
-| `data.amount` / `data.currency` | The **net** amount the counterparty receives, and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
-| `data.source_amount` / `data.source_currency` | The debit leg. For a **payout** this is the **gross** amount, i.e. `amount` **+ fee**; for FX it's the source-currency amount. |
-| `data.destination_amount` / `data.destination_currency` | The credit leg — what the beneficiary/wallet actually receives. |
-| `data.fee_amount` | Fee applied, in smallest units |
-| `data.sender` | Sender details — present for **deposits**, otherwise `null` |
-| `data.beneficiary` | Beneficiary details — present for **payouts**, otherwise `null` (see below) |
-| `data.network` | On-chain details — present for **stablecoin** transactions, otherwise `null` |
+| `data.amount` / `data.currency` | The **net** amount the counterparty receives (in **minor units** — see [Amount format](#amount-format)), and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
+| `data.source_amount` / `data.source_currency` | The debit leg, in **minor units**. For a **payout** this is the **gross** amount, i.e. `amount` **+ fee**; for FX it's the source-currency amount. |
+| `data.destination_amount` / `data.destination_currency` | The credit leg, in **minor units** — what the beneficiary/wallet actually receives. |
+| `data.exchange_rate` | The effective rate for the conversion, computed as `destination_amount / source_amount` (destination per source, in minor units) — the same convention as the external [transactions API](/api-reference/endpoint/transactions). Present for **FX** transactions (source and destination currencies differ); `null` otherwise. |
+| `data.fee_amount` | Fee applied, in **minor units** |
+| `data.sender` | The external payer of a **deposit** (`name`/`account_number`/`bank`… or a crypto `wallet_address`/`chain`). Always `null` for **payouts** — the originator is your own business (implicit in your API key). |
+| `data.beneficiary` | Beneficiary details — present for **payouts**, otherwise `null` (see below). Only fields relevant to the payout are included. |
+| `data.network` | On-chain details — present for **stablecoin** transactions, otherwise `null`. `chain` is the full network name (`Solana`). |
 | `data.metadata` | Any metadata you supplied when creating the transaction |
 
-<Info>
-  **Amounts** are in each currency's **smallest unit** — NGN kobo, USD cents (**100 = \$1.00**), and the base unit for stablecoins — consistent with the rest of the Rolla API.
-</Info>
+### Amount format
+
+All monetary fields — **`amount`**, **`source_amount`**, **`destination_amount`**, and **`fee_amount`** — are integers in the currency's **minor unit** (the smallest indivisible unit), never the major unit.
+
+| Currency | Minor unit | Major → minor |
+|----------|-----------|---------------|
+| NGN | kobo (1/100) | ₦100 → `10000` |
+| USD | cents (1/100) | $100 → `10000` |
+| XAF | (no minor unit) | 1,000 XAF → `1000` |
+| USDC | base unit (6 dp) | 100 USDC → `100000000` |
+
+To display a value, divide by the currency's minor-unit factor (e.g. `amount / 100` for NGN and USD).
+
+<Warning>
+  These values are **not** major units. An `amount` of `10000` on an NGN transaction means **₦100.00**, not ₦10,000. Treating minor units as major units will overstate amounts by the minor-unit factor (100× for NGN/USD).
+</Warning>
+
+<Note>
+  **Webhook amounts differ from the REST transaction endpoints.** Webhook payloads report amounts in **minor units** (e.g. `1000` = $10.00). The REST transaction responses — `GET /wallet/transactions`, `GET /wallet/transaction/{id}`, and the `withdraw` / `transfer` / `swap` responses — report transaction amounts in **major units** (e.g. `10` = $10.00). So the same transaction shows `1000` in its webhook and `10` over REST. Match a webhook to a REST record by **`transaction_id`** (or `reference`), not by comparing raw amounts, and apply the right scale for each source.
+</Note>
 
 <Tip>
-  For a payout, **`amount`** is what you asked to send (the beneficiary's amount). **`source_amount`** is what's debited from your wallet, including the fee. So `source_amount = amount + fee_amount` (when fees are charged on top).
+  For a payout, **`amount`** is what you asked to send (the beneficiary's amount). **`source_amount`** is what's debited from your wallet, including the fee. So `source_amount = amount + fee_amount` (when fees are charged on top). All in minor units.
 </Tip>
 
 ### The `beneficiary` object (payouts)
 
-Always contains this whitelisted set; fields are `null` when not applicable. Internal fields (your `business_id`, row timestamps) are never included.
+Drawn from this whitelisted set — but only the fields **relevant to the payout** are returned. Empty/`null` fields are omitted, so a fiat bank payout returns bank-account fields (no wallet fields), while a crypto payout returns wallet fields (no bank fields). Internal fields (your `business_id`, row timestamps) are never included.
 
 `id` · `account_name` · `account_number` · `bank_name` · `bank_code` · `bank_address` · `currency` · `withdrawal_method` · `routing_number` · `swift_code` · `iban` · `bic` · `sort_code` · `intermediary_bank_name` · `intermediary_bank_routing_number` · `wallet_address` · `wallet_chain` · `email` · `contact_person` · `label` · `beneficiary_address`
 
 <Note>
-  For a one-time (inline) beneficiary, `id` is the literal string `"inline-temp"`. For a saved beneficiary it's the beneficiary's UUID. The samples below trim `null` fields for readability — the live payload includes all of the above.
+  `wallet_chain` is the full network name (`Solana`). Inside `bank_address` / `beneficiary_address`, `country` is the full country name (e.g. `Côte d'Ivoire`, not `CI`). **A present `id` means the payout went to a saved beneficiary** (it's the beneficiary's UUID). One-time (inline) beneficiaries have **no `id` field at all** — use its absence to detect them.
 </Note>
 
 ---
@@ -95,6 +118,7 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
     "source_currency": "NGN",
     "destination_amount": 500000,
     "destination_currency": "NGN",
+    "exchange_rate": null,
     "fee_amount": 0,
     "description": "Deposit from John Doe",
     "timestamp": "2026-06-10T12:00:04.812Z",
@@ -133,6 +157,7 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
     "source_currency": "NGN",
     "destination_amount": 100000,
     "destination_currency": "NGN",
+    "exchange_rate": null,
     "fee_amount": 2500,
     "description": "Vendor payment",
     "timestamp": "2026-06-10T12:01:09.500Z",
@@ -151,6 +176,60 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
   }
 }
 ```
+
+---
+
+## Sample: FX payout (NGN → USD) pending
+
+A cross-currency payout. `exchange_rate` is populated (the quoted rate for the pair), and the wire beneficiary's `bank_address.country` is the full country name. Only the bank-relevant beneficiary fields are present.
+
+```json
+{
+  "event": "transaction.pending",
+  "event_id": "07c97239-a8b0-5579-bd5e-e3221f614173",
+  "created_at": "2026-06-10T12:05:00.000Z",
+  "data": {
+    "transaction_id": "9a56d01f-dc72-4ace-bbbc-a237bdb1c599",
+    "reference": "NG-D7NUAS9Q",
+    "type": "payout",
+    "status": "pending",
+    "rail": "fiat",
+    "currency": "USD",
+    "amount": 100000,
+    "source_amount": 160000000,
+    "source_currency": "NGN",
+    "destination_amount": 100000,
+    "destination_currency": "USD",
+    "exchange_rate": 0.000625,
+    "fee_amount": 250000,
+    "description": "FX Payout",
+    "timestamp": "2026-06-10T12:04:59.500Z",
+    "sender": null,
+    "beneficiary": {
+      "id": "79ee09c0-1518-4a5c-86c7-d880a78ec6e5",
+      "account_name": "Fatunde Tee",
+      "account_number": "0711348929",
+      "bank_name": "Bank Of America",
+      "routing_number": "026009593",
+      "currency": "USD",
+      "withdrawal_method": "domestic_wire",
+      "bank_address": {
+        "street": "17 Akintunde Close",
+        "city": "New York",
+        "state": "New York",
+        "postalCode": "12222",
+        "country": "United States"
+      }
+    },
+    "network": null,
+    "metadata": null
+  }
+}
+```
+
+<Note>
+  Here `exchange_rate` is `destination_amount / source_amount` = `100000 / 160000000` = `0.000625` (USD minor units per NGN minor unit). Use `source_amount` and `destination_amount` for exact reconciliation — they are the authoritative debit and credit legs in minor units.
+</Note>
 
 ---
 
@@ -173,20 +252,21 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
     "source_currency": "USDC",
     "destination_amount": 100000,
     "destination_currency": "USDC",
+    "exchange_rate": null,
     "fee_amount": 0,
     "description": "USDC deposit",
     "timestamp": "2026-06-10T12:02:29.100Z",
     "sender": {
       "type": "crypto",
-      "wallet_address": "0x9aA1f3...c0De",
-      "chain": "base"
+      "wallet_address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+      "chain": "Solana"
     },
     "beneficiary": null,
     "network": {
-      "chain": "base",
+      "chain": "Solana",
       "tx_hash": "5h2k...onchain-signature",
-      "source_address": "0x9aA1f3...c0De",
-      "destination_address": "0x44Bc...91Fe"
+      "source_address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+      "destination_address": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
     },
     "metadata": null
   }
@@ -195,7 +275,7 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
 
 ---
 
-## Sample: Stablecoin payout pending
+## Sample: Stablecoin payout pending (one-time beneficiary)
 
 ```json
 {
@@ -208,29 +288,29 @@ Always contains this whitelisted set; fields are `null` when not applicable. Int
     "type": "payout",
     "status": "pending",
     "rail": "stablecoin",
-    "currency": "USD",
+    "currency": "USDC",
     "amount": 10000,
     "source_amount": 10000,
-    "source_currency": "USD",
+    "source_currency": "USDC",
     "destination_amount": 10000,
-    "destination_currency": "USD",
+    "destination_currency": "USDC",
+    "exchange_rate": null,
     "fee_amount": 0,
     "description": "Supplier settlement",
     "timestamp": "2026-06-10T12:02:59.700Z",
     "sender": null,
     "beneficiary": {
-      "id": "c3d4e5f6-7081-9203-b4c5-d6e7f8091234",
-      "account_name": "My USDT Wallet",
-      "currency": "USD",
-      "withdrawal_method": "crypto_usdt",
-      "wallet_address": "TXyZ1234abcd5678efgh9012ijkl3456mnop",
-      "wallet_chain": "tron"
+      "account_name": "My USDC Wallet",
+      "currency": "USDC",
+      "withdrawal_method": "crypto_usdc",
+      "wallet_address": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM",
+      "wallet_chain": "Solana"
     },
     "network": {
-      "chain": "tron",
+      "chain": "Solana",
       "tx_hash": "USD-WD-7H3M2B",
       "source_address": null,
-      "destination_address": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
+      "destination_address": "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM"
     },
     "metadata": { "po_number": "PO-99812" }
   }
