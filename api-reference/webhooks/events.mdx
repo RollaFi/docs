@@ -30,6 +30,8 @@ These cover the onboarding lifecycle of the accounts you manage via the API (the
 | `account.onboarded` | An account was created (onboarding started). |
 | `account.submitted` | The account's KYB/KYC application was submitted for review. |
 | `account.approved` | The account's application was approved and it's ready to transact. |
+| `account.rejected` | The account's application was rejected during review. |
+| `account.changes_requested` | The application was reviewed and changes were requested — the account must update its details and resubmit. |
 | `account.virtual_account.created` | A deposit (virtual) account — bank transfer or crypto — was provisioned for the account. |
 
 ## Account lifecycle
@@ -43,8 +45,8 @@ An account onboarded through the API typically moves through:
   <Step title="account.submitted">
     The application has been submitted for review.
   </Step>
-  <Step title="account.approved">
-    The application was approved. The account can now transact, and deposit accounts can be issued for it.
+  <Step title="account.approved / account.rejected / account.changes_requested (review outcome)">
+    Review resolves one of three ways: **approved** (the account can now transact, and deposit accounts can be issued for it), **rejected** (the application was declined), or **changes_requested** (the account must update its details and resubmit — after which it emits `account.submitted` again).
   </Step>
   <Step title="account.virtual_account.created">
     A deposit account (NGN/USD bank transfer details, or a crypto address) is now available for funding. The `data.virtual_account` object carries the details — the same shape you'd get from the [funding instructions](/api-reference/endpoint/accounts/funding-instructions) endpoint.

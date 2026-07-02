@@ -290,7 +290,7 @@ A cross-currency payout. `exchange_rate` is populated (the quoted rate for the p
 
 ## Account event payloads
 
-Account events (`account.onboarded`, `account.submitted`, `account.approved`, `account.virtual_account.created`) describe an **account** rather than a transaction, so `data` carries the account fields. `transaction_id` is not present.
+Account events (`account.onboarded`, `account.submitted`, `account.approved`, `account.rejected`, `account.changes_requested`, `account.virtual_account.created`) describe an **account** rather than a transaction, so `data` carries the account fields. `transaction_id` is not present.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -298,7 +298,7 @@ Account events (`account.onboarded`, `account.submitted`, `account.approved`, `a
 | `data.name` | string | Account name. Omitted if not available. |
 | `data.email` | string | Account email. Omitted if not available. |
 | `data.entity_type` | string | `business` or `individual`. Omitted if not available. |
-| `data.status` | string | The application status (`draft`, `submitted`, `approved`, ...). Omitted if not available. |
+| `data.status` | string | The application status (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`, ...). Omitted if not available. |
 | `data.virtual_account` | object | Present on `account.virtual_account.created` — the provisioned deposit account. Omitted otherwise. |
 
 ### Sample: Account approved
