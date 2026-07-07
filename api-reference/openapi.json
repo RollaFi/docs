@@ -2122,10 +2122,97 @@
           }
         }
       },
-      "put": {
+      "patch": {
         "operationId": "updateBeneficiary",
         "summary": "Update Beneficiary",
-        "description": "Updates an existing beneficiary's details.",
+        "description": "Updates an existing beneficiary's details. Also used to backfill the account_owner_type and account_category classification fields on beneficiaries created before those fields existed.",
+        "parameters": [
+          {
+            "name": "beneficiaryId",
+            "in": "path",
+            "required": true,
+            "description": "Beneficiary UUID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BeneficiaryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Beneficiary updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Beneficiary updated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "beneficiary": {
+                          "$ref": "#/components/schemas/SavedBeneficiary"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Beneficiary not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceBeneficiary",
+        "summary": "Update Beneficiary (PUT alias)",
+        "description": "Legacy alias for PATCH /beneficiaries/{beneficiaryId}. Behaves identically. New integrations should use PATCH.",
         "parameters": [
           {
             "name": "beneficiaryId",
@@ -6755,6 +6842,24 @@
             "format": "uuid",
             "description": "Required for rolla_transfer. The UUID of the destination Rolla business."
           },
+          "account_owner_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "business"
+            ],
+            "description": "Whether the account is held by an individual or a business. Present for bank-account beneficiaries; null on legacy records that predate this field.",
+            "example": "business"
+          },
+          "account_category": {
+            "type": "string",
+            "enum": [
+              "checking",
+              "savings"
+            ],
+            "description": "Whether a USD account is checking or savings. Present for USD beneficiaries; null on legacy records that predate this field.",
+            "example": "checking"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -6912,6 +7017,24 @@
             "format": "uuid",
             "description": "Required for rolla_transfer. The UUID of the destination Rolla business.",
             "example": "d4e5f6a7-b8c9-0123-defa-456789012345"
+          },
+          "account_owner_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "business"
+            ],
+            "description": "Whether the account is held by an individual or a business. Required for every bank-account beneficiary (any fiat method that is not crypto or rolla_transfer, including NGN bank transfer, domestic_wire, and international_wire). Not applicable to crypto_usdt, crypto_usdc, or rolla_transfer. During the deprecation grace period, requests that omit this field still succeed but return a `deprecation_warning` object; after the enforcement date the request is rejected with a 400. See the Beneficiary Account Fields migration guide.",
+            "example": "business"
+          },
+          "account_category": {
+            "type": "string",
+            "enum": [
+              "checking",
+              "savings"
+            ],
+            "description": "Whether a USD account is checking or savings. Required only when `currency` is USD. If you are not sure, use \"checking\". Subject to the same grace-period behaviour as account_owner_type.",
+            "example": "checking"
           }
         }
       },
