@@ -5,6 +5,16 @@ openapi: 'POST /beneficiaries'
 
 Create a new saved beneficiary for your business. The required fields depend on the `withdrawal_method` and `currency`.
 
+<Warning>
+  **New required fields (`account_owner_type`, `account_category`).** Every bank-account
+  beneficiary must now declare `account_owner_type` (`individual` or `business`), and
+  every USD beneficiary must also declare `account_category` (`checking` or `savings`).
+  During a 60-day grace period, requests that omit these fields still succeed but return a
+  `deprecation_warning` in the response; after the enforcement date they are rejected with a
+  `400`. See [Beneficiary Account Fields](/api-reference/endpoint/beneficiaries/account-fields)
+  for the full migration guide.
+</Warning>
+
 ## Example Request (NGN Bank Transfer)
 
 For Nigerian Naira transfers, omit `withdrawal_method` (or set it to `null`). `bank_code` is always required for NGN.
@@ -20,6 +30,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "account_number": "0123456789",
     "bank_name": "Access Bank",
     "bank_code": "000014",
+    "account_owner_type": "business",
     "email": "john@example.com"
   }'
 ```
@@ -38,6 +49,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "account_number": "123456789",
     "bank_name": "Chase Bank",
     "routing_number": "021000021",
+    "account_owner_type": "business",
+    "account_category": "checking",
     "beneficiary_address": {
       "street": "123 Main St",
       "city": "New York",
@@ -69,6 +82,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "account_number": "123456789",
     "bank_name": "Barclays Bank",
     "swift_code": "BARCGB22",
+    "account_owner_type": "business",
+    "account_category": "checking",
     "beneficiary_address": {
       "street": "123 Main St",
       "city": "New York",
@@ -139,9 +154,44 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "bank_name": "Access Bank",
     "bank_code": "000014",
     "withdrawal_method": null,
+    "account_owner_type": "business",
     "email": "john@example.com",
     "created_at": "2024-01-15T10:30:00.000Z",
     "updated_at": "2024-01-15T10:30:00.000Z"
+  }
+}
+```
+
+## Account Classification Fields
+
+For compliant payout routing, bank-account beneficiaries carry two classification fields:
+
+| Field | Values | Required when |
+|-------|--------|---------------|
+| `account_owner_type` | `individual`, `business` | Every bank-account beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `domestic_wire`, `international_wire`). Not applicable to crypto or `rolla_transfer`. |
+| `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
+
+<Note>
+  These fields are being rolled out with a **60-day grace period**. Requests that omit a
+  required field currently still succeed but include a `deprecation_warning` object in the
+  response (see below). After the enforcement date, the same request is rejected with a `400`.
+  Send the fields now to avoid disruption. Full details in the
+  [Beneficiary Account Fields migration guide](/api-reference/endpoint/beneficiaries/account-fields).
+</Note>
+
+### Deprecation warning (during grace period)
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Beneficiary created successfully",
+  "data": { "...": "..." },
+  "deprecation_warning": {
+    "code": "BENEFICIARY_FIELDS_REQUIRED_SOON",
+    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries.",
+    "missing_fields": ["account_owner_type"],
+    "enforcement_date": "2026-09-01T00:00:00.000Z"
   }
 }
 ```
@@ -150,9 +200,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 
 | Method | Required Fields |
 |--------|----------------|
-| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code` |
-| `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address` |
-| `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address` |
+| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code`, `account_owner_type` |
+| `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
+| `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address`, `wallet_chain` |
 | `rolla_transfer` | `currency`, `account_name`, `recipient_business_id` |
 
