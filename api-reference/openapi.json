@@ -1619,6 +1619,414 @@
         }
       }
     },
+    "/wallet/virtual-accounts/generate/customer": {
+      "post": {
+        "operationId": "generateCustomerVirtualAccount",
+        "summary": "Generate Customer Virtual Account",
+        "description": "Creates (or returns the existing) permanent NGN virtual account dedicated to one of your end-users, so deposits to it can be attributed to that user via webhook. The provider requires the end-user's BVN, name and date of birth. Idempotent per customer_identifier: re-requesting for the same customer returns the account already on file (HTTP 200) rather than creating a duplicate.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "first_name",
+                  "last_name",
+                  "email",
+                  "phone",
+                  "bvn",
+                  "date_of_birth",
+                  "address",
+                  "gender"
+                ],
+                "properties": {
+                  "customer_identifier": {
+                    "type": "string",
+                    "description": "Your own unique id for this end-user. Pass it so the account maps back to the user and re-requests are idempotent. If omitted, one is generated and returned.",
+                    "example": "user-12345"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "example": "Tosin"
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "example": "Kalejaiye"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "tosin@example.com"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "description": "Nigerian mobile number.",
+                    "example": "08012345678"
+                  },
+                  "bvn": {
+                    "type": "string",
+                    "description": "End-user's 11-digit Bank Verification Number. Validated by the provider. Never returned in responses.",
+                    "example": "22222222222"
+                  },
+                  "date_of_birth": {
+                    "type": "string",
+                    "description": "End-user's date of birth in mm/dd/yyyy format.",
+                    "example": "01/31/1990"
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "12 Marina Road, Lagos"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "enum": [
+                      "1",
+                      "2"
+                    ],
+                    "description": "1 = male, 2 = female.",
+                    "example": "1"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "New customer virtual account created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 201
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Customer virtual account generated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "virtualAccount": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "customer_identifier": {
+                              "type": "string",
+                              "example": "user-12345"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "Tosin"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Kalejaiye"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "tosin@example.com"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "example": "08012345678"
+                            },
+                            "bvn_last4": {
+                              "type": "string",
+                              "example": "2222",
+                              "description": "Last 4 digits of the BVN. The full BVN is never returned."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "NGN"
+                            },
+                            "bank_name": {
+                              "type": "string",
+                              "example": "GTBank"
+                            },
+                            "bank_code": {
+                              "type": "string",
+                              "example": "058"
+                            },
+                            "account_number": {
+                              "type": "string",
+                              "example": "4382272943"
+                            },
+                            "account_name": {
+                              "type": "string",
+                              "example": "Tosin Kalejaiye"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "active"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        "existing": {
+                          "type": "boolean",
+                          "description": "true when an account already existed for this customer_identifier and was returned unchanged (idempotent); false when newly created.",
+                          "example": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "An account already existed for this customer_identifier and was returned unchanged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Customer virtual account already exists for this customer_identifier"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "virtualAccount": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "customer_identifier": {
+                              "type": "string",
+                              "example": "user-12345"
+                            },
+                            "first_name": {
+                              "type": "string",
+                              "example": "Tosin"
+                            },
+                            "last_name": {
+                              "type": "string",
+                              "example": "Kalejaiye"
+                            },
+                            "email": {
+                              "type": "string",
+                              "example": "tosin@example.com"
+                            },
+                            "phone": {
+                              "type": "string",
+                              "example": "08012345678"
+                            },
+                            "bvn_last4": {
+                              "type": "string",
+                              "example": "2222",
+                              "description": "Last 4 digits of the BVN. The full BVN is never returned."
+                            },
+                            "currency": {
+                              "type": "string",
+                              "example": "NGN"
+                            },
+                            "bank_name": {
+                              "type": "string",
+                              "example": "GTBank"
+                            },
+                            "bank_code": {
+                              "type": "string",
+                              "example": "058"
+                            },
+                            "account_number": {
+                              "type": "string",
+                              "example": "4382272943"
+                            },
+                            "account_name": {
+                              "type": "string",
+                              "example": "Tosin Kalejaiye"
+                            },
+                            "status": {
+                              "type": "string",
+                              "example": "active"
+                            },
+                            "created_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
+                          }
+                        },
+                        "existing": {
+                          "type": "boolean",
+                          "description": "true when an account already existed for this customer_identifier and was returned unchanged (idempotent); false when newly created.",
+                          "example": true
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or provider rejection (e.g. invalid BVN)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/virtual-accounts/customers": {
+      "get": {
+        "operationId": "getCustomerVirtualAccounts",
+        "summary": "List Customer Virtual Accounts",
+        "description": "Lists the permanent per-end-user virtual accounts for your business. Optionally filter by customer_identifier.",
+        "parameters": [
+          {
+            "name": "customer_identifier",
+            "in": "query",
+            "description": "Filter to a single end-user's account.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer virtual accounts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Customer virtual accounts retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "virtualAccounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "format": "uuid"
+                              },
+                              "customer_identifier": {
+                                "type": "string",
+                                "example": "user-12345"
+                              },
+                              "first_name": {
+                                "type": "string",
+                                "example": "Tosin"
+                              },
+                              "last_name": {
+                                "type": "string",
+                                "example": "Kalejaiye"
+                              },
+                              "email": {
+                                "type": "string",
+                                "example": "tosin@example.com"
+                              },
+                              "phone": {
+                                "type": "string",
+                                "example": "08012345678"
+                              },
+                              "bvn_last4": {
+                                "type": "string",
+                                "example": "2222",
+                                "description": "Last 4 digits of the BVN. The full BVN is never returned."
+                              },
+                              "currency": {
+                                "type": "string",
+                                "example": "NGN"
+                              },
+                              "bank_name": {
+                                "type": "string",
+                                "example": "GTBank"
+                              },
+                              "bank_code": {
+                                "type": "string",
+                                "example": "058"
+                              },
+                              "account_number": {
+                                "type": "string",
+                                "example": "4382272943"
+                              },
+                              "account_name": {
+                                "type": "string",
+                                "example": "Tosin Kalejaiye"
+                              },
+                              "status": {
+                                "type": "string",
+                                "example": "active"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/wallet/virtual-accounts": {
       "get": {
         "operationId": "getVirtualAccounts",

@@ -1,0 +1,53 @@
+---
+title: 'List Customer Virtual Accounts'
+openapi: 'GET /wallet/virtual-accounts/customers'
+---
+
+List the permanent per-end-user virtual accounts you've created for your business. Optionally filter to a single user with `customer_identifier`.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/customers?customer_identifier=user-12345" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Query Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `customer_identifier` | string | Filter to a single end-user's account. Omit to list all. |
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "success": true,
+  "message": "Customer virtual accounts retrieved successfully",
+  "data": {
+    "virtualAccounts": [
+      {
+        "id": "9632c120-3c98-4a1c-baf2-47c17a079802",
+        "customer_identifier": "user-12345",
+        "first_name": "Tosin",
+        "last_name": "Kalejaiye",
+        "email": "tosin@example.com",
+        "phone": "08012345678",
+        "bvn_last4": "2222",
+        "currency": "NGN",
+        "bank_name": "GTBank",
+        "bank_code": "058",
+        "account_number": "4382272943",
+        "account_name": "Tosin Kalejaiye",
+        "status": "active",
+        "created_at": "2026-07-10T10:02:11.942Z"
+      }
+    ]
+  }
+}
+```
+
+<Note>
+  This endpoint returns end-user PII. The raw BVN is never included — only `bvn_last4`. If your API key has an IP allowlist configured, it applies here as it does to every endpoint.
+</Note>
