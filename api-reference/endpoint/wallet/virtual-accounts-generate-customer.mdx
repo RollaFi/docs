@@ -1,0 +1,86 @@
+---
+title: 'Generate Customer Virtual Account'
+openapi: 'POST /wallet/virtual-accounts/generate/customer'
+---
+
+Create a permanent NGN virtual account dedicated to **one of your end-users**. Each user gets their own account number, so when a deposit lands you can attribute it to the right user via [webhook](/api-reference/webhooks/overview) and credit them automatically — instead of everyone sharing a single business account.
+
+The provider requires the end-user's **BVN**, **name** and **date of birth** to open a dedicated personal account.
+
+<Info>
+This endpoint is **idempotent per `customer_identifier`**. Re-requesting for the same customer returns the account already on file (HTTP `200`, `existing: true`) rather than creating a duplicate. Use a **new** `customer_identifier` to create a **new** account for a different user.
+</Info>
+
+## `customer_identifier`
+
+Your own unique id for the end-user (their user id in your system). It is what ties the Rolla account back to a specific user, so the deposit webhook tells you who paid. Pass your own value; if you omit it, one is generated and returned.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customer_identifier` | string | No | Your unique id for this end-user. Omit to have one generated. |
+| `first_name` | string | Yes | End-user's first name |
+| `last_name` | string | Yes | End-user's last name |
+| `email` | string | Yes | End-user's email |
+| `phone` | string | Yes | End-user's Nigerian mobile number |
+| `bvn` | string | Yes | End-user's 11-digit BVN. Validated by the provider. **Never returned** in responses. |
+| `date_of_birth` | string | Yes | End-user's date of birth in `mm/dd/yyyy` format |
+| `address` | string | Yes | End-user's address |
+| `gender` | string | Yes | `"1"` = male, `"2"` = female |
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/customer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_identifier": "user-12345",
+    "first_name": "Tosin",
+    "last_name": "Kalejaiye",
+    "email": "tosin@example.com",
+    "phone": "08012345678",
+    "bvn": "22222222222",
+    "date_of_birth": "01/31/1990",
+    "address": "12 Marina Road, Lagos",
+    "gender": "1"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Customer virtual account generated successfully",
+  "data": {
+    "virtualAccount": {
+      "id": "9632c120-3c98-4a1c-baf2-47c17a079802",
+      "customer_identifier": "user-12345",
+      "first_name": "Tosin",
+      "last_name": "Kalejaiye",
+      "email": "tosin@example.com",
+      "phone": "08012345678",
+      "bvn_last4": "2222",
+      "currency": "NGN",
+      "bank_name": "GTBank",
+      "bank_code": "058",
+      "account_number": "4382272943",
+      "account_name": "Tosin Kalejaiye",
+      "status": "active",
+      "created_at": "2026-07-10T10:02:11.942Z"
+    },
+    "existing": false
+  }
+}
+```
+
+<Note>
+  The raw BVN is never echoed back — only `bvn_last4`. In the sandbox, use the test BVN `22222222222`; a made-up value returns `400 "invalid BVN"`. In production, pass the user's real BVN.
+</Note>
+
+<Info>
+  If your API key has an IP allowlist configured, it applies here as it does to every endpoint — requests from other IPs are rejected. An allowlist is not required to use this endpoint.
+</Info>
