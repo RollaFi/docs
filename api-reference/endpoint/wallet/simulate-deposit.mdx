@@ -1,0 +1,86 @@
+---
+title: 'Simulate a Deposit (Sandbox)'
+---
+
+A testing helper that injects a deposit into one of **your own virtual accounts** so you can verify your integration end-to-end — the wallet is credited and the deposit [webhook](/api-reference/webhooks/overview) is delivered — **without sending a real bank transfer**.
+
+Use it while building your deposit flow: create a customer virtual account, simulate a deposit into it, and confirm your endpoint receives the `transaction.completed` webhook and attributes it to the right end-user.
+
+<Warning>
+  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`. Use it against your sandbox environment only.
+</Warning>
+
+## Targeting an account
+
+Send **exactly one** of the following. The account must belong to your business.
+
+- **`customer_identifier`** — the id you used when creating a [customer virtual account](/api-reference/endpoint/wallet/virtual-accounts-generate-customer). Best when testing per-end-user deposits.
+- **`account_number`** — the number of any of your virtual accounts (static, dynamic, or customer).
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `customer_identifier` | string | Conditional | The customer id of one of your customer virtual accounts. Provide this **or** `account_number`, not both. |
+| `account_number` | string | Conditional | The account number of any of your virtual accounts. Provide this **or** `customer_identifier`, not both. |
+| `amount` | string | Yes | Deposit amount in major units of the account currency (e.g. Naira). Must be **greater than the pay-in fee** on the account, otherwise the request is rejected. |
+| `sender_name` | string | No | Name to record as the sender on the transaction (appears in the webhook's sender snapshot). |
+| `provider` | string | No | Force the provider tag on the deposit: `HABARI`, `NOMBA`, `VFD`, or `NETMFB`. Omit to inherit the target account's own provider (recommended). |
+
+## Example Request — by `customer_identifier`
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_identifier": "user-12345",
+    "amount": "2000",
+    "sender_name": "John Sender"
+  }'
+```
+
+## Example Request — by `account_number`
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_number": "4382272943",
+    "amount": "2000"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Simulated deposit created",
+  "data": {
+    "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
+    "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
+    "status": "completed",
+    "provider": "HABARI",
+    "account_number": "4382272943",
+    "customer_identifier": "user-12345",
+    "amount": "2000"
+  }
+}
+```
+
+## What happens
+
+1. The deposit is routed through the **same crediting path a real provider deposit uses** — your wallet is credited (net of the pay-in fee) and the deposit is tagged with the account's provider.
+2. The transaction is completed, emitting the deposit webhook to your configured endpoint: a `transaction.pending` event, followed by `transaction.completed`.
+3. For a **customer** virtual account, the webhook payload includes the `customer_identifier`, so you can attribute the deposit to the right end-user. See [Webhook Payloads](/api-reference/webhooks/payloads).
+
+<Note>
+  `amount` must be **greater than the pay-in fee** on the account. A smaller amount is rejected with `400 "Deposit amount is too small — it must be greater than the pay-in fee configured on this account."` — retry with a larger amount.
+</Note>
+
+<Info>
+  Because this credits a real (sandbox) wallet balance, treat it like any other write: it moves your test wallet's balance and generates a real transaction record and webhook delivery.
+</Info>
