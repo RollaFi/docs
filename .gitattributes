@@ -1,0 +1,6 @@
+# Keep environment-specific config per-branch on merge so staging (develop) and
+# production (main) never overwrite each other's base URL / banner.
+# Requires the "ours" merge driver to be enabled once per clone:
+#   git config merge.ours.driver true
+docs.json merge=ours
+api-reference/openapi.json merge=ours

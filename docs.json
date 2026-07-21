@@ -8,6 +8,10 @@
     "dark": "#15803D"
   },
   "favicon": "/favicon.ico",
+  "banner": {
+    "content": "🧪 You're viewing the **Staging** docs — the base URL is `api-staging.rolla.xyz`. For production, see [docs.rolla.xyz](https://docs.rolla.xyz).",
+    "dismissible": true
+  },
   "navigation": {
     "tabs": [
       {
@@ -170,7 +174,7 @@
   },
   "api": {
     "baseUrl": [
-      "https://api.rolla.xyz/api/v1/external"
+      "https://api-staging.rolla.xyz/api/v1/external"
     ],
     "auth": {
       "method": "key",
