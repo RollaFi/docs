@@ -24,7 +24,7 @@ git pull --ff-only origin develop 2>/dev/null || true
 
 # Take ALL content from main (overwrite), then keep develop-only infra files.
 git checkout origin/main -- .
-git checkout develop -- scripts/sync-staging-docs.sh .gitattributes
+git checkout develop -- scripts .gitattributes
 
 # Rewrite production URLs -> staging across all content + config.
 find . -type f \( -name "*.mdx" -o -name "*.json" \) \
@@ -33,16 +33,7 @@ find . -type f \( -name "*.mdx" -o -name "*.json" \) \
       's{https://api\.rolla\.xyz}{https://api-staging.rolla.xyz}g; s{https://app\.rolla\.xyz}{https://app-staging.rolla.xyz}g;'
 
 # Ensure the staging banner exists in docs.json (idempotent).
-node - "$PWD/docs.json" <<'NODE'
-const fs = require('fs');
-const f = process.argv[1];
-const j = JSON.parse(fs.readFileSync(f, 'utf8'));
-j.banner = {
-  content: "🧪 You're viewing the **Staging** docs — base URL is `api-staging.rolla.xyz`. For production, see [docs.rolla.xyz](https://docs.rolla.xyz).",
-  dismissible: true,
-};
-fs.writeFileSync(f, JSON.stringify(j, null, 2) + "\n");
-NODE
+node scripts/inject-banner.js docs.json
 
 node -e "JSON.parse(require('fs').readFileSync('docs.json','utf8')); JSON.parse(require('fs').readFileSync('api-reference/openapi.json','utf8'));" \
   && echo "✓ JSON valid"

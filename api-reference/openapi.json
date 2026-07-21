@@ -8,7 +8,7 @@
   "servers": [
     {
       "url": "https://api-staging.rolla.xyz/api/v1/external",
-      "description": "Staging server"
+      "description": "Production server"
     }
   ],
   "security": [

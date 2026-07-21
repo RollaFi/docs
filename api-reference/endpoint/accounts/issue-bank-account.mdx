@@ -3,17 +3,9 @@ title: 'Issue Bank Account'
 openapi: 'POST /accounts/{accountId}/bank-accounts'
 ---
 
-Issues an **NGN** or **USD** deposit account for an approved account. The banking provider is selected based on the currency (and, for USD, on configuration — see below).
+Issues an **NGN** or **USD** deposit account for an approved account. The banking provider is selected automatically based on the currency and whether the account is a business or an individual.
 
-The details each provider needs are prefilled from the account's application. Check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) first to see the prefilled payload, the resolved `provider`, and anything missing, then pass the missing pieces in `accountData`.
-
-<Info>
-  **USD provider selection.** The USD provider (Infinitus or Routefusion) is
-  resolved from the `default_usd_provider` configuration: a per-business override
-  takes priority, otherwise the system-wide default. It can be set (system-wide or
-  per business) by your Rolla account manager. NGN provider selection is
-  unaffected.
-</Info>
+The details each provider needs are prefilled from the account's application. Check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) first to see the prefilled payload and anything missing, then pass the missing pieces in `accountData`.
 
 ## NGN accounts
 
