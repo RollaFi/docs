@@ -3,9 +3,17 @@ title: 'Issue Bank Account'
 openapi: 'POST /accounts/{accountId}/bank-accounts'
 ---
 
-Issues an **NGN** or **USD** deposit account for an approved account. The banking provider is selected automatically based on the currency and whether the account is a business or an individual.
+Issues an **NGN** or **USD** deposit account for an approved account. The banking provider is selected based on the currency (and, for USD, on configuration — see below).
 
-The details each provider needs are prefilled from the account's application. Check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) first to see the prefilled payload and anything missing, then pass the missing pieces in `accountData`.
+The details each provider needs are prefilled from the account's application. Check [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) first to see the prefilled payload, the resolved `provider`, and anything missing, then pass the missing pieces in `accountData`.
+
+<Info>
+  **USD provider selection.** The USD provider (Infinitus or Routefusion) is
+  resolved from the `default_usd_provider` configuration: a per-business override
+  takes priority, otherwise the system-wide default. It can be set (system-wide or
+  per business) by your Rolla account manager. NGN provider selection is
+  unaffected.
+</Info>
 
 ## NGN accounts
 
@@ -87,10 +95,35 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 Call the endpoint again after the provider approves — the response then includes the deposit account with `accountNumber`, `routingNumber` and `swiftCode`. While review is in progress you get `202` with `status: pending_provider_review`.
 
+### Individual USD accounts
+
+Individual accounts have no representatives. When the account was onboarded with
+its identity details via [Update Individual Details](/api-reference/endpoint/accounts/update-individual)
+(`idDocument`, `address.line2`, and a tax number from `taxId` / `nin` / `bvn`) —
+plus the passport/ID from the completed Sumsub KYC — no extra payload is needed:
+
+```json
+{ "currency": "USD" }
+```
+
+You only need `accountData.onboardingDetails` to **override** a field that wasn't
+set on the account, e.g.:
+
+```json
+{
+  "currency": "USD",
+  "accountData": {
+    "onboardingDetails": {
+      "idDocument": { "type": "passport", "number": "P123456789", "issueDate": "2020-01-01", "expirationDate": "2030-01-01" }
+    }
+  }
+}
+```
+
 ## Key Behaviours
 
 <Info>
-  Entries in `accountData.representatives` are merged into the prefilled representative with the same `relatedPersonId`, so you only send the fields you're adding — names, addresses and ownership come from the application.
+  Entries in `accountData.representatives` are merged into the prefilled representative with the same `relatedPersonId`, so you only send the fields you're adding — names, addresses and ownership come from the application. Individual accounts use `accountData.onboardingDetails` instead (see above).
 </Info>
 
 <Warning>

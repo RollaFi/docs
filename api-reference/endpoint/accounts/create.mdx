@@ -60,3 +60,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
 | `name` | string | For business | Legal or trading name of the business |
 | `firstName` | string | No | Account holder first name (individual accounts); defaults to the owner's name |
 | `lastName` | string | No | Account holder last name (individual accounts); defaults to the owner's name |
+| `email` | string | No | The account's own contact email. Strongly recommended when onboarding a distinct customer so the account isn't tied to your email. |
+
+<Note>
+  When you supply an `email`, creating a second account with the same `email`
+  under your business returns `409 Conflict` with `code: "ACCOUNT_EMAIL_EXISTS"`.
+  Accounts created without an `email` (which inherit the owner's email) are not
+  deduplicated.
+</Note>
