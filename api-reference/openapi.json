@@ -426,7 +426,7 @@
                               },
                               "symbol": {
                                 "type": "string",
-                                "example": "₦"
+                                "example": "\u20a6"
                               },
                               "status": {
                                 "type": "string",
@@ -474,7 +474,7 @@
                 "properties": {
                   "amount": {
                     "type": "number",
-                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD — 100 cents = $1.00 USD).",
+                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD \u2014 100 cents = $1.00 USD).",
                     "example": 100
                   },
                   "currency": {
@@ -593,7 +593,7 @@
             }
           },
           "400": {
-            "description": "Bad request — insufficient balance, invalid recipient, or missing fields",
+            "description": "Bad request \u2014 insufficient balance, invalid recipient, or missing fields",
             "content": {
               "application/json": {
                 "schema": {
@@ -1526,7 +1526,7 @@
       "post": {
         "operationId": "generateStaticVirtualAccount",
         "summary": "Generate Static Virtual Account",
-        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist — this will return an error if one already exists.",
+        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist \u2014 this will return an error if one already exists.",
         "requestBody": {
           "required": false,
           "content": {
@@ -6392,6 +6392,167 @@
           }
         }
       }
+    },
+    "/wallet/virtual-accounts/simulate-deposit": {
+      "post": {
+        "operationId": "simulateDeposit",
+        "summary": "Simulate a Deposit (Sandbox)",
+        "description": "Sandbox only: inject a deposit into one of your own virtual accounts. The wallet is credited and the deposit webhook is delivered, without a real bank transfer. Returns 404 in production. Provide exactly one of customer_identifier or account_number.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount"
+                ],
+                "properties": {
+                  "customer_identifier": {
+                    "type": "string",
+                    "description": "Customer id of one of your customer virtual accounts. Provide this or account_number, not both.",
+                    "example": "user-12345"
+                  },
+                  "account_number": {
+                    "type": "string",
+                    "description": "Account number of any of your virtual accounts. Provide this or customer_identifier, not both.",
+                    "example": "4382272943"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "description": "Deposit amount in major units of the account currency (e.g. Naira). Must exceed the account pay-in fee.",
+                    "example": "2000"
+                  },
+                  "sender_name": {
+                    "type": "string",
+                    "description": "Name to record as the sender on the transaction.",
+                    "example": "John Sender"
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "HABARI",
+                      "NOMBA",
+                      "VFD",
+                      "NETMFB"
+                    ],
+                    "description": "Force the provider tag on the deposit. Omit to inherit the target account's own provider."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulated deposit created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 201,
+                  "success": true,
+                  "message": "Simulated deposit created",
+                  "data": {
+                    "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
+                    "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
+                    "status": "completed",
+                    "provider": "HABARI",
+                    "account_number": "4382272943",
+                    "customer_identifier": "user-12345",
+                    "amount": "2000"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/simulate-usd-deposit": {
+      "post": {
+        "operationId": "simulateUsdDeposit",
+        "summary": "Simulate a USD Deposit (Sandbox)",
+        "description": "Sandbox only: simulate an incoming USD deposit into your account's USD wallet. Dispatched to the account's USD provider sandbox; the wallet is credited asynchronously via the provider's deposit webhook. Returns 404 in production. Requires an issued, active USD account.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Target a specific sub-account under your tenancy. Omit to use the calling account."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Deposit amount in major units of USD. Must be greater than 0.",
+                    "example": "100"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "description": "Your own reference for the simulated transfer. Auto-generated if omitted.",
+                    "maxLength": 120
+                  },
+                  "sender_name": {
+                    "type": "string",
+                    "description": "Name to record as the sender/counterparty on the transaction.",
+                    "maxLength": 120,
+                    "example": "John Sender"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulated USD deposit submitted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 201,
+                  "success": true,
+                  "message": "Simulated USD deposit submitted",
+                  "data": {
+                    "provider": "ROUTEFUSION",
+                    "status": "submitted",
+                    "amount": "100",
+                    "currency": "USD",
+                    "reference": "RL_SIM_A7CAF7AC3673",
+                    "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
+                    "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No USD account provisioned (USD_ACCOUNT_NOT_FOUND), or endpoint called in production."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6828,7 +6989,7 @@
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount in smallest units (kobo for NGN; US cents for USD — 100 = 1 USD).",
+            "description": "Amount in smallest units (kobo for NGN; US cents for USD \u2014 100 = 1 USD).",
             "example": 5000
           },
           "currency": {
@@ -6871,7 +7032,7 @@
       },
       "InlineBeneficiary": {
         "type": "object",
-        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method — see the endpoint docs for per-currency examples.",
+        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method \u2014 see the endpoint docs for per-currency examples.",
         "properties": {
           "withdrawal_method": {
             "type": "string",
@@ -6982,7 +7143,7 @@
           },
           "wallet_address": {
             "type": "string",
-            "description": "Required for crypto_usdt and crypto_usdc. Must be 26–64 alphanumeric characters. Use with currency: USD.",
+            "description": "Required for crypto_usdt and crypto_usdc. Must be 26\u201364 alphanumeric characters. Use with currency: USD.",
             "example": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
           },
           "wallet_chain": {
@@ -7500,7 +7661,7 @@
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "Role to assign (from /teams/roles). Optional — defaults to the initiator role when omitted."
+            "description": "Role to assign (from /teams/roles). Optional \u2014 defaults to the initiator role when omitted."
           }
         }
       },
@@ -8139,7 +8300,11 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["passport", "drivers_license", "national_id"]
+                "enum": [
+                  "passport",
+                  "drivers_license",
+                  "national_id"
+                ]
               },
               "number": {
                 "type": "string",
@@ -8418,7 +8583,7 @@
           },
           "accountData": {
             "type": "object",
-            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider — call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
+            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider \u2014 call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
             "additionalProperties": true
           }
         }

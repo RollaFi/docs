@@ -1,0 +1,71 @@
+---
+title: 'Simulate a USD Deposit (Sandbox)'
+openapi: 'POST /wallet/simulate-usd-deposit'
+---
+
+A testing helper that simulates an **incoming USD deposit** into your account's **USD wallet** so you can verify your USD funding flow end-to-end — the wallet is credited and the deposit [webhook](/api-reference/webhooks/overview) is delivered — **without sending a real wire transfer**.
+
+It is the USD counterpart of [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit). The request is dispatched to your account's USD provider sandbox; the wallet balance is then credited **asynchronously** via that provider's normal deposit webhook — so the call only *submits* the simulated inbound transfer.
+
+<Warning>
+  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`. Use it against your sandbox environment only.
+</Warning>
+
+## Prerequisites
+
+The account must already have an **issued, active USD account**. Issue one first via [Issue a Bank Account](/api-reference/endpoint/accounts/issue-bank-account) with `currency: "USD"`. If no USD account is provisioned yet, the call returns `404` with code `USD_ACCOUNT_NOT_FOUND`.
+
+To simulate a deposit for a specific sub-account under your tenancy, send its id in the `X-Account-Id` header.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | string | Yes | Deposit amount in major units of USD (e.g. `"100"` or `"100.50"`). Must be greater than 0. |
+| `reference` | string | No | Your own reference for the simulated transfer. If omitted, a reference is generated for you. |
+| `sender_name` | string | No | Name to record as the sender/counterparty on the transaction. |
+
+## Example Request
+
+```bash
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-deposit" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "100",
+    "sender_name": "John Sender"
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Simulated USD deposit submitted",
+  "data": {
+    "provider": "ROUTEFUSION",
+    "status": "submitted",
+    "amount": "100",
+    "currency": "USD",
+    "reference": "RL_SIM_A7CAF7AC3673",
+    "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
+    "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
+  }
+}
+```
+
+## What happens
+
+1. The request is routed to your account's USD provider sandbox, which submits a simulated incoming transfer against your USD account. The response `status` is `submitted` — the balance is **not** credited yet.
+2. The provider then delivers a deposit webhook through the **same crediting path a real USD deposit uses**, and your USD wallet is credited.
+3. The transaction is completed, emitting the deposit webhook to your configured endpoint: a `transaction.pending` event, followed by `transaction.completed`. See [Webhook Payloads](/api-reference/webhooks/payloads).
+
+<Note>
+  Because the credit is delivered by the provider webhook, it is **not instant**. After a `submitted` response, poll [List Wallets](/api-reference/endpoint/wallet/wallets) or [Transactions](/api-reference/endpoint/wallet/transactions) until the USD balance lands.
+</Note>
+
+<Info>
+  Because this credits a real (sandbox) wallet balance, treat it like any other write: it moves your test wallet's balance and generates a real transaction record and webhook delivery.
+</Info>
