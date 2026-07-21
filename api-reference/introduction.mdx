@@ -11,14 +11,14 @@ The Rolla Developer API enables you to programmatically manage wallets and retri
   **Amounts**: Unless a route documents otherwise, numeric **`amount`** fields use each currency's **smallest unit** — NGN **kobo** (like the quickstart withdrawal), USD **US cents** (**100** = **\$1.00** USD), etc.
 </Info>
 
-**Base URL**: `https://api.rolla.xyz/api/v1/external`
+**Base URL**: `https://api-staging.rolla.xyz/api/v1/external`
 
 ## Authentication
 
 All API endpoints require authentication using an API key. Include your API key in the `X-API-Key` header with every request.
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
+curl -X GET "https://api-staging.rolla.xyz/api/v1/external/banks" \
   -H "X-API-Key: your_api_key_here"
 ```
 
@@ -28,7 +28,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
 
 ### Obtaining an API Key
 
-API keys can be generated from your [Rolla Dashboard](https://app.rolla.xyz). Navigate to **Settings → API Keys** to create and manage your keys.
+API keys can be generated from your [Rolla Dashboard](https://app-staging.rolla.xyz). Navigate to **Settings → API Keys** to create and manage your keys.
 
 ### IP Whitelisting
 
@@ -40,7 +40,7 @@ If your business is a Rolla **white-label tenant**, a single API key can act on 
 
 ```bash
 # Fetch funding instructions for one of your tenant's accounts
-curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/funding-instructions" \
+curl -X GET "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}/funding-instructions" \
   -H "X-API-Key: your_tenant_api_key" \
   -H "X-Account-Id: 3f1c2d4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
 ```

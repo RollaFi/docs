@@ -10,7 +10,7 @@ The request `amount` is always in the **smallest currency unit** for `currency` 
 ## Example Request (by email)
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/transfer" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -26,7 +26,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
 ## Example Request (by saved beneficiary)
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/transfer" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -43,7 +43,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
 Cross-currency transfers require a `rateToken` from the [`GET /wallet/rates`](/api-reference/endpoint/wallet/rates) endpoint first.
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/transfer" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{

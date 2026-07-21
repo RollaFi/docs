@@ -7,7 +7,7 @@ description: "Start making API calls in under 5 minutes"
 
 Before you begin, make sure you have:
 
-- A Rolla business account at [app.rolla.xyz](https://app.rolla.xyz)
+- A Rolla business account at [app.rolla.xyz](https://app-staging.rolla.xyz)
 - An API key from your dashboard (**Settings → API Keys**)
 - NGN balance in your wallet
 
@@ -15,7 +15,7 @@ Before you begin, make sure you have:
 
 <Steps>
   <Step title="Log in to your dashboard">
-    Go to [app.rolla.xyz](https://app.rolla.xyz) and sign in.
+    Go to [app.rolla.xyz](https://app-staging.rolla.xyz) and sign in.
   </Step>
   <Step title="Navigate to API Keys">
     Click **Settings** in the sidebar, then select **API Keys**.
@@ -34,7 +34,7 @@ Before you begin, make sure you have:
 Make a simple request to list available banks:
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
+curl -X GET "https://api-staging.rolla.xyz/api/v1/external/banks" \
   -H "X-API-Key: your_api_key_here"
 ```
 
@@ -58,7 +58,7 @@ You should receive a response like:
 Validate a bank account using the lookup endpoint:
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/lookup" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -72,7 +72,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
 Save the validated account as a beneficiary so you can send payments to it:
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -96,7 +96,7 @@ Copy the `id` from the response — you'll use it in the next step.
 Use the beneficiary ID to withdraw funds from your wallet to their bank account:
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{

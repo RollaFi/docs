@@ -40,7 +40,7 @@ For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents =
 | `account_name` | No (auto-resolved from bank lookup) |
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -71,7 +71,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 | `bank_address` | Yes — `{ street, city, state, postalCode, country }` |
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -110,7 +110,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 </Warning>
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -F "amount=1000" \
   -F "currency=USD" \
@@ -146,7 +146,7 @@ Crypto withdrawals are sent from your **USD wallet**. Set `withdrawal_method` to
 | `wallet_chain` | Yes — e.g. `"ethereum"`, `"tron"` |
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{

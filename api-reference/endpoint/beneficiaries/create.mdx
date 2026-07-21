@@ -20,7 +20,7 @@ Create a new saved beneficiary for your business. The required fields depend on 
 For Nigerian Naira transfers, omit `withdrawal_method` (or set it to `null`). `bank_code` is always required for NGN.
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -38,7 +38,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 ## Example Request (Domestic Wire — USD)
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -71,7 +71,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 ## Example Request (International Wire — USD)
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -104,7 +104,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 ## Example Request (Crypto USDC)
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -122,7 +122,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 For sending funds to another Rolla business. Use `recipient_business_id` to identify the target business. You can send in any supported currency.
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/beneficiaries" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{

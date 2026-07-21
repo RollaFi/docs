@@ -7586,7 +7586,7 @@
           "inviteUrl": {
             "type": "string",
             "format": "uri",
-            "example": "https://app.rolla.xyz/register?code=REF-ABCD1234"
+            "example": "https://app-staging.rolla.xyz/register?code=REF-ABCD1234"
           }
         }
       },

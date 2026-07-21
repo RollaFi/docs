@@ -149,7 +149,7 @@
       "anchors": [
         {
           "anchor": "Dashboard",
-          "href": "https://app.rolla.xyz",
+          "href": "https://app-staging.rolla.xyz",
           "icon": "gauge"
         }
       ]
@@ -169,7 +169,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://app.rolla.xyz"
+      "href": "https://app-staging.rolla.xyz"
     }
   },
   "api": {
