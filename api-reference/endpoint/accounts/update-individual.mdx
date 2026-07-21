@@ -18,8 +18,16 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a
       "citizenship": "NG",
       "nin": "12345678901",
       "bvn": "22212345678",
+      "taxId": "22212345678",
+      "idDocument": {
+        "type": "passport",
+        "number": "P123456789",
+        "issueDate": "2020-01-01",
+        "expirationDate": "2030-01-01"
+      },
       "address": {
         "street": "12 Marina Rd",
+        "line2": "Suite 4",
         "city": "Lagos",
         "state": "Lagos",
         "postalCode": "101241",
@@ -66,6 +74,19 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a
 | United States | `ssn` |
 | Canada | `sin` |
 | Other | `nationalId` |
+
+## Fields used for USD account issuance
+
+These optional fields on an individual account flow directly into [USD bank
+account issuance](/api-reference/endpoint/accounts/issue-bank-account), so you
+don't have to pass them per issuance:
+
+| Field | Description |
+|-------|-------------|
+| `idDocument` | `{ type, number, issueDate, expirationDate }`. Dates are `YYYY-MM-DD`. A verified Sumsub document overrides this when present. |
+| `idDocument.type` | `passport`, `drivers_license`, or `national_id` (aliases `id_card` / `residence_permit` also map to national ID). |
+| `address.line2` | Secondary address line (apt/suite). Derived from city/state when omitted. |
+| `taxId` \| `nin` \| `bvn` | Used as the tax number for the USD provider. |
 
 <Warning>
   Applications can no longer be edited once their status is `submitted` or `approved`.

@@ -7824,6 +7824,36 @@
           }
         }
       },
+      "IndividualAddress": {
+        "type": "object",
+        "properties": {
+          "street": {
+            "type": "string",
+            "example": "12 Marina Rd"
+          },
+          "line2": {
+            "type": "string",
+            "description": "Secondary address line (apt/suite). Used by USD account issuance; derived from city/state when omitted.",
+            "example": "Suite 4"
+          },
+          "city": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "state": {
+            "type": "string",
+            "example": "Lagos"
+          },
+          "postalCode": {
+            "type": "string",
+            "example": "101241"
+          },
+          "country": {
+            "type": "string",
+            "example": "NG"
+          }
+        }
+      },
       "ContactInfo": {
         "type": "object",
         "properties": {
@@ -8103,8 +8133,30 @@
             "type": "string",
             "description": "National ID for other countries"
           },
+          "idDocument": {
+            "type": "object",
+            "description": "Identity document, consumed by USD account issuance. A verified Sumsub document overrides it when present.",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["passport", "drivers_license", "national_id"]
+              },
+              "number": {
+                "type": "string",
+                "example": "P123456789"
+              },
+              "issueDate": {
+                "type": "string",
+                "example": "2020-01-01"
+              },
+              "expirationDate": {
+                "type": "string",
+                "example": "2030-01-01"
+              }
+            }
+          },
           "address": {
-            "$ref": "#/components/schemas/BusinessAddress"
+            "$ref": "#/components/schemas/IndividualAddress"
           },
           "employment": {
             "type": "object",
