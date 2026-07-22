@@ -6408,6 +6408,167 @@
         }
       }
     },
+    "/wallet/virtual-accounts/simulate-deposit": {
+      "post": {
+        "operationId": "simulateDeposit",
+        "summary": "Simulate a Deposit (Sandbox)",
+        "description": "Sandbox only: inject a deposit into one of your own virtual accounts. The wallet is credited and the deposit webhook is delivered, without a real bank transfer. Returns 404 in production. Provide exactly one of customer_identifier or account_number.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount"
+                ],
+                "properties": {
+                  "customer_identifier": {
+                    "type": "string",
+                    "description": "Customer id of one of your customer virtual accounts. Provide this or account_number, not both.",
+                    "example": "user-12345"
+                  },
+                  "account_number": {
+                    "type": "string",
+                    "description": "Account number of any of your virtual accounts. Provide this or customer_identifier, not both.",
+                    "example": "4382272943"
+                  },
+                  "amount": {
+                    "type": "string",
+                    "description": "Deposit amount in major units of the account currency (e.g. Naira). Must exceed the account pay-in fee.",
+                    "example": "2000"
+                  },
+                  "sender_name": {
+                    "type": "string",
+                    "description": "Name to record as the sender on the transaction.",
+                    "example": "John Sender"
+                  },
+                  "provider": {
+                    "type": "string",
+                    "enum": [
+                      "HABARI",
+                      "NOMBA",
+                      "VFD",
+                      "NETMFB"
+                    ],
+                    "description": "Force the provider tag on the deposit. Omit to inherit the target account's own provider."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulated deposit created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 201,
+                  "success": true,
+                  "message": "Simulated deposit created",
+                  "data": {
+                    "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
+                    "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
+                    "status": "completed",
+                    "provider": "HABARI",
+                    "account_number": "4382272943",
+                    "customer_identifier": "user-12345",
+                    "amount": "2000"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallet/simulate-usd-deposit": {
+      "post": {
+        "operationId": "simulateUsdDeposit",
+        "summary": "Simulate a USD Deposit (Sandbox)",
+        "description": "Sandbox only: simulate an incoming USD deposit into your account's USD wallet. Dispatched to the account's USD provider sandbox; the wallet is credited asynchronously via the provider's deposit webhook. Returns 404 in production. Requires an issued, active USD account.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-Account-Id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Target a specific sub-account under your tenancy. Omit to use the calling account."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "amount"
+                ],
+                "properties": {
+                  "amount": {
+                    "type": "string",
+                    "description": "Deposit amount in major units of USD. Must be greater than 0.",
+                    "example": "100"
+                  },
+                  "reference": {
+                    "type": "string",
+                    "description": "Your own reference for the simulated transfer. Auto-generated if omitted.",
+                    "maxLength": 120
+                  },
+                  "sender_name": {
+                    "type": "string",
+                    "description": "Name to record as the sender/counterparty on the transaction.",
+                    "maxLength": 120,
+                    "example": "John Sender"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulated USD deposit submitted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 201,
+                  "success": true,
+                  "message": "Simulated USD deposit submitted",
+                  "data": {
+                    "provider": "ROUTEFUSION",
+                    "status": "submitted",
+                    "amount": "100",
+                    "currency": "USD",
+                    "reference": "RL_SIM_A7CAF7AC3673",
+                    "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
+                    "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No USD account provisioned (USD_ACCOUNT_NOT_FOUND), or endpoint called in production."
+          }
+        }
+      }
+    },
     "/accounts/{accountId}/kyc-link": {
       "post": {
         "operationId": "createIndividualKycLink",
