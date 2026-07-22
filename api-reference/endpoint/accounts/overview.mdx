@@ -3,12 +3,16 @@ title: 'Account Onboarding Overview'
 description: 'Onboard additional business or individual accounts programmatically'
 ---
 
-The Account Onboarding API lets you create and verify additional Rolla accounts through the API — the same flow the Rolla dashboard uses when you add a new business or personal account to your profile.
+The Account Onboarding API lets you create and verify Rolla accounts for your customers through the API — the same flow the Rolla dashboard uses when you onboard a new business or personal account.
 
-Every account you create belongs to the same owner as the business your API key was issued for, and shares that owner's email. Accounts created here also appear in the owner's dashboard account switcher.
+<Warning>
+  **White-label partners only.** The entire Account Onboarding API (every endpoint under `/accounts`) is available only to businesses activated as white-label tenants. A non-tenant API key receives `403 Forbidden`. Contact Rolla to enable white-label for your business.
+</Warning>
+
+Every account you create belongs to the same owner as the business your API key was issued for, and each one must have its **own unique email** (a duplicate is rejected with `409 ACCOUNT_EMAIL_EXISTS`). Accounts created here also appear in the owner's dashboard account switcher.
 
 <Info>
-  **White-label tenants:** a single tenant API key can onboard and manage every account in your tenancy. Pass the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header to scope any request to a specific account you've onboarded.
+  **Tenant scoping:** a single tenant API key can onboard and manage every account in your tenancy. Pass the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header to scope any request to a specific account you've onboarded.
 </Info>
 
 ## Onboarding a business account
