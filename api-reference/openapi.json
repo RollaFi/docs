@@ -426,7 +426,7 @@
                               },
                               "symbol": {
                                 "type": "string",
-                                "example": "₦"
+                                "example": "\u20a6"
                               },
                               "status": {
                                 "type": "string",
@@ -474,7 +474,7 @@
                 "properties": {
                   "amount": {
                     "type": "number",
-                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD — 100 cents = $1.00 USD).",
+                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD \u2014 100 cents = $1.00 USD).",
                     "example": 100
                   },
                   "currency": {
@@ -593,7 +593,7 @@
             }
           },
           "400": {
-            "description": "Bad request — insufficient balance, invalid recipient, or missing fields",
+            "description": "Bad request \u2014 insufficient balance, invalid recipient, or missing fields",
             "content": {
               "application/json": {
                 "schema": {
@@ -1526,7 +1526,7 @@
       "post": {
         "operationId": "generateStaticVirtualAccount",
         "summary": "Generate Static Virtual Account",
-        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist — this will return an error if one already exists.",
+        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist \u2014 this will return an error if one already exists.",
         "requestBody": {
           "required": false,
           "content": {
@@ -4545,6 +4545,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "An account with this email already exists for this owner (code: ACCOUNT_EMAIL_EXISTS). Only returned when a distinct `email` is supplied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "success": false,
+                  "message": "An account with this email already exists for this owner.",
+                  "code": "ACCOUNT_EMAIL_EXISTS"
+                }
+              }
+            }
           }
         }
       },
@@ -6392,6 +6407,106 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/kyc-link": {
+      "post": {
+        "operationId": "createIndividualKycLink",
+        "summary": "Generate Individual KYC Link",
+        "description": "Generates a hosted identity verification link for an INDIVIDUAL account (the individual-flow parallel of the related-person KYC link). Share the returned URL with the account holder \u2014 it opens a Rolla-hosted page where they upload an ID and complete a liveness check. Only valid for individual accounts; calling it on a business account returns 400. Generating a new link invalidates the previous one. Links expire after 72 hours.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an individual account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "KYC link generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "KYC link generated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "Hosted verification page to share with the account holder. Links expire after 72 hours."
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "completed",
+                            "rejected",
+                            "expired"
+                          ]
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "accountId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not an individual account (use the related-person KYC link for business owners/directors)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -6828,7 +6943,7 @@
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount in smallest units (kobo for NGN; US cents for USD — 100 = 1 USD).",
+            "description": "Amount in smallest units (kobo for NGN; US cents for USD \u2014 100 = 1 USD).",
             "example": 5000
           },
           "currency": {
@@ -6871,7 +6986,7 @@
       },
       "InlineBeneficiary": {
         "type": "object",
-        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method — see the endpoint docs for per-currency examples.",
+        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method \u2014 see the endpoint docs for per-currency examples.",
         "properties": {
           "withdrawal_method": {
             "type": "string",
@@ -6982,7 +7097,7 @@
           },
           "wallet_address": {
             "type": "string",
-            "description": "Required for crypto_usdt and crypto_usdc. Must be 26–64 alphanumeric characters. Use with currency: USD.",
+            "description": "Required for crypto_usdt and crypto_usdc. Must be 26\u201364 alphanumeric characters. Use with currency: USD.",
             "example": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
           },
           "wallet_chain": {
@@ -7500,7 +7615,7 @@
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "Role to assign (from /teams/roles). Optional — defaults to the initiator role when omitted."
+            "description": "Role to assign (from /teams/roles). Optional \u2014 defaults to the initiator role when omitted."
           }
         }
       },
@@ -8078,6 +8193,11 @@
           "lastName": {
             "type": "string",
             "description": "Account holder last name (individual accounts). Defaults to the owner's name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The account's own contact email. Strongly recommended when onboarding a distinct customer so the account is not tied to your owner email. When supplied it must be unique among your accounts \u2014 creating a second account with the same email under your business returns 409 (code ACCOUNT_EMAIL_EXISTS). Omit to inherit the owner's email (not deduplicated)."
           }
         }
       },
@@ -8139,7 +8259,11 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["passport", "drivers_license", "national_id"]
+                "enum": [
+                  "passport",
+                  "drivers_license",
+                  "national_id"
+                ]
               },
               "number": {
                 "type": "string",
@@ -8418,7 +8542,7 @@
           },
           "accountData": {
             "type": "object",
-            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider — call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
+            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider \u2014 call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
             "additionalProperties": true
           }
         }
