@@ -5,6 +5,10 @@ openapi: 'POST /accounts'
 
 Creates an additional business or individual account under the same owner as your API key's business. The new account starts as a draft application that you complete with the other account onboarding endpoints.
 
+<Warning>
+  **White-label partners only.** The entire account onboarding API (this endpoint and everything under `/accounts`) is available only to businesses activated as white-label tenants. A non-tenant API key receives `403 Forbidden`.
+</Warning>
+
 ## Example Request
 
 ### Business account
@@ -15,7 +19,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
   -H "Content-Type: application/json" \
   -d '{
     "type": "business",
-    "name": "Beta Logistics LLC"
+    "name": "Beta Logistics LLC",
+    "email": "ops@betalogistics.com"
   }'
 ```
 
@@ -28,7 +33,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
   -d '{
     "type": "individual",
     "firstName": "Jane",
-    "lastName": "Doe"
+    "lastName": "Doe",
+    "email": "jane.doe@example.com"
   }'
 ```
 
@@ -42,7 +48,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
     "account": {
       "id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
       "name": "Beta Logistics LLC",
-      "email": "owner@example.com",
+      "email": "ops@betalogistics.com",
       "status": "created",
       "entityType": "business"
     },
@@ -60,11 +66,10 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
 | `name` | string | For business | Legal or trading name of the business |
 | `firstName` | string | No | Account holder first name (individual accounts); defaults to the owner's name |
 | `lastName` | string | No | Account holder last name (individual accounts); defaults to the owner's name |
-| `email` | string | No | The account's own contact email. Strongly recommended when onboarding a distinct customer so the account isn't tied to your email. |
+| `email` | string | **Yes** | The account's own contact email. **Required**, and must be **unique** across your accounts — every account you onboard is a distinct customer with its own email. |
 
 <Note>
-  When you supply an `email`, creating a second account with the same `email`
-  under your business returns `409 Conflict` with `code: "ACCOUNT_EMAIL_EXISTS"`.
-  Accounts created without an `email` (which inherit the owner's email) are not
-  deduplicated.
+  `email` is **required** and must be unique. Omitting it returns `400`. Creating a
+  second account with the same `email` under your business returns `409 Conflict`
+  with `code: "ACCOUNT_EMAIL_EXISTS"`.
 </Note>
