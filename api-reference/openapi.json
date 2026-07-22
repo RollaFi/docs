@@ -4545,6 +4545,21 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "An account with this email already exists for this owner (code: ACCOUNT_EMAIL_EXISTS). Only returned when a distinct `email` is supplied.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "success": false,
+                  "message": "An account with this email already exists for this owner.",
+                  "code": "ACCOUNT_EMAIL_EXISTS"
+                }
+              }
+            }
           }
         }
       },
@@ -6553,6 +6568,106 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/kyc-link": {
+      "post": {
+        "operationId": "createIndividualKycLink",
+        "summary": "Generate Individual KYC Link",
+        "description": "Generates a hosted identity verification link for an INDIVIDUAL account (the individual-flow parallel of the related-person KYC link). Share the returned URL with the account holder \u2014 it opens a Rolla-hosted page where they upload an ID and complete a liveness check. Only valid for individual accounts; calling it on a business account returns 400. Generating a new link invalidates the previous one. Links expire after 72 hours.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an individual account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "KYC link generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "KYC link generated successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "url": {
+                          "type": "string",
+                          "description": "Hosted verification page to share with the account holder. Links expire after 72 hours."
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "completed",
+                            "rejected",
+                            "expired"
+                          ]
+                        },
+                        "expiresAt": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "accountId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Not an individual account (use the related-person KYC link for business owners/directors)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8239,6 +8354,11 @@
           "lastName": {
             "type": "string",
             "description": "Account holder last name (individual accounts). Defaults to the owner's name."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "The account's own contact email. Strongly recommended when onboarding a distinct customer so the account is not tied to your owner email. When supplied it must be unique among your accounts \u2014 creating a second account with the same email under your business returns 409 (code ACCOUNT_EMAIL_EXISTS). Omit to inherit the owner's email (not deduplicated)."
           }
         }
       },

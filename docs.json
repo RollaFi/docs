@@ -120,6 +120,7 @@
               "api-reference/endpoint/accounts/update-related-person",
               "api-reference/endpoint/accounts/delete-related-person",
               "api-reference/endpoint/accounts/kyc-link",
+              "api-reference/endpoint/accounts/individual-kyc-link",
               "api-reference/endpoint/accounts/verification",
               "api-reference/endpoint/accounts/verification-status",
               "api-reference/endpoint/accounts/submit",
