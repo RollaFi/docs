@@ -6696,6 +6696,75 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/approve": {
+      "post": {
+        "operationId": "approveAccountSandbox",
+        "summary": "Approve Account (Sandbox)",
+        "description": "Sandbox only: self-approve a submitted account so you can test the full flow (onboard \u2192 submit \u2192 approve \u2192 issue accounts \u2192 fund \u2192 payout) without waiting for Rolla's manual review. Runs the same approval path as the Rolla admin dashboard, so wallets are provisioned and the account.approved webhook fires. The account must already be `submitted` (only possible once every onboarding requirement is complete). Returns 404 in production.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of a submitted account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account approved",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Account approved",
+                  "data": {
+                    "accountId": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+                    "applicationStatus": "approved"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The account is not submitted yet (code ACCOUNT_NOT_SUBMITTED). Complete onboarding and submit the application first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "success": false,
+                  "message": "Account must be submitted before it can be approved (current status: draft). Complete onboarding and submit the application first.",
+                  "code": "ACCOUNT_NOT_SUBMITTED"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, or the endpoint was called in production (sandbox-only)."
+          }
+        }
+      }
     }
   },
   "components": {

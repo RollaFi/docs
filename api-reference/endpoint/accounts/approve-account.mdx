@@ -1,0 +1,50 @@
+---
+title: 'Approve Account (Sandbox)'
+openapi: 'POST /accounts/{accountId}/approve'
+---
+
+Self-approves a **submitted** account so you can test the entire onboarding-to-payout journey end to end without waiting for Rolla's manual compliance review.
+
+<Warning>
+  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`. In production, accounts are approved by Rolla's compliance team.
+</Warning>
+
+It runs the **same approval path as the Rolla admin dashboard**, so wallets are provisioned and the [`account.approved`](/api-reference/webhooks/events) webhook fires — exactly as a real approval would.
+
+## Prerequisites
+
+The account must already be **`submitted`** — which is only possible once every onboarding requirement is complete (see [Submit Application](/api-reference/endpoint/accounts/submit)). If it isn't, the call returns `409` with code `ACCOUNT_NOT_SUBMITTED`.
+
+## Example Request
+
+```bash
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}/approve" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Account approved",
+  "data": {
+    "accountId": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+    "applicationStatus": "approved"
+  }
+}
+```
+
+## What happens
+
+1. The account's application status moves from `submitted` to `approved`.
+2. Wallets are provisioned and the `account.approved` outbound webhook is delivered to your endpoint.
+3. You can now [issue bank accounts](/api-reference/endpoint/accounts/issue-bank-account) (NGN/USD), fund them, and initiate payouts for the account.
+
+<Note>
+  Calling this on an already-approved account is a no-op and returns `applicationStatus: "approved"` with `alreadyApproved: true`.
+</Note>
+
+<Tip>
+  Full sandbox test loop: **create account → complete details + KYC → submit → approve (this endpoint) → issue USD/NGN account → simulate a deposit → initiate a payout.**
+</Tip>
