@@ -709,6 +709,56 @@
               "schema": {
                 "$ref": "#/components/schemas/WithdrawalRequest"
               }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "description": "Required for USD `international_wire` (reference documents must be attached). Send `inlineBeneficiary` as a single JSON-stringified field — not as bracketed sub-fields.",
+                "required": ["amount", "currency"],
+                "properties": {
+                  "amount": {
+                    "type": "integer",
+                    "description": "Amount in the smallest currency unit (cents for USD — 100 = $1.00).",
+                    "example": 1000
+                  },
+                  "currency": {
+                    "type": "string",
+                    "example": "USD"
+                  },
+                  "inlineBeneficiary": {
+                    "type": "string",
+                    "description": "The full beneficiary object, JSON-stringified into one field. Multipart fields are not reconstructed into a nested object, so bracket notation (`inlineBeneficiary[account_name]=…`) will fail with 400. Either this or `beneficiaryId` is required.",
+                    "example": "{\"withdrawal_method\":\"international_wire\",\"account_name\":\"Jane Smith\",\"bank_name\":\"Barclays Bank\",\"account_number\":\"12345678\",\"swift_code\":\"BARCGB22\",\"beneficiary_address\":{\"street\":\"123 Main Street\",\"city\":\"New York\",\"state\":\"NY\",\"postalCode\":\"10001\",\"country\":\"US\"},\"bank_address\":{\"street\":\"456 Bank Avenue\",\"city\":\"New York\",\"state\":\"NY\",\"postalCode\":\"10001\",\"country\":\"US\"}}"
+                  },
+                  "beneficiaryId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "ID of a saved beneficiary. Either this or `inlineBeneficiary` is required."
+                  },
+                  "externalReference": {
+                    "type": "string",
+                    "description": "Your own reference for this transaction."
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "saveBeneficiary": {
+                    "type": "boolean"
+                  },
+                  "deductFeesFromBalance": {
+                    "type": "boolean",
+                    "description": "If true, fees come out of your wallet balance and the beneficiary receives the exact amount."
+                  },
+                  "documents": {
+                    "type": "array",
+                    "description": "One or more reference documents/invoices. Required for USD international_wire. Max 50MB per file.",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
             }
           }
         },
