@@ -106,7 +106,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 | `intermediary_bank_routing_number` | No |
 
 <Warning>
-  USD international wire requires reference documents/invoices to be attached. Send the request as `multipart/form-data` and include one or more files under the `documents` field alongside your other fields.
+  USD international wire requires reference documents/invoices to be attached, so this is the one withdrawal type that must be sent as `multipart/form-data` (every other currency/method uses a JSON body). Include one or more files under the `documents` field.
+</Warning>
+
+<Warning>
+  Send `inlineBeneficiary` as a **single JSON-stringified field** — one form field named `inlineBeneficiary` whose value is the full JSON object. Do **not** spread it across bracketed fields like `inlineBeneficiary[account_name]=…`; multipart form fields are not reconstructed into a nested object, so the request will fail with `400 "Either beneficiaryId or inlineBeneficiary must be provided"`.
 </Warning>
 
 ```bash
@@ -114,21 +118,15 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -F "amount=1000" \
   -F "currency=USD" \
-  -F "inlineBeneficiary[withdrawal_method]=international_wire" \
-  -F "inlineBeneficiary[account_name]=Jane Smith" \
-  -F "inlineBeneficiary[bank_name]=Barclays Bank" \
-  -F "inlineBeneficiary[account_number]=12345678" \
-  -F "inlineBeneficiary[swift_code]=BARCGB22" \
-  -F "inlineBeneficiary[beneficiary_address][street]=123 Main Street" \
-  -F "inlineBeneficiary[beneficiary_address][city]=New York" \
-  -F "inlineBeneficiary[beneficiary_address][state]=NY" \
-  -F "inlineBeneficiary[beneficiary_address][postalCode]=10001" \
-  -F "inlineBeneficiary[beneficiary_address][country]=US" \
-  -F "inlineBeneficiary[bank_address][street]=456 Bank Avenue" \
-  -F "inlineBeneficiary[bank_address][city]=New York" \
-  -F "inlineBeneficiary[bank_address][state]=NY" \
-  -F "inlineBeneficiary[bank_address][postalCode]=10001" \
-  -F "inlineBeneficiary[bank_address][country]=US" \
+  -F 'inlineBeneficiary={
+        "withdrawal_method": "international_wire",
+        "account_name": "Jane Smith",
+        "bank_name": "Barclays Bank",
+        "account_number": "12345678",
+        "swift_code": "BARCGB22",
+        "beneficiary_address": { "street": "123 Main Street", "city": "New York", "state": "NY", "postalCode": "10001", "country": "US" },
+        "bank_address": { "street": "456 Bank Avenue", "city": "New York", "state": "NY", "postalCode": "10001", "country": "US" }
+      }' \
   -F "documents=@/path/to/invoice.pdf"
 ```
 
