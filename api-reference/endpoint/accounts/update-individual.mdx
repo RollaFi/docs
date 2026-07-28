@@ -5,6 +5,26 @@ openapi: 'PUT /accounts/{accountId}/individual'
 
 Updates the KYC application of an individual account. Fields inside `individualInfo` are merged into the stored application, so you can collect personal details, address and employment information across multiple calls.
 
+## Required fields to submit
+
+These must be present before the application can move from `draft` to `submitted`. Everything else on `individualInfo` is optional. Check what's still outstanding at any time with [Get Requirements](/api-reference/endpoint/accounts/requirements) — its `readyToSubmit` flag and `missingFields` array list exactly what's missing.
+
+| Group | Required fields |
+|-------|-----------------|
+| `individualInfo` | `firstName`, `lastName`, `phone`, `dateOfBirth`, `citizenship` |
+| `individualInfo.address` | `street`, `city`, `state`, `postalCode`, `country` |
+| `individualInfo.employment` | `status`, `sourceOfWealth`, `annualIncome` |
+| Documents | `proof_of_address` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
+
+Enum values:
+- `employment.status` — `employed`, `self-employed`, `retired`, `unemployed`, `student`
+- `employment.sourceOfWealth` — `salary`, `business_income`, `investments`, `inheritance`, `savings`, `other`
+- `employment.annualIncome` — `<25k`, `25k-50k`, `50k-100k`, `100k-250k`, `250k-500k`, `500k+`
+
+<Info>
+  Identity verification (the hosted KYC link) is **reported** in requirements but does **not** block submission for individual accounts — though a completed verification is required later for **USD** account issuance.
+</Info>
+
 ## Example Request
 
 ```bash
@@ -86,7 +106,7 @@ don't have to pass them per issuance:
 | `idDocument` | `{ type, number, issueDate, expirationDate }`. Dates are `YYYY-MM-DD`. A verified Sumsub document overrides this when present. |
 | `idDocument.type` | `passport`, `drivers_license`, or `national_id` (aliases `id_card` / `residence_permit` also map to national ID). |
 | `address.line2` | Secondary address line (apt/suite). Derived from city/state when omitted. |
-| `taxId` \| `nin` \| `bvn` | Used as the tax number for the USD provider. |
+| `taxId` \| `nin` \| `bvn` | Used as the tax number for the USD provider. For an **individual**, use the person's national **ID or passport number** as the tax ID when no separate tax identifier exists (e.g. Chinese Mainland applicants). |
 
 <Warning>
   Applications can no longer be edited once their status is `submitted` or `approved`.

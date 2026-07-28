@@ -8,6 +8,10 @@ Initiate a withdrawal from your wallet to a beneficiary. You can reference a sav
 Either `beneficiaryId` or `inlineBeneficiary` must be provided. The required fields inside `inlineBeneficiary` depend on the currency and `withdrawal_method`.
 
 <Info>
+  **Paying out for a specific merchant (tenant keys):** if your API key is a white-label tenant key managing multiple merchants, add the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header set to the merchant's account ID — the payout is then deducted from **that merchant's wallet**. Without it, the withdrawal runs against your own (parent) account. The account ID is the `id` returned by `POST /accounts` (or from `GET /accounts`).
+</Info>
+
+<Info>
 For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents = **\$1.00** USD transferred (consistent with ledger `*_amount` fields returned on transactions).
 </Info>
 
