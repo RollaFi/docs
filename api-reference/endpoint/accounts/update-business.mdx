@@ -5,6 +5,25 @@ openapi: 'PUT /accounts/{accountId}/business'
 
 Updates the application of a business account. Each section you send (`business_info`, `business_address`, `contact_info`, `banking_info`) is merged into the stored application, so you can save progress incrementally — one section per call or everything at once.
 
+## Required fields to submit
+
+These must be present before the application can move from `draft` to `submitted`. Everything else is optional. Check what's still outstanding at any time with [Get Requirements](/api-reference/endpoint/accounts/requirements) — its `readyToSubmit` flag and `missingFields` array list exactly what's missing.
+
+| Section | Required fields |
+|---------|-----------------|
+| `business_info` | `legalName`, `businessType`, `incorporationDate`, `incorporationCountry`, `registrationNumber`, `taxId`, `description`, `monthlyVolume`, `annualRevenue`, `primaryFundingSource` |
+| `business_address` | `street`, `city`, `state`, `postalCode`, `country` |
+| `contact_info` | `email`, `phone` |
+| Documents | `certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `director_register`, `shareholder_register`, `bank_statement` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
+
+<Info>
+  Every **beneficial owner / director** must complete identity verification (Sumsub **GREEN**) before the application can be submitted. Add them via [Add Related Person](/api-reference/endpoint/accounts/add-related-person) and send each their KYC link.
+</Info>
+
+<Tip>
+  **`taxId`** — for a business, use the company's **tax identification / business-license (registration) number**.
+</Tip>
+
 ## Example Request
 
 ```bash

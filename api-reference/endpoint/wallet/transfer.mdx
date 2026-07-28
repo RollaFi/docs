@@ -7,6 +7,10 @@ Send funds to another Rolla business instantly and fee-free. You can identify th
 
 The request `amount` is always in the **smallest currency unit** for `currency` (USD = cents — **100** = **\$1.00** USD; NGN = kobo).
 
+<Info>
+  **Transferring from a specific merchant (tenant keys):** if your API key is a white-label tenant key managing multiple merchants, add the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header set to the account ID you want to send **from** — the transfer is then debited from **that account's wallet**. Without it, it runs against your own (parent) account. This is how you move funds between your institutional account and merchant wallets.
+</Info>
+
 ## Example Request (by email)
 
 ```bash
