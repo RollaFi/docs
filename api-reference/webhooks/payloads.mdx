@@ -107,8 +107,8 @@ The destination account a deposit was received into. For a bank (fiat) deposit: 
 
 Who sent the deposit, as reported by the provider. Fields: `name`, `account_number`, `bank_name`, `country` — only the ones the provider supplies are included, so availability varies by rail:
 
-- **USD via Infinitus** — `name` and `account_number` (no sender bank).
-- **USD via Routefusion** — `name`, `account_number`, `bank_name`, and `country`.
+- **USD** — always `name` and `account_number`; `bank_name` and `country` are included when the
+  sending rail reports them.
 
 `payer` is **omitted** when the provider sends no sender details. Crypto deposits expose the sender via the `network.source_address` field instead of `payer`.
 
@@ -140,7 +140,6 @@ Who sent the deposit, as reported by the provider. Fields: `name`, `account_numb
       "id": "2b0f3d84-8c1a-4c7e-9f0b-1a2b3c4d5e6f",
       "currency": "NGN",
       "method": "bank_transfer",
-      "provider": "HABARI",
       "bank_name": "GTBank",
       "account_number": "0123456789",
       "account_name": "Acme Ltd / Rolla"
@@ -184,7 +183,6 @@ Same shape as a fiat deposit, plus **`customer_identifier`** — the identifier 
       "id": "7d1e9a52-3f44-4b88-a0c2-9e8f7d6c5b4a",
       "currency": "NGN",
       "method": "bank_transfer",
-      "provider": "HABARI",
       "bank_name": "GTBank",
       "account_number": "9988776655",
       "account_name": "End User / Rolla"

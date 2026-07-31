@@ -426,7 +426,7 @@
                               },
                               "symbol": {
                                 "type": "string",
-                                "example": "\u20a6"
+                                "example": "₦"
                               },
                               "status": {
                                 "type": "string",
@@ -474,7 +474,7 @@
                 "properties": {
                   "amount": {
                     "type": "number",
-                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD \u2014 100 cents = $1.00 USD).",
+                    "description": "Amount in the smallest currency unit for the given `currency` (e.g. kobo for NGN, cents for USD — 100 cents = $1.00 USD).",
                     "example": 100
                   },
                   "currency": {
@@ -593,7 +593,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 insufficient balance, invalid recipient, or missing fields",
+            "description": "Bad request — insufficient balance, invalid recipient, or missing fields",
             "content": {
               "application/json": {
                 "schema": {
@@ -714,7 +714,10 @@
               "schema": {
                 "type": "object",
                 "description": "Required for USD `international_wire` (reference documents must be attached). Send `inlineBeneficiary` as a single JSON-stringified field — not as bracketed sub-fields.",
-                "required": ["amount", "currency"],
+                "required": [
+                  "amount",
+                  "currency"
+                ],
                 "properties": {
                   "amount": {
                     "type": "integer",
@@ -1576,7 +1579,7 @@
       "post": {
         "operationId": "generateStaticVirtualAccount",
         "summary": "Generate Static Virtual Account",
-        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist \u2014 this will return an error if one already exists.",
+        "description": "Generates a permanent static NGN virtual account for your business. Only one static virtual account can exist — this will return an error if one already exists.",
         "requestBody": {
           "required": false,
           "content": {
@@ -6163,9 +6166,6 @@
                           "type": "string",
                           "example": "issued"
                         },
-                        "provider": {
-                          "type": "string"
-                        },
                         "bankAccount": {
                           "$ref": "#/components/schemas/BankAccount"
                         }
@@ -6200,9 +6200,6 @@
                             "submitted_for_review",
                             "pending_provider_review"
                           ]
-                        },
-                        "provider": {
-                          "type": "string"
                         },
                         "state": {
                           "type": "string",
@@ -6318,9 +6315,6 @@
                           "items": {
                             "type": "object",
                             "properties": {
-                              "provider": {
-                                "type": "string"
-                              },
                               "state": {
                                 "type": "string"
                               },
@@ -6410,9 +6404,6 @@
                       "type": "object",
                       "properties": {
                         "currency": {
-                          "type": "string"
-                        },
-                        "provider": {
                           "type": "string"
                         },
                         "applicationApproved": {
@@ -6554,7 +6545,6 @@
                     "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
                     "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
                     "status": "completed",
-                    "provider": "HABARI",
                     "account_number": "4382272943",
                     "customer_identifier": "user-12345",
                     "amount": "2000"
@@ -6629,7 +6619,6 @@
                   "success": true,
                   "message": "Simulated USD deposit submitted",
                   "data": {
-                    "provider": "ROUTEFUSION",
                     "status": "submitted",
                     "amount": "100",
                     "currency": "USD",
@@ -6651,7 +6640,7 @@
       "post": {
         "operationId": "createIndividualKycLink",
         "summary": "Generate Individual KYC Link",
-        "description": "Generates a hosted identity verification link for an INDIVIDUAL account (the individual-flow parallel of the related-person KYC link). Share the returned URL with the account holder \u2014 it opens a Rolla-hosted page where they upload an ID and complete a liveness check. Only valid for individual accounts; calling it on a business account returns 400. Generating a new link invalidates the previous one. Links expire after 72 hours.",
+        "description": "Generates a hosted identity verification link for an INDIVIDUAL account (the individual-flow parallel of the related-person KYC link). Share the returned URL with the account holder — it opens a Rolla-hosted page where they upload an ID and complete a liveness check. Only valid for individual accounts; calling it on a business account returns 400. Generating a new link invalidates the previous one. Links expire after 72 hours.",
         "parameters": [
           {
             "name": "accountId",
@@ -6751,7 +6740,7 @@
       "post": {
         "operationId": "approveAccountSandbox",
         "summary": "Approve Account (Sandbox)",
-        "description": "Sandbox only: self-approve a submitted account so you can test the full flow (onboard \u2192 submit \u2192 approve \u2192 issue accounts \u2192 fund \u2192 payout) without waiting for Rolla's manual review. Runs the same approval path as the Rolla admin dashboard, so wallets are provisioned and the account.approved webhook fires. The account must already be `submitted` (only possible once every onboarding requirement is complete). Returns 404 in production.",
+        "description": "Sandbox only: self-approve a submitted account so you can test the full flow (onboard → submit → approve → issue accounts → fund → payout) without waiting for Rolla's manual review. Runs the same approval path as the Rolla admin dashboard, so wallets are provisioned and the account.approved webhook fires. The account must already be `submitted` (only possible once every onboarding requirement is complete). Returns 404 in production.",
         "servers": [
           {
             "url": "https://api-staging.rolla.xyz/api/v1/external"
@@ -7251,7 +7240,7 @@
         "properties": {
           "amount": {
             "type": "number",
-            "description": "Amount in smallest units (kobo for NGN; US cents for USD \u2014 100 = 1 USD).",
+            "description": "Amount in smallest units (kobo for NGN; US cents for USD — 100 = 1 USD).",
             "example": 5000
           },
           "currency": {
@@ -7294,7 +7283,7 @@
       },
       "InlineBeneficiary": {
         "type": "object",
-        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method \u2014 see the endpoint docs for per-currency examples.",
+        "description": "One-time beneficiary details (use instead of beneficiaryId). Required fields depend on currency and withdrawal_method — see the endpoint docs for per-currency examples.",
         "properties": {
           "withdrawal_method": {
             "type": "string",
@@ -7405,7 +7394,7 @@
           },
           "wallet_address": {
             "type": "string",
-            "description": "Required for crypto_usdt and crypto_usdc. Must be 26\u201364 alphanumeric characters. Use with currency: USD.",
+            "description": "Required for crypto_usdt and crypto_usdc. Must be 26–64 alphanumeric characters. Use with currency: USD.",
             "example": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
           },
           "wallet_chain": {
@@ -7923,7 +7912,7 @@
           "roleId": {
             "type": "string",
             "format": "uuid",
-            "description": "Role to assign (from /teams/roles). Optional \u2014 defaults to the initiator role when omitted."
+            "description": "Role to assign (from /teams/roles). Optional — defaults to the initiator role when omitted."
           }
         }
       },
@@ -8506,7 +8495,7 @@
           "email": {
             "type": "string",
             "format": "email",
-            "description": "The account's own contact email. REQUIRED, and must be unique among your accounts \u2014 every account you onboard is a distinct customer with its own email. A duplicate (same owner) returns 409 with code ACCOUNT_EMAIL_EXISTS; omitting it returns 400."
+            "description": "The account's own contact email. REQUIRED, and must be unique among your accounts — every account you onboard is a distinct customer with its own email. A duplicate (same owner) returns 409 with code ACCOUNT_EMAIL_EXISTS; omitting it returns 400."
           }
         }
       },
@@ -8778,16 +8767,6 @@
               "USD"
             ]
           },
-          "provider": {
-            "type": "string",
-            "enum": [
-              "VFD",
-              "gtbank",
-              "NOMBA",
-              "portage_usd",
-              "ssb_usd"
-            ]
-          },
           "bankName": {
             "type": "string",
             "example": "Guaranty Trust Bank"
@@ -8851,7 +8830,7 @@
           },
           "accountData": {
             "type": "object",
-            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider \u2014 call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
+            "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider — call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
             "additionalProperties": true
           }
         }
