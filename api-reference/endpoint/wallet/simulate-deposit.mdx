@@ -26,7 +26,7 @@ Send **exactly one** of the following. The account must belong to your business.
 | `account_number` | string | Conditional | The account number of any of your virtual accounts. Provide this **or** `customer_identifier`, not both. |
 | `amount` | string | Yes | Deposit amount in major units of the account currency (e.g. Naira). Must be **greater than the pay-in fee** on the account, otherwise the request is rejected. |
 | `sender_name` | string | No | Name to record as the sender on the transaction (appears in the webhook's sender snapshot). |
-| `provider` | string | No | Force the provider tag on the deposit: `HABARI`, `NOMBA`, `VFD`, or `NETMFB`. Omit to inherit the target account's own provider (recommended). |
+| `provider` | string | No | Sandbox only. Overrides which payment rail the simulated deposit is tagged against. Omit to inherit the target account's own rail — recommended, and the closest match to a real deposit. |
 
 ## Example Request — by `customer_identifier`
 
@@ -64,7 +64,6 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simu
     "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
     "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
     "status": "completed",
-    "provider": "HABARI",
     "account_number": "4382272943",
     "customer_identifier": "user-12345",
     "amount": "2000"
