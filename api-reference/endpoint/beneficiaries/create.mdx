@@ -104,8 +104,12 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 ```
 
 <Info>
-  `routing_number` is the beneficiary bank's 9-digit ABA number and is **required** for `ach` — an ACH credit is addressed by routing number, so a beneficiary saved without one is rejected with a `400`.
+  `routing_number` is the beneficiary bank's 9-digit ABA number and is **required** for both `ach` and `domestic_wire` — those rails are addressed by routing number, so a beneficiary saved without one can never be paid and is rejected with a `400`. `international_wire` uses `swift_code` instead and is unaffected.
 </Info>
+
+<Warning>
+  The `domestic_wire` requirement is newly **enforced**. It has always been listed as required below, but the server previously accepted domestic wire beneficiaries without a `routing_number`. If you have saved any, backfill them via [`PATCH /beneficiaries/{beneficiaryId}`](/api-reference/endpoint/beneficiaries/update) — otherwise the next update to that beneficiary will be rejected.
+</Warning>
 
 ## Example Request (International Wire — USD)
 

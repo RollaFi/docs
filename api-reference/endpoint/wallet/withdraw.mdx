@@ -117,7 +117,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 </Info>
 
 <Warning>
-  `routing_number` is required for `ach`. Omitting it returns a `400` with `"routing_number is required for ACH withdrawals"`.
+  `routing_number` is required for `ach` and `domestic_wire`. Omitting it returns a `400` with `"routing_number is required for ACH and domestic wire withdrawals"`.
+
+  This is newly **enforced**. It has always been documented as required for `domestic_wire`, but the server previously accepted domestic wire requests without it and the payout then stranded. If you have been omitting it, those requests now fail fast instead.
 </Warning>
 
 ---
