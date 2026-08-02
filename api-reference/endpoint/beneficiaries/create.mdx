@@ -68,6 +68,45 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   }'
 ```
 
+## Example Request (ACH — USD)
+
+ACH is the low-cost domestic US rail. It reaches the same US bank accounts as a domestic wire but settles in business days rather than same-day, and is usually priced lower — so quote the fee per rail rather than assuming they match. Use `account_category` to say whether the destination is a checking or savings account.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "withdrawal_method": "ach",
+    "label": "US Payroll",
+    "account_name": "John Doe",
+    "account_number": "123456789",
+    "bank_name": "Chase Bank",
+    "routing_number": "021000021",
+    "account_owner_type": "individual",
+    "account_category": "checking",
+    "beneficiary_address": {
+      "street": "123 Main St",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10001",
+      "country": "US"
+    },
+    "bank_address": {
+      "street": "270 Park Ave",
+      "city": "New York",
+      "state": "NY",
+      "postalCode": "10017",
+      "country": "US"
+    }
+  }'
+```
+
+<Info>
+  `routing_number` is the beneficiary bank's 9-digit ABA number and is **required** for `ach` — an ACH credit is addressed by routing number, so a beneficiary saved without one is rejected with a `400`.
+</Info>
+
 ## Example Request (International Wire — USD)
 
 ```bash
@@ -168,7 +207,7 @@ For compliant payout routing, bank-account beneficiaries carry two classificatio
 
 | Field | Values | Required when |
 |-------|--------|---------------|
-| `account_owner_type` | `individual`, `business` | Every bank-account beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `domestic_wire`, `international_wire`). Not applicable to crypto or `rolla_transfer`. |
+| `account_owner_type` | `individual`, `business` | Every bank-account beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `ach`, `domestic_wire`, `international_wire`). Not applicable to crypto or `rolla_transfer`. |
 | `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
 
 <Note>
@@ -201,6 +240,7 @@ For compliant payout routing, bank-account beneficiaries carry two classificatio
 | Method | Required Fields |
 |--------|----------------|
 | NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code`, `account_owner_type` |
+| `ach` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address`, `wallet_chain` |

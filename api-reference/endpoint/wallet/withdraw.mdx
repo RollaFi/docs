@@ -62,6 +62,66 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 
 ---
 
+### Choosing a USD rail
+
+USD payouts run on one of three bank rails, selected with `withdrawal_method`. The choice drives settlement speed, the fields you must supply, and the fee — so pass it explicitly on both the quote and the withdrawal.
+
+| `withdrawal_method` | Use for | Addressed by | Notes |
+|---------------------|---------|--------------|-------|
+| `ach` | Domestic US, cost-sensitive | `routing_number` (ABA) | Settles in business days. Cheapest US rail. |
+| `domestic_wire` | Domestic US, time-sensitive | `routing_number` (ABA) | Same-day settlement, priced above ACH. |
+| `international_wire` | Outside the US | `swift_code` | Requires supporting documents — `multipart/form-data` only. |
+
+<Tip>
+  Fees are configured per rail, so `ach` and `domestic_wire` to the same bank generally cost different amounts. Send `withdrawal_method` (or `beneficiaryId`) to [`POST /wallet/fee`](/api-reference/endpoint/wallet/fee) to quote the exact fee this withdrawal will be charged.
+</Tip>
+
+---
+
+### USD — ACH
+
+| Field | Required |
+|-------|----------|
+| `withdrawal_method` | Yes — `"ach"` |
+| `account_name` | Yes |
+| `bank_name` | Yes |
+| `account_number` | Yes |
+| `routing_number` | Yes — 9-digit ABA number |
+| `beneficiary_address` | Yes — `{ street, city, state, postalCode, country }` |
+| `bank_address` | Yes — `{ street, city, state, postalCode, country }` |
+| `account_category` | No — `"checking"` or `"savings"`. Recommended; carried onto the saved record when `saveBeneficiary: true` |
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "currency": "USD",
+    "description": "Payroll run",
+    "inlineBeneficiary": {
+      "withdrawal_method": "ach",
+      "account_name": "Jane Smith",
+      "bank_name": "Chase Bank",
+      "account_number": "123456789",
+      "routing_number": "021000021",
+      "account_category": "checking",
+      "beneficiary_address": { "street": "123 Main St", "city": "New York", "state": "NY", "postalCode": "10001", "country": "US" },
+      "bank_address": { "street": "270 Park Ave", "city": "New York", "state": "NY", "postalCode": "10017", "country": "US" }
+    }
+  }'
+```
+
+<Info>
+  Unlike `international_wire`, ACH needs no supporting documents — send it as a normal JSON body.
+</Info>
+
+<Warning>
+  `routing_number` is required for `ach`. Omitting it returns a `400` with `"routing_number is required for ACH withdrawals"`.
+</Warning>
+
+---
+
 ### USD — Domestic Wire
 
 | Field | Required |

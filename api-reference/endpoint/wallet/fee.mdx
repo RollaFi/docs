@@ -34,6 +34,94 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
 }
 ```
 
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `currency` | string | Yes | 3-letter code of the wallet being debited |
+| `transactionType` | string | Yes | `deposit`, `withdrawal`, or `swap` |
+| `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD) |
+| `recipientCurrency` | string | No | For FX payouts — the currency the beneficiary receives |
+| `withdrawal_method` | string | No | The payout rail to price — see below |
+| `destination_country` | string | No | 2-letter country code of the destination bank |
+| `beneficiaryId` | string (UUID) | No | Quote a saved beneficiary; the rail and destination country are read from it |
+
+---
+
+## Quoting a specific withdrawal method
+
+Fees are configured **per rail**, so an ACH and a wire to the same bank are usually priced differently. Pass `withdrawal_method` to quote the rail you will actually send on:
+
+| `withdrawal_method` | Rail |
+|---------------------|------|
+| `ach` | Domestic US ACH — settles in business days, cheapest US rail |
+| `domestic_wire` | Domestic US wire (Fedwire) — same-day, priced above ACH |
+| `international_wire` | Cross-border wire (SWIFT) |
+| `local_transfer` | In-country transfer (e.g. NGN bank transfer) |
+| `crypto_usdt` / `crypto_usdc` | Stablecoin payout |
+| `mobile_money` | Mobile money payout |
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "transactionType": "withdrawal",
+    "amount": 100000,
+    "withdrawal_method": "ach",
+    "destination_country": "US"
+  }'
+```
+
+Swap `"ach"` for `"domestic_wire"` or `"international_wire"` to compare rails before deciding which to send on — everything else in the request stays the same.
+
+<Warning>
+  Omitting `withdrawal_method` quotes the currency-level fee, which may not be what the withdrawal is charged if a rail-specific fee applies to your account. Always send the rail you intend to use.
+</Warning>
+
+---
+
+## Quoting a saved beneficiary
+
+If you are paying a saved beneficiary, pass `beneficiaryId` instead and the rail and destination country are taken from that beneficiary — no need to restate them:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "transactionType": "withdrawal",
+    "amount": 100000,
+    "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012"
+  }'
+```
+
+Anything you send explicitly wins over the beneficiary's own values, so you can quote a different rail for an existing beneficiary by supplying `withdrawal_method` alongside `beneficiaryId`.
+
+<Note>
+  The beneficiary must belong to your account. An unknown `beneficiaryId` returns a `400` rather than falling back to a default fee — a quote never silently prices a different rail than the withdrawal will use.
+</Note>
+
+---
+
+## FX payouts
+
+For a cross-currency payout, add `recipientCurrency`. The response then also carries `feeInRecipientCurrency`:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "transactionType": "withdrawal",
+    "amount": 100000,
+    "recipientCurrency": "NGN"
+  }'
+```
+
 <Tip>
-  Call this endpoint before initiating a withdrawal or swap to show your users the exact fee they'll be charged. Fees vary by currency and transaction type.
+  Call this endpoint before initiating a withdrawal or swap to show your users the exact fee they'll be charged. Send the same `withdrawal_method` (or `beneficiaryId`) you will send to [`POST /wallet/withdraw`](/api-reference/endpoint/wallet/withdraw) so the quote matches the charge.
 </Tip>

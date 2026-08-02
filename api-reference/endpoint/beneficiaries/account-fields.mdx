@@ -11,7 +11,7 @@ to migrate existing beneficiaries before enforcement begins.
 
 | Field | Enum values | Required when |
 |-------|-------------|---------------|
-| `account_owner_type` | `individual`, `business` | Every **bank-account** beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `domestic_wire`, `international_wire`). **Not applicable** to `crypto_usdt`, `crypto_usdc`, or `rolla_transfer`. |
+| `account_owner_type` | `individual`, `business` | Every **bank-account** beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `ach`, `domestic_wire`, `international_wire`). **Not applicable** to `crypto_usdt`, `crypto_usdc`, or `rolla_transfer`. |
 | `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
 
 Both fields are accepted on [`POST /beneficiaries`](/api-reference/endpoint/beneficiaries/create)

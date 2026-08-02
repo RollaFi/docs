@@ -910,18 +910,30 @@
                     },
                     "message": {
                       "type": "string",
-                      "example": "Fee calculated successfully"
+                      "example": "Transaction fee retrieved successfully"
                     },
                     "data": {
                       "type": "object",
                       "properties": {
                         "fee": {
-                          "type": "number",
-                          "example": 50
-                        },
-                        "currency": {
-                          "type": "string",
-                          "example": "NGN"
+                          "type": "object",
+                          "properties": {
+                            "amount": {
+                              "type": "number",
+                              "description": "Fee in the smallest unit of the source currency",
+                              "example": 50
+                            },
+                            "currency": {
+                              "type": "string",
+                              "description": "Currency the fee is charged in (the wallet being debited)",
+                              "example": "NGN"
+                            },
+                            "feeInRecipientCurrency": {
+                              "type": "number",
+                              "description": "Present only for FX quotes — the same fee expressed in recipientCurrency",
+                              "example": 75000
+                            }
+                          }
                         }
                       }
                     }
@@ -7292,6 +7304,7 @@
               "local_transfer",
               "domestic_wire",
               "international_wire",
+              "ach",
               "crypto_usdt",
               "crypto_usdc",
               "rolla_transfer"
@@ -7319,7 +7332,7 @@
           },
           "routing_number": {
             "type": "string",
-            "description": "Required for USD domestic_wire."
+            "description": "9-digit ABA routing number. Required for USD ach and domestic_wire."
           },
           "swift_code": {
             "type": "string",
@@ -7447,8 +7460,43 @@
           },
           "amount": {
             "type": "number",
-            "description": "Transaction amount (positive number)",
+            "description": "Transaction amount in the smallest unit (kobo for NGN, cents for USD)",
             "example": 5000
+          },
+          "recipientCurrency": {
+            "type": "string",
+            "description": "For FX payouts — the currency the beneficiary receives. The response then also carries feeInRecipientCurrency.",
+            "minLength": 3,
+            "maxLength": 3,
+            "example": "NGN"
+          },
+          "withdrawal_method": {
+            "type": "string",
+            "description": "Payout rail to price. Fees are configured per rail, so an ACH and a wire to the same bank are usually priced differently — send the rail you will actually withdraw on. Omitted, the currency-level fee is quoted.",
+            "enum": [
+              "ach",
+              "domestic_wire",
+              "international_wire",
+              "local_transfer",
+              "crypto_usdt",
+              "crypto_usdc",
+              "rolla_transfer",
+              "mobile_money"
+            ],
+            "example": "ach"
+          },
+          "destination_country": {
+            "type": "string",
+            "description": "2-letter country code of the destination bank, for fees scoped to a corridor.",
+            "minLength": 2,
+            "maxLength": 2,
+            "example": "US"
+          },
+          "beneficiaryId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Quote a saved beneficiary. withdrawal_method and destination_country are read from it when not supplied explicitly. An id that does not belong to your account returns a 400.",
+            "example": "c3d4e5f6-a7b8-9012-cdef-123456789012"
           }
         }
       },
@@ -7637,6 +7685,7 @@
             "enum": [
               "domestic_wire",
               "international_wire",
+              "ach",
               "crypto_usdt",
               "crypto_usdc",
               "rolla_transfer"
@@ -7803,6 +7852,7 @@
             "enum": [
               "domestic_wire",
               "international_wire",
+              "ach",
               "crypto_usdt",
               "crypto_usdc",
               "rolla_transfer"
@@ -7810,7 +7860,7 @@
           },
           "routing_number": {
             "type": "string",
-            "description": "Routing number (for US wires)",
+            "description": "9-digit ABA routing number. Required for USD ach and domestic_wire.",
             "maxLength": 20
           },
           "wallet_address": {
