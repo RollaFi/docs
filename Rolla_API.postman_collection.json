@@ -96,7 +96,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 1000,\n  \"currency\": \"USD\",\n  \"inlineBeneficiary\": {\n    \"withdrawal_method\": \"international_wire\"\n  }\n}",
+              "raw": "{\n  \"currency\": \"USD\",\n  \"transactionType\": \"withdrawal\",\n  \"amount\": 100000,\n  \"withdrawal_method\": \"ach\",\n  \"destination_country\": \"US\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -104,7 +104,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["wallet", "fee"]
             },
-            "description": "Returns the fee for a withdrawal before committing it."
+            "description": "Returns the fee for a withdrawal before committing it.\n\n`amount` is in the smallest unit (cents for USD, kobo for NGN).\n\nFees are configured per rail, so send the `withdrawal_method` you will actually withdraw on \u2014 swap `ach` for `domestic_wire` or `international_wire` to compare. Alternatively pass `beneficiaryId` instead and the rail and destination country are read from that saved beneficiary."
           }
         }
       ]
@@ -152,6 +152,27 @@
               "path": ["wallet", "withdraw"]
             },
             "description": "Withdraw to a previously saved beneficiary using their UUID."
+          }
+        },
+        {
+          "name": "USD — ACH",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-Key", "value": "{{apiKey}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100000,\n  \"currency\": \"USD\",\n  \"description\": \"Payroll run\",\n  \"externalReference\": \"PAY-2026-001\",\n  \"inlineBeneficiary\": {\n    \"withdrawal_method\": \"ach\",\n    \"account_name\": \"Jane Smith\",\n    \"bank_name\": \"Chase Bank\",\n    \"account_number\": \"123456789\",\n    \"routing_number\": \"021000021\",\n    \"account_category\": \"checking\",\n    \"beneficiary_address\": {\n      \"street\": \"123 Main St\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"postalCode\": \"10001\",\n      \"country\": \"US\"\n    },\n    \"bank_address\": {\n      \"street\": \"270 Park Ave\",\n      \"city\": \"New York\",\n      \"state\": \"NY\",\n      \"postalCode\": \"10017\",\n      \"country\": \"US\"\n    }\n  },\n  \"saveBeneficiary\": false,\n  \"deductFeesFromBalance\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/wallet/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["wallet", "withdraw"]
+            },
+            "description": "Withdraw USD via ACH (domestic US). Settles in business days and is the cheapest US rail \u2014 use `domestic_wire` instead when same-day settlement matters.\n\n`routing_number` is the beneficiary bank's 9-digit ABA number and is **required** for ACH.\n\n`amount` is in **cents** \u2014 100000 cents = $1,000.00 USD."
           }
         },
         {

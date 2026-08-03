@@ -65,3 +65,10 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
   fields by withdrawal method, and the
   [Beneficiary Account Fields](/api-reference/endpoint/beneficiaries/account-fields) migration guide.
 </Note>
+
+<Warning>
+  The body is validated as a whole, not as a partial patch — send the method's full required
+  field set, not just the fields you are changing. In particular, a beneficiary on
+  `"withdrawal_method": "ach"` or `"domestic_wire"` must include `routing_number` in the same
+  request, now that it is enforced for both rails.
+</Warning>
