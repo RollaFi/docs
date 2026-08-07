@@ -112,6 +112,56 @@ set on the account, e.g.:
 }
 ```
 
+## Multiple USD deposit accounts
+
+A client can hold **more than one USD deposit account**, each with its own account number. Pass a `reference` — your own stable id for whatever you need to reconcile separately, such as a storefront, a branch, a marketplace or a channel:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "reference": "store-amazon-uk",
+    "label": "Amazon UK"
+  }'
+```
+
+```json
+{
+  "success": true,
+  "message": "Bank account issued successfully",
+  "data": {
+    "status": "created",
+    "bankAccount": {
+      "id": "c81f0a44-2d6e-4a5b-9c31-77b0e2d1f904",
+      "currency": "USD",
+      "accountNumber": "8823410077",
+      "accountName": "Beta Logistics LLC",
+      "routingNumber": "021000021",
+      "reference": "store-amazon-uk",
+      "label": "Amazon UK",
+      "type": "static",
+      "status": "active"
+    }
+  }
+}
+```
+
+Only the **account number** differs — bank name, routing number and account holder are shared, because all of these accounts belong to one client. That account number is what separates the money: funds sent to it are credited against that reference, so you can tell which source a deposit came from without reconciling by amount or sender name. `reference` and `label` are echoed back on [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) and [Get Funding Instructions](/api-reference/endpoint/accounts/funding-instructions), so you can hand the right details to the right source without keeping your own mapping.
+
+The client's **primary** account is the one issued without a `reference`, and it reports `reference: null`.
+
+<Info>
+  **The reference is the idempotency key.** The same reference always returns the same account with `status: already_exists`, so a retry, a duplicated job or a replayed request can never mint a second account for one source. There is no cap on how many references a client can have.
+</Info>
+
+<Warning>
+  Requesting an additional account requires the client to already hold its primary account — that is what proves the provider approved the entity. Issue one **without** a `reference` first, or the call is rejected.
+
+  Additional accounts are **USD only**. A `reference` with `currency: "NGN"` returns `400`; for per-customer NGN accounts use the customer virtual account endpoint instead. Not every USD provider can issue more than one account per client — where it can't, the call returns `400` explaining so.
+</Warning>
+
 ## Key Behaviours
 
 <Info>
@@ -123,5 +173,5 @@ set on the account, e.g.:
 </Warning>
 
 <Note>
-  One bank account per provider and currency: issuing again returns `409 Conflict` once an account exists.
+  **Re-issuing.** A USD call without a `reference` returns the client's existing account with `status: already_exists` (`200`) rather than creating another — safe to retry. A USD call **with** a `reference` behaves the same way per reference. NGN is one account per provider and returns `409 Conflict` once one exists.
 </Note>

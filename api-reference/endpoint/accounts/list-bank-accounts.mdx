@@ -5,6 +5,8 @@ openapi: 'GET /accounts/{accountId}/bank-accounts'
 
 Lists the bank accounts issued for an account, along with any USD provider onboarding that is still under review.
 
+A client may hold several USD accounts — one per [`reference`](/api-reference/endpoint/accounts/issue-bank-account#multiple-usd-deposit-accounts). Every entry carries `reference` and `label` so you can tell them apart; both are `null` on the client's primary account.
+
 ## Example Request
 
 ```bash
@@ -29,7 +31,23 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "accountName": "Beta Logistics LLC",
         "type": "static",
         "status": "active",
+        "reference": null,
+        "label": null,
         "createdAt": "2026-06-13T01:50:00.000Z"
+      },
+      {
+        "id": "b2c7d918-4e10-4b6a-8d55-1f0a9c3e77b2",
+        "currency": "USD",
+        "provider": "ssb_usd",
+        "bankName": "Lead Bank",
+        "accountNumber": "8823410077",
+        "accountName": "Beta Logistics LLC",
+        "routingNumber": "021000021",
+        "type": "static",
+        "status": "active",
+        "reference": "store-amazon-uk",
+        "label": "Amazon UK",
+        "createdAt": "2026-06-14T09:22:11.000Z"
       }
     ],
     "usdOnboarding": [
