@@ -6189,7 +6189,7 @@
             }
           },
           "202": {
-            "description": "USD onboarding submitted or pending provider review",
+            "description": "USD request accepted and awaiting review",
             "content": {
               "application/json": {
                 "schema": {
@@ -6213,10 +6213,16 @@
                             "pending_provider_review"
                           ]
                         },
-                        "state": {
+                        "requestId": {
                           "type": "string",
-                          "nullable": true,
-                          "example": "client_submitted"
+                          "format": "uuid",
+                          "description": "Identifies this request. Repeat calls while it is under review return the same value, so retrying never creates a second request.",
+                          "example": "185b0aaf-ba79-4f9b-9c6d-5e0587d14314"
+                        },
+                        "provider": {
+                          "type": "string",
+                          "description": "Always `rolla`. Which banking partner holds the account is an implementation detail and is not exposed.",
+                          "example": "rolla"
                         },
                         "message": {
                           "type": "string"

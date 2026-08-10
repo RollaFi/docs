@@ -29,11 +29,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
   "message": "Bank account issued successfully",
   "data": {
     "status": "issued",
-    "provider": "gtbank",
     "bankAccount": {
       "id": "7f3a2b10-91c4-4f3b-b1d2-0a8e44c10a55",
       "currency": "NGN",
-      "provider": "gtbank",
       "bankName": "Guaranty Trust Bank",
       "accountNumber": "1238726395",
       "accountName": "Beta Logistics LLC",
@@ -46,7 +44,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ## USD accounts
 
-USD accounts require **provider review**. The first call submits the account's application data (including its documents) to the provider and returns `202 Accepted`:
+USD accounts require **review**. The first call records the request and returns `202 Accepted`; the deposit account is set up once the request is approved:
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts" \
@@ -78,14 +76,20 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
   "message": "Bank account request accepted",
   "data": {
     "status": "submitted_for_review",
-    "provider": "ssb_usd",
-    "state": "client_submitted",
-    "message": "Account details were submitted to the provider for review. The deposit account becomes available once the provider approves; retry this endpoint to collect it."
+    "requestId": "185b0aaf-ba79-4f9b-9c6d-5e0587d14314",
+    "provider": "rolla",
+    "message": "Account details were submitted for review. The deposit account becomes available once approved; retry this endpoint to collect it."
   }
 }
 ```
 
-Call the endpoint again after the provider approves — the response then includes the deposit account with `accountNumber`, `routingNumber` and `swiftCode`. While review is in progress you get `202` with `status: pending_provider_review`.
+`requestId` identifies this request — quote it when asking us about a request that is taking longer than you expect.
+
+Call the endpoint again once the account is approved — the response then includes the deposit account with `accountNumber`, `routingNumber` and `swiftCode`. While review is in progress, repeat calls keep returning `202` with the same `requestId`, so retrying is safe and never creates a second request.
+
+<Tip>
+  Rather than polling, subscribe to [`account.virtual_account.created`](/api-reference/webhooks/events) — it fires as soon as the deposit account exists, with the account details in the payload.
+</Tip>
 
 ### Individual USD accounts
 
