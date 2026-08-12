@@ -33,6 +33,8 @@ These cover the onboarding lifecycle of the accounts you manage via the API (the
 | `account.rejected` | The account's application was rejected during review. |
 | `account.changes_requested` | The application was reviewed and changes were requested — the account must update its details and resubmit. |
 | `account.virtual_account.created` | A deposit (virtual) account — bank transfer or crypto — was provisioned for the account. |
+| `account.virtual_account.changes_requested` | A deposit account request needs corrected details before it can proceed. Re-issue with the corrections to reopen it. |
+| `account.virtual_account.declined` | A deposit account request was declined. `data.bank_account_request.reason` carries why. |
 
 ## Account lifecycle
 
@@ -52,6 +54,26 @@ An account onboarded through the API typically moves through:
     A deposit account (NGN/USD bank transfer details, or a crypto address) is now available for funding. The `data.virtual_account` object carries the details — the same shape you'd get from the [funding instructions](/api-reference/endpoint/accounts/funding-instructions) endpoint.
   </Step>
 </Steps>
+
+## Deposit account requests
+
+A USD deposit account request is reviewed before the account is provisioned, so it resolves one of three ways:
+
+<Steps>
+  <Step title="account.virtual_account.created">
+    The request was approved and the deposit account exists.
+  </Step>
+  <Step title="account.virtual_account.changes_requested">
+    Something on the request needs correcting. `data.bank_account_request.reason` explains what. Re-issue the account with the corrections and the same request reopens — no duplicate is created.
+  </Step>
+  <Step title="account.virtual_account.declined">
+    The request was declined, with the reason in `data.bank_account_request.reason`. Further requests for the same currency are blocked until the decision is lifted.
+  </Step>
+</Steps>
+
+<Info>
+  These three events are scoped to the **deposit account request**, not the account's KYB. `account.rejected` and `account.changes_requested` refer to the account's application and are unrelated.
+</Info>
 
 ## Transaction lifecycle
 

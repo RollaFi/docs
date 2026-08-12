@@ -11,7 +11,7 @@ These must be present before the application can move from `draft` to `submitted
 
 | Group | Required fields |
 |-------|-----------------|
-| `individualInfo` | `firstName`, `lastName`, `phone`, `dateOfBirth`, `citizenship` |
+| `individualInfo` | `firstName`, `lastName`, `phone`, `dateOfBirth`, `citizenship`, plus the identifier for their country (see below) |
 | `individualInfo.address` | `street`, `city`, `state`, `postalCode`, `country` |
 | `individualInfo.employment` | `status`, `sourceOfWealth`, `annualIncome` |
 | Documents | `proof_of_address` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
@@ -21,9 +21,9 @@ Enum values:
 - `employment.sourceOfWealth` — `salary`, `business_income`, `investments`, `inheritance`, `savings`, `other`
 - `employment.annualIncome` — `<25k`, `25k-50k`, `50k-100k`, `100k-250k`, `250k-500k`, `500k+`
 
-<Info>
-  Identity verification (the hosted KYC link) is **reported** in requirements but does **not** block submission for individual accounts — though a completed verification is required later for **USD** account issuance.
-</Info>
+<Warning>
+  Identity verification **blocks submission**. The applicant must complete their [KYC link](/api-reference/endpoint/accounts/individual-kyc-link) before [Submit Application](/api-reference/endpoint/accounts/submit) will succeed — until then it returns `409 KYC_INCOMPLETE` and `readyToSubmit` stays `false`.
+</Warning>
 
 ## Example Request
 
@@ -88,12 +88,20 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a
 
 ## Country-Specific Identifiers
 
-| Country | Fields |
-|---------|--------|
+One of these is **required** before the application can be submitted. Which one depends on the applicant's `countryOfResidence`, falling back to `citizenship` when no separate residence is recorded.
+
+| Country | Required fields |
+|---------|-----------------|
 | Nigeria | `nin` (11 digits), `bvn` (11 digits) |
-| United States | `ssn` |
-| Canada | `sin` |
-| Other | `nationalId` |
+| United States | `ssn` (9 digits) |
+| Canada | `sin` (9 digits) |
+| Anywhere else | `nationalId` |
+
+Digits are validated on write — a `nin` of the wrong length is rejected with `400`. Send `null` for the identifiers that don't apply.
+
+<Info>
+  **Countries are normalized to [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).** `citizenship`, `countryOfResidence` and `address.country` accept a code (`NG`), a country name (`Nigeria`) or a demonym (`Nigerian`), and are stored as the code. A value that can't be resolved is rejected with `400`.
+</Info>
 
 ## Fields used for USD account issuance
 
