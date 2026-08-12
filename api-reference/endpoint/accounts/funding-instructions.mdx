@@ -30,7 +30,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "currency": "NGN",
         "method": "bank_transfer",
         "status": "active",
-        "provider": "gtbank",
+        "provider": "rolla",
         "bankName": "Guaranty Trust Bank",
         "accountNumber": "1234567890",
         "accountName": "Beta Logistics LLC",
@@ -60,7 +60,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "currency": "USDC",
         "method": "crypto",
         "status": "active",
-        "provider": "BLOCKCHAIN",
+        "provider": "rolla",
         "walletAddress": "0xAbC1234dEf5678901234567890aBcDeF12345678",
         "network": "base",
         "instructions": "Send USDC on the base network to the wallet address below. Deposits are credited to the account automatically after network confirmation."
@@ -69,7 +69,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
     "pending": [
       {
         "currency": "USD",
-        "provider": "ssb_usd",
+        "provider": "rolla",
         "state": "client_submitted",
         "message": "A USD deposit account is being provisioned. Funding details become available once the provider approves."
       }
