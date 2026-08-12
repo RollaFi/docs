@@ -5,6 +5,20 @@ openapi: 'POST /accounts/{accountId}/related-persons'
 
 Adds a beneficial owner or director to a business account's application. Every related person must complete identity verification — via a [KYC link](/api-reference/endpoint/accounts/kyc-link) — before the application can be submitted.
 
+## Required before submission
+
+A business must declare **at least one** beneficial owner or director. For each person:
+
+| Group | Required |
+|-------|----------|
+| Details | `firstName`, `lastName`, `email`, `phone`, `dateOfBirth`, `sourceOfWealthExplanation` |
+| `currentAddress` | `street`, `city`, `state`, `postalCode`, `country` |
+| Identifier | `nin` (11 digits) when the person resides in Nigeria |
+| Documents | `proof_of_address`, `source_of_wealth_doc` — upload with their `relatedPersonId` |
+| Verification | a completed [KYC link](/api-reference/endpoint/accounts/kyc-link) |
+
+Owners must be at least 18. [Get Requirements](/api-reference/endpoint/accounts/requirements) reports anything outstanding per person under `relatedPersons[].missingFields` and `relatedPersons[].missingDocuments`.
+
 ## Example Request
 
 ```bash

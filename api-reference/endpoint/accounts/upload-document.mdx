@@ -26,6 +26,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 **Required for business accounts:** `certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `director_register`, `shareholder_register`, `bank_statement`
 
+**Required for each beneficial owner and director:** `proof_of_address`, `source_of_wealth_doc` — upload with that person's `relatedPersonId`
+
 **Required for individual accounts:** `proof_of_address`
 
 **Optional / compliance:** `proof_of_tax_id`, `wolfsberg_questionnaire`, `msb_flow_form`, `flow_of_funds_diagram`, `aml_policy_procedures`, `ach_procedures`, `wire_procedures`, `customer_complaint_procedures`, `prohibited_jurisdictions_industries`

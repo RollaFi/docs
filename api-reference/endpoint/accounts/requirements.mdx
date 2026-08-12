@@ -24,7 +24,10 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
     "entityType": "business",
     "status": "draft",
     "readyToSubmit": false,
-    "missingFields": [],
+    "missingFields": [
+      "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.nin",
+      "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.sourceOfWealthExplanation"
+    ],
     "missingDocuments": [
       "certificate_of_incorporation",
       "articles_of_association",
@@ -37,7 +40,15 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
       {
         "id": "a3d4f21e-f499-488f-8508-43228dfea485",
         "name": "Jane Doe",
-        "verification": "pending"
+        "verification": "pending",
+        "missingFields": [
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.nin",
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.sourceOfWealthExplanation"
+        ],
+        "missingDocuments": [
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.proof_of_address",
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.source_of_wealth_doc"
+        ]
       }
     ]
   }
@@ -65,8 +76,12 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `readyToSubmit` | boolean | `true` when all required fields and documents are present |
-| `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName` |
-| `missingDocuments` | string[] | Required document types not yet uploaded |
-| `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) |
+| `readyToSubmit` | boolean | `true` when nothing is outstanding. For an **individual** this also requires `identityVerification` to be `verified` |
+| `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName`. Entries prefixed `related_persons.<id>.` belong to that person |
+| `missingDocuments` | string[] | Required document types not yet uploaded, including each related person's own documents |
+| `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) and their own `missingFields` / `missingDocuments` |
 | `identityVerification` | string | Individual only: identity verification state (`verified`, `pending`, `unknown`) |
+
+<Info>
+  A business must declare **at least one** beneficial owner or director. Until one is added, `missingFields` contains `related_persons`.
+</Info>
