@@ -5,6 +5,8 @@ description: 'Fetch deposit instructions for an account across its currencies'
 
 Returns the deposit (funding) instructions for an account — how to fund each of its currencies. Each entry is either fiat **bank transfer** details (NGN, USD, ...) or a **crypto** deposit address. Any USD account still being provisioned by the provider is surfaced under `pending`.
 
+A client can hold several USD accounts, one per [`reference`](/api-reference/endpoint/accounts/issue-bank-account#multiple-usd-deposit-accounts) — each appears as its own entry, carrying the `reference` and `label` it was issued with, so you can hand the right details to the right source. Both are `null` on the client's primary account.
+
 <Info>
   Deposit accounts are provisioned once an account's application is approved. Issue them with [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account); they then appear here. You can also receive an [`account.virtual_account.created`](/api-reference/webhooks/events) webhook when one is added.
 </Info>
@@ -35,7 +37,24 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "routingNumber": null,
         "swiftCode": null,
         "bankAddress": null,
+        "reference": null,
+        "label": null,
         "instructions": "Transfer NGN to the bank account below. Deposits are credited to the account's NGN wallet automatically."
+      },
+      {
+        "currency": "USD",
+        "method": "bank_transfer",
+        "status": "active",
+        "provider": "ssb_usd",
+        "bankName": "Lead Bank",
+        "accountNumber": "8823410077",
+        "accountName": "Beta Logistics LLC",
+        "routingNumber": "021000021",
+        "swiftCode": "LEADUS33",
+        "bankAddress": null,
+        "reference": "store-amazon-uk",
+        "label": "Amazon UK",
+        "instructions": "Transfer USD to the bank account below. Deposits are credited to the account's USD wallet automatically."
       },
       {
         "currency": "USDC",

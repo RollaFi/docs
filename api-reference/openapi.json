@@ -6816,6 +6816,77 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/bank-accounts/simulate-deposit": {
+      "post": {
+        "operationId": "simulateAccountDeposit",
+        "summary": "Simulate a Deposit (Sandbox)",
+        "description": "Sandbox only. Simulates an incoming USD deposit into one of an account's deposit accounts, so you can exercise deposit crediting and webhooks without a real transfer.\n\nWith `bank_account_reference` the deposit is credited to that specific account; without it, to the client's primary account. The balance is credited **asynchronously** via the provider's normal deposit webhook — this call only submits the simulated inbound transfer.\n\nThis endpoint does not exist in production; calls there return `404`.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateAccountDepositRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Simulated deposit submitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulateAccountDepositResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, no USD account provisioned, or no account exists for the given `bank_account_reference`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8862,6 +8933,18 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true,
+            "description": "The reference this account was issued under, or `null` on the client's primary account. Lets you tell a client's accounts apart without keeping your own mapping.",
+            "example": "store-amazon-uk"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true,
+            "description": "The label this account was issued with, if any.",
+            "example": "Amazon UK"
           }
         }
       },
@@ -8882,6 +8965,98 @@
             "type": "object",
             "description": "Optional overrides merged over the details prefilled from the account's application. The shape depends on the provider — call GET /accounts/{accountId}/bank-accounts/requirements to see the prefilled payload and what's missing. For USD, entries in `representatives` merge into the prefilled person matching the same `relatedPersonId`.",
             "additionalProperties": true
+          },
+          "reference": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Your own stable id for whatever you need to reconcile separately — a storefront, a branch, a marketplace, a channel. Supplying it issues an **additional** deposit account under the same client, with its own account number, so incoming funds are attributable to that one reference. Omit it for the client's primary account.\n\nIdempotent: the same reference always returns the same account, so a retry cannot create a duplicate. USD only, and only on providers that support more than one account per client.",
+            "example": "store-amazon-uk"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "description": "Human-readable name stored alongside the account and echoed back on reads, e.g. \"Amazon UK\".",
+            "example": "Amazon UK"
+          }
+        }
+      },
+      "SimulateAccountDepositRequest": {
+        "type": "object",
+        "required": [
+          "amount"
+        ],
+        "properties": {
+          "amount": {
+            "type": "string",
+            "description": "Deposit amount in major units of USD, e.g. \"100\" or \"100.50\". Must be greater than 0.",
+            "example": "250.00"
+          },
+          "bank_account_reference": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Which of the account's deposit accounts to credit, as passed to Issue Bank Account. Omit to credit the client's primary account. A reference with no account behind it returns `404` rather than falling back to the primary.",
+            "example": "store-amazon-uk"
+          },
+          "reference": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Your own reference carried on the simulated transfer itself. Generated when omitted."
+          },
+          "sender_name": {
+            "type": "string",
+            "maxLength": 120,
+            "description": "Name recorded as the sender on the resulting transaction.",
+            "example": "Amazon EU S.a.r.l."
+          }
+        }
+      },
+      "SimulateAccountDepositResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "example": "Simulated USD deposit submitted"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "example": "submitted"
+              },
+              "amount": {
+                "type": "string",
+                "example": "250.00"
+              },
+              "currency": {
+                "type": "string",
+                "example": "USD"
+              },
+              "reference": {
+                "type": "string",
+                "description": "Reference on the simulated transfer.",
+                "example": "RL_SIM_C029D665B02F"
+              },
+              "bankAccountReference": {
+                "type": "string",
+                "nullable": true,
+                "description": "Which deposit account was credited; `null` for the client's primary.",
+                "example": "store-amazon-uk"
+              },
+              "transferId": {
+                "type": "string",
+                "nullable": true
+              },
+              "message": {
+                "type": "string"
+              }
+            }
           }
         }
       }

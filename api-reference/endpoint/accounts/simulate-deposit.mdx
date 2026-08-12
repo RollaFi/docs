@@ -1,0 +1,90 @@
+---
+title: 'Simulate an Account Deposit (Sandbox)'
+openapi: 'POST /accounts/{accountId}/bank-accounts/simulate-deposit'
+---
+
+A testing helper that simulates an **incoming USD deposit** into one of an account's deposit accounts, so you can verify crediting and webhooks end-to-end **without sending a real wire transfer**.
+
+Its purpose is to let you prove **attribution**: when a client holds several deposit accounts — one per [`reference`](/api-reference/endpoint/accounts/issue-bank-account#multiple-usd-deposit-accounts) — you can send a deposit to one of them and confirm it lands against that reference and no other.
+
+<Warning>
+  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`.
+</Warning>
+
+## Prerequisites
+
+The account must already have an **issued, active USD account**. Issue one via [Issue a Bank Account](/api-reference/endpoint/accounts/issue-bank-account) with `currency: "USD"`. If none is provisioned, the call returns `404` with code `USD_ACCOUNT_NOT_FOUND`.
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `amount` | string | Yes | Deposit amount in major units of USD (e.g. `"100"` or `"100.50"`). Must be greater than 0. |
+| `bank_account_reference` | string | No | Which of the client's deposit accounts to credit, as passed to Issue Bank Account. Omit to credit the **primary** account. |
+| `reference` | string | No | Your own reference carried on the simulated transfer itself. Generated when omitted. |
+| `sender_name` | string | No | Name recorded as the sender on the resulting transaction. |
+
+<Note>
+  The two references do different jobs. `bank_account_reference` chooses **which account receives the money**; `reference` is a label on **the transfer**.
+</Note>
+
+## Example Request
+
+Credit the deposit account issued for `store-amazon-uk`:
+
+```bash
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts/simulate-deposit" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": "250.00",
+    "bank_account_reference": "store-amazon-uk",
+    "sender_name": "Amazon EU S.a.r.l."
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "success": true,
+  "message": "Simulated USD deposit submitted",
+  "data": {
+    "status": "submitted",
+    "amount": "250.00",
+    "currency": "USD",
+    "reference": "RL_SIM_C029D665B02F",
+    "bankAccountReference": "store-amazon-uk",
+    "transferId": "5b3c2fa0-d4db-49d5-9484-0af9aec2b155",
+    "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
+  }
+}
+```
+
+`bankAccountReference` echoes which account was credited — `null` when the primary was.
+
+## What happens
+
+1. The request is routed to the USD provider's sandbox, which submits a simulated incoming transfer against the deposit account you named. The response `status` is `submitted` — the balance is **not** credited yet.
+2. The provider then delivers a deposit webhook through the **same crediting path a real deposit uses**, and the wallet is credited.
+3. The transaction completes, emitting a `transaction.pending` event followed by `transaction.completed`. See [Webhook Payloads](/api-reference/webhooks/payloads).
+
+<Note>
+  Because the credit arrives via the provider webhook, it is **not instant**. After a `submitted` response, poll [List Wallets](/api-reference/endpoint/wallet/wallets) or [Transactions](/api-reference/endpoint/wallet/transactions) until the balance lands.
+</Note>
+
+## Unknown references
+
+A `bank_account_reference` with no account behind it returns `404` naming the reference, rather than quietly falling back to the primary account — so a typo in a test cannot credit the wrong balance and leave you reading the result as a pass:
+
+```json
+{
+  "status": 404,
+  "message": "No deposit account exists for reference \"store-does-not-exist\". Issue one with that reference first."
+}
+```
+
+<Info>
+  To simulate a deposit into **your own** business's wallet rather than one of your accounts', use [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit). That endpoint always credits the primary account and cannot target a `reference`.
+</Info>

@@ -128,6 +128,7 @@
               "api-reference/endpoint/accounts/bank-account-requirements",
               "api-reference/endpoint/accounts/issue-bank-account",
               "api-reference/endpoint/accounts/list-bank-accounts",
+              "api-reference/endpoint/accounts/simulate-deposit",
               "api-reference/endpoint/accounts/funding-instructions"
             ]
           },

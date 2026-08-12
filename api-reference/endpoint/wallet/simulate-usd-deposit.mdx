@@ -15,7 +15,11 @@ It is the USD counterpart of [Simulate a Deposit](/api-reference/endpoint/wallet
 
 The account must already have an **issued, active USD account**. Issue one first via [Issue a Bank Account](/api-reference/endpoint/accounts/issue-bank-account) with `currency: "USD"`. If no USD account is provisioned yet, the call returns `404` with code `USD_ACCOUNT_NOT_FOUND`.
 
-To simulate a deposit for a specific sub-account under your tenancy, send its id in the `X-Account-Id` header.
+To simulate a deposit for a specific sub-account under your tenancy, send its id in the `X-Account-Id` header. Without it the deposit is credited to **your own** business, which returns `404` if your business has no USD account of its own.
+
+<Info>
+  This endpoint always credits the client's **primary** USD account. If the client holds several deposit accounts — one per [`reference`](/api-reference/endpoint/accounts/issue-bank-account#multiple-usd-deposit-accounts) — use [Simulate an Account Deposit](/api-reference/endpoint/accounts/simulate-deposit) instead, which can target one of them by reference.
+</Info>
 
 ## Request Body
 
