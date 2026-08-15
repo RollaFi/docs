@@ -1,0 +1,96 @@
+---
+title: 'Get Verification Documents'
+openapi: 'GET /accounts/{accountId}/verification/documents'
+---
+
+Returns the identity document your customer submitted during Rolla's hosted liveness check, along with the details read off that document by the identity provider.
+
+Use it to review what was submitted without running a second identity check of your own. For a business account's beneficial owners and directors, use [Get Owner Verification Documents](/api-reference/endpoint/accounts/related-person-verification-documents) instead.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/verification/documents" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Verification documents retrieved successfully",
+  "data": {
+    "subject": {
+      "type": "account",
+      "id": "b6075be0-f1d0-451f-a468-3e94563101d2"
+    },
+    "status": {
+      "reviewStatus": "completed",
+      "reviewAnswer": "GREEN",
+      "verified": true
+    },
+    "identity": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "dateOfBirth": "1990-01-15",
+      "country": "NGA",
+      "idDocType": "PASSPORT",
+      "documentNumber": null,
+      "issuedDate": null,
+      "validUntil": null
+    },
+    "documents": [
+      {
+        "imageId": "909788538",
+        "idDocType": "PASSPORT",
+        "country": "NGA",
+        "side": "front"
+      }
+    ],
+    "inspectionId": "6a7ba5bcce15d46609bd3f4b"
+  }
+}
+```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `subject.type` | string | `account` here; `related_person` on the owner endpoint |
+| `status.verified` | boolean | `true` once the review completed with a positive result |
+| `status.reviewStatus` | string | Review state, e.g. `init`, `pending`, `completed` |
+| `status.reviewAnswer` | string | `GREEN` (passed) or `RED` (failed); `null` while in progress |
+| `identity` | object | Read **off the document** by the identity provider — not the values you submitted |
+| `identity.idDocType` | string | e.g. `PASSPORT`, `ID_CARD`, `DRIVERS` |
+| `documents[].imageId` | string | Pass to [Download Verification Document](/api-reference/endpoint/accounts/download-verification-document) to fetch the file |
+| `documents[].side` | string | `front` or `back` |
+| `inspectionId` | string | The provider's inspection reference, for support queries |
+
+<Info>
+  `identity` reflects what the provider could extract. `documentNumber`, `issuedDate` and `validUntil` are frequently `null` even on a passed check — treat every field as optional rather than relying on it being present.
+</Info>
+
+<Note>
+  Selfies and liveness frames are not returned; only identity documents are.
+</Note>
+
+## Error Responses
+
+### Verification not started (`404`)
+
+```json
+{
+  "status": 404,
+  "message": "No verification found. The identity check has not been started or completed yet."
+}
+```
+
+### Wrong account type (`400`)
+
+```json
+{
+  "status": 400,
+  "message": "This endpoint is only for individual accounts. Use /related-persons/:personId/verification/documents for business owners and directors."
+}
+```

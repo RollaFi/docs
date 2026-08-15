@@ -1,0 +1,80 @@
+---
+title: 'Get Owner Verification Documents'
+openapi: 'GET /accounts/{accountId}/related-persons/{personId}/verification/documents'
+---
+
+Returns the identity document a beneficial owner or director submitted during Rolla's hosted liveness check, along with the details read off that document.
+
+Identical in shape to [Get Verification Documents](/api-reference/endpoint/accounts/verification-documents), but scoped to one person on a business account. A business has no identity check of its own — its owners and directors do.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/related-persons/a3d4f21e-f499-488f-8508-43228dfea485/verification/documents" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Verification documents retrieved successfully",
+  "data": {
+    "subject": {
+      "type": "related_person",
+      "id": "a3d4f21e-f499-488f-8508-43228dfea485"
+    },
+    "status": {
+      "reviewStatus": "completed",
+      "reviewAnswer": "GREEN",
+      "verified": true
+    },
+    "identity": {
+      "firstName": "Jane",
+      "lastName": "Doe",
+      "dateOfBirth": "1985-09-21",
+      "country": "NGA",
+      "idDocType": "PASSPORT",
+      "documentNumber": null,
+      "issuedDate": null,
+      "validUntil": null
+    },
+    "documents": [
+      {
+        "imageId": "440291976",
+        "idDocType": "PASSPORT",
+        "country": "NGA",
+        "side": "front"
+      }
+    ],
+    "inspectionId": "6a5e30bc03557d60b945d58a"
+  }
+}
+```
+
+Field meanings are the same as on [Get Verification Documents](/api-reference/endpoint/accounts/verification-documents), except `subject.type` is `related_person`.
+
+<Tip>
+  Get the `personId` values from [List Related Persons](/api-reference/endpoint/accounts/list-related-persons). Each owner verifies separately, so expect a mix of completed and pending checks across a single business.
+</Tip>
+
+## Error Responses
+
+### Person not on this account (`404`)
+
+```json
+{
+  "status": 404,
+  "message": "Related person not found"
+}
+```
+
+### Verification not started (`404`)
+
+```json
+{
+  "status": 404,
+  "message": "No verification found. The identity check has not been started or completed yet."
+}
+```

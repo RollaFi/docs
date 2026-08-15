@@ -1,0 +1,52 @@
+---
+title: 'Download Verification Document'
+openapi: 'GET /accounts/{accountId}/verification/documents/{imageId}'
+---
+
+Returns the document file itself. Take `imageId` from [Get Verification Documents](/api-reference/endpoint/accounts/verification-documents).
+
+The response is the raw file, not JSON. Files are proxied through Rolla, so you never talk to the identity provider directly.
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/verification/documents/909788538" \
+  -H "X-API-Key: your_api_key_here" \
+  -o passport.png
+```
+
+For a beneficial owner or director, use the related-person path:
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/related-persons/{personId}/verification/documents/{imageId}" \
+  -H "X-API-Key: your_api_key_here" \
+  -o owner-passport.jpg
+```
+
+## Response
+
+The file, with `Content-Type` and `Content-Disposition` set from its actual format.
+
+| Header | Example |
+|--------|---------|
+| `Content-Type` | `image/png`, `image/jpeg`, `image/webp` or `application/pdf` |
+| `Content-Disposition` | `inline; filename="909788538.png"` |
+
+<Warning>
+  **Do not assume JPEG.** Applicants upload whatever their device produced — PNG and PDF are as common as JPEG, and the two documents we tested against came back as a 3.7 MB PNG and a 419 KB JPEG. Read `Content-Type` and set your file extension from it.
+</Warning>
+
+<Info>
+  An `imageId` is only readable through the account it belongs to. Requesting one that belongs to a different customer returns `404`, whether or not the id is valid.
+</Info>
+
+## Error Responses
+
+### Document not on this account (`404`)
+
+```json
+{
+  "status": 404,
+  "message": "Document not found for this account"
+}
+```
