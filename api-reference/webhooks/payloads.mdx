@@ -372,6 +372,9 @@ Account events (`account.onboarded`, `account.submitted`, `account.approved`, `a
 | `data.email` | string | Account email. Omitted if not available. |
 | `data.entity_type` | string | `business` or `individual`. Omitted if not available. |
 | `data.status` | string | The application status (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`, ...). Omitted if not available. |
+| `data.review` | object | Present on `account.rejected` and `account.changes_requested` when the reviewer recorded a note. Omitted otherwise. |
+| `data.review.reason` | string | The reviewer's note, verbatim. Safe to show your customer. |
+| `data.review.decided_at` | string | ISO 8601 timestamp of the decision. Earlier than `created_at`, which is when the event was emitted. |
 | `data.virtual_account` | object | Present on `account.virtual_account.created` — the provisioned deposit account. Omitted otherwise. |
 
 ### Sample: Account approved
@@ -390,6 +393,56 @@ Account events (`account.onboarded`, `account.submitted`, `account.approved`, `a
   }
 }
 ```
+
+### Sample: Account rejected
+
+`review.reason` is the reviewer's own wording — there is no separate email, so this payload is the only notification carrying it.
+
+```json
+{
+  "event": "account.rejected",
+  "event_id": "91cf07aa-1ad7-54d8-a458-a0e437677b23",
+  "created_at": "2026-06-13T10:20:14.055Z",
+  "data": {
+    "account_id": "a1b2c3d4-e5f6-7081-9203-b4c5d6e7f809",
+    "name": "Acme Logistics Ltd",
+    "email": "ops@acmelogistics.com",
+    "entity_type": "business",
+    "status": "rejected",
+    "review": {
+      "reason": "Business registration document is illegible and the shareholder register is out of date.",
+      "decided_at": "2026-06-13T10:19:48.043Z"
+    }
+  }
+}
+```
+
+### Sample: Changes requested
+
+The account reopens for editing. Fix what `review.reason` describes and resubmit — the account then emits `account.submitted` again.
+
+```json
+{
+  "event": "account.changes_requested",
+  "event_id": "56a1f159-1def-54cd-b7ca-3dc2effdf483",
+  "created_at": "2026-06-13T10:21:15.363Z",
+  "data": {
+    "account_id": "b2c3d4e5-f607-8192-a3b4-c5d6e7f80912",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "entity_type": "individual",
+    "status": "changes_requested",
+    "review": {
+      "reason": "Proof of address is older than 3 months — please upload a recent one.",
+      "decided_at": "2026-06-13T10:20:49.390Z"
+    }
+  }
+}
+```
+
+<Info>
+  `review` is omitted entirely when a decision was recorded without a note, so treat it as optional.
+</Info>
 
 ### Sample: Virtual account created
 
