@@ -6893,6 +6893,584 @@
           }
         }
       }
+    },
+    "/accounts/{accountId}/verification/documents": {
+      "get": {
+        "operationId": "getAccountVerificationDocuments",
+        "summary": "Get Verification Documents",
+        "description": "Returns the identity document an individual account holder submitted during Rolla's hosted liveness check, plus the details read off that document. For a business account's beneficial owners, use the related-person endpoint.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification documents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Verification documents retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "object",
+                          "description": "Who the verification belongs to",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "account",
+                                "related_person"
+                              ],
+                              "example": "account"
+                            },
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "object",
+                          "properties": {
+                            "verified": {
+                              "type": "boolean",
+                              "example": true,
+                              "description": "True once the review completed with a positive result"
+                            },
+                            "reviewStatus": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "completed"
+                            },
+                            "reviewAnswer": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "GREEN",
+                              "description": "GREEN (passed) or RED (failed); null while in progress"
+                            }
+                          }
+                        },
+                        "identity": {
+                          "type": "object",
+                          "description": "Read off the document by the identity provider, not the values you submitted. Every field is best-effort and may be null even on a passed check.",
+                          "properties": {
+                            "firstName": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "Jane"
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "Doe"
+                            },
+                            "dateOfBirth": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "1990-01-15"
+                            },
+                            "country": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "NGA"
+                            },
+                            "idDocType": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "PASSPORT"
+                            },
+                            "documentNumber": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Frequently null — the provider does not always extract it"
+                            },
+                            "issuedDate": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "validUntil": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "documents": {
+                          "type": "array",
+                          "description": "Identity documents submitted during the liveness check. Selfies are not returned.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "imageId": {
+                                "type": "string",
+                                "example": "909788538",
+                                "description": "Pass to the download endpoint to fetch the file"
+                              },
+                              "idDocType": {
+                                "type": "string",
+                                "example": "PASSPORT"
+                              },
+                              "country": {
+                                "type": "string",
+                                "nullable": true,
+                                "example": "NGA"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ],
+                                "example": "front"
+                              }
+                            }
+                          }
+                        },
+                        "inspectionId": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "6a7ba5bcce15d46609bd3f4b",
+                          "description": "The provider's inspection reference, for support queries"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong account type for this endpoint",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "This endpoint is only for individual accounts. Use /related-persons/:personId/verification/documents for business owners and directors."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Verification has not been started or completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No verification found. The identity check has not been started or completed yet."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/verification/documents/{imageId}": {
+      "get": {
+        "operationId": "downloadAccountVerificationDocument",
+        "summary": "Download Verification Document",
+        "description": "Returns the document file itself. Files are proxied through Rolla, so you never call the identity provider directly. An imageId is only readable through the account it belongs to.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of the document, taken from `documents[].imageId`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The document file. Content-Type reflects the uploaded format — read it rather than assuming JPEG.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The document does not belong to this account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Document not found for this account"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/related-persons/{personId}/verification/documents": {
+      "get": {
+        "operationId": "getRelatedPersonVerificationDocuments",
+        "summary": "Get Owner Verification Documents",
+        "description": "Returns the identity document a beneficial owner or director submitted during Rolla's hosted liveness check. Identical in shape to the account endpoint, but `subject.type` is `related_person`.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "personId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of a beneficial owner or director on this account",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification documents retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Verification documents retrieved successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "object",
+                          "description": "Who the verification belongs to",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "account",
+                                "related_person"
+                              ],
+                              "example": "account"
+                            },
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          }
+                        },
+                        "status": {
+                          "type": "object",
+                          "properties": {
+                            "verified": {
+                              "type": "boolean",
+                              "example": true,
+                              "description": "True once the review completed with a positive result"
+                            },
+                            "reviewStatus": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "completed"
+                            },
+                            "reviewAnswer": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "GREEN",
+                              "description": "GREEN (passed) or RED (failed); null while in progress"
+                            }
+                          }
+                        },
+                        "identity": {
+                          "type": "object",
+                          "description": "Read off the document by the identity provider, not the values you submitted. Every field is best-effort and may be null even on a passed check.",
+                          "properties": {
+                            "firstName": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "Jane"
+                            },
+                            "lastName": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "Doe"
+                            },
+                            "dateOfBirth": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "1990-01-15"
+                            },
+                            "country": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "NGA"
+                            },
+                            "idDocType": {
+                              "type": "string",
+                              "nullable": true,
+                              "example": "PASSPORT"
+                            },
+                            "documentNumber": {
+                              "type": "string",
+                              "nullable": true,
+                              "description": "Frequently null — the provider does not always extract it"
+                            },
+                            "issuedDate": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "validUntil": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "documents": {
+                          "type": "array",
+                          "description": "Identity documents submitted during the liveness check. Selfies are not returned.",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "imageId": {
+                                "type": "string",
+                                "example": "909788538",
+                                "description": "Pass to the download endpoint to fetch the file"
+                              },
+                              "idDocType": {
+                                "type": "string",
+                                "example": "PASSPORT"
+                              },
+                              "country": {
+                                "type": "string",
+                                "nullable": true,
+                                "example": "NGA"
+                              },
+                              "side": {
+                                "type": "string",
+                                "enum": [
+                                  "front",
+                                  "back"
+                                ],
+                                "example": "front"
+                              }
+                            }
+                          }
+                        },
+                        "inspectionId": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "6a7ba5bcce15d46609bd3f4b",
+                          "description": "The provider's inspection reference, for support queries"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong account type for this endpoint",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 400
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "This endpoint is only for individual accounts. Use /related-persons/:personId/verification/documents for business owners and directors."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Verification has not been started or completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "No verification found. The identity check has not been started or completed yet."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/related-persons/{personId}/verification/documents/{imageId}": {
+      "get": {
+        "operationId": "downloadRelatedPersonVerificationDocument",
+        "summary": "Download Owner Verification Document",
+        "description": "Returns a beneficial owner's document file.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "personId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of a beneficial owner or director on this account",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "imageId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of the document, taken from `documents[].imageId`",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The document file. Content-Type reflects the uploaded format — read it rather than assuming JPEG.",
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The document does not belong to this account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 404
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Document not found for this account"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
