@@ -53,7 +53,28 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 }
 ```
 
-Field meanings are the same as on [Get Verification Documents](/api-reference/endpoint/accounts/verification-documents), except `subject.type` is `related_person`.
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `subject.type` | string | `related_person` on this endpoint |
+| `subject.id` | string | The owner or director this verification belongs to |
+| `status.verified` | boolean | `true` once the review completed with a positive result |
+| `status.reviewStatus` | string | Review state, e.g. `init`, `pending`, `completed` |
+| `status.reviewAnswer` | string | `GREEN` (passed) or `RED` (failed); `null` while in progress |
+| `identity` | object | Read **off the document** by the identity provider — not the values you submitted |
+| `identity.idDocType` | string | e.g. `PASSPORT`, `ID_CARD`, `DRIVERS` |
+| `documents[].imageId` | string | Pass to [Download Verification Document](/api-reference/endpoint/accounts/download-verification-document) to fetch the file |
+| `documents[].side` | string | `front` or `back` |
+| `inspectionId` | string | The provider's inspection reference, for support queries |
+
+<Info>
+  `identity` reflects what the provider could extract. `documentNumber`, `issuedDate` and `validUntil` are frequently `null` even on a passed check — treat every field as optional.
+</Info>
+
+<Note>
+  Selfies and liveness frames are not returned; only identity documents are.
+</Note>
 
 <Tip>
   Get the `personId` values from [List Related Persons](/api-reference/endpoint/accounts/list-related-persons). Each owner verifies separately, so expect a mix of completed and pending checks across a single business.
