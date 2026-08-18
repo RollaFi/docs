@@ -13,11 +13,31 @@ A business must declare **at least one** beneficial owner or director. For each 
 |-------|----------|
 | Details | `firstName`, `lastName`, `email`, `phone`, `dateOfBirth`, `sourceOfWealthExplanation` |
 | `currentAddress` | `street`, `city`, `state`, `postalCode`, `country` |
-| Identifier | `nin` (11 digits) when the person resides in Nigeria |
+| Identifier | `taxId` — the person's government identifier. Nigerian residents supply `nin` (11 digits) instead |
 | Documents | `proof_of_address`, `source_of_wealth_doc` — upload with their `relatedPersonId` |
 | Verification | a completed [KYC link](/api-reference/endpoint/accounts/kyc-link) |
 
 Owners must be at least 18. [Get Requirements](/api-reference/endpoint/accounts/requirements) reports anything outstanding per person under `relatedPersons[].missingFields` and `relatedPersons[].missingDocuments`.
+
+## Government identifier
+
+Every person needs one, and our USD banking partner validates it **in the format their country of residence issues** — so the value differs per person, not per account.
+
+| Country of residence | Field | Format | Example |
+|---|---|---|---|
+| Nigeria | `nin` | 11 digits | `12345678901` |
+| Mainland China | `taxId` | 18-character resident ID | `440301199209153216` |
+| Hong Kong | `taxId` | HKID | `UH123456(A)` |
+| United States | `taxId` | SSN or ITIN | `123456789` |
+| Elsewhere | `taxId` | national ID or tax number as issued | — |
+
+<Info>
+  `nin` is accepted as a `taxId` for people added before this field existed, so nothing needs re-sending. New integrations should use `taxId`.
+</Info>
+
+<Warning>
+  A missing identifier is not rejected when you add the person — it surfaces as `related_persons.<id>.taxId` in [Get Requirements](/api-reference/endpoint/accounts/requirements) and blocks submission. Supplying the wrong **format** for the country is only caught later, when the USD account is issued.
+</Warning>
 
 ## Example Request
 
@@ -32,6 +52,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
     "email": "jane@betalogistics.com",
     "phone": "+13025550124",
     "dateOfBirth": "1985-09-21",
+    "taxId": "123456789",
     "ownershipPercentage": 60,
     "currentAddress": {
       "street": "5 Oak St",

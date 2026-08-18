@@ -5,6 +5,13 @@ openapi: 'PUT /accounts/{accountId}/related-persons/{personId}'
 
 Updates a related person on a business account's application. Provided fields are merged into the existing record.
 
+<Info>
+  `taxId` can be patched onto an existing person — useful for representatives added before
+  the field existed, whose USD issuance is blocked until one is supplied. See
+  [Add Related Person](/api-reference/endpoint/accounts/add-related-person#government-identifier)
+  for the per-country formats.
+</Info>
+
 ## Example Request
 
 ```bash
