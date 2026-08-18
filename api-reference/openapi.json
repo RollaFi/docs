@@ -6754,6 +6754,155 @@
         }
       }
     },
+    "/accounts/{accountId}/kyc-reliance": {
+      "post": {
+        "operationId": "uploadKycReliance",
+        "summary": "Submit KYC Reliance",
+        "description": "Submits identity documents the partner has already verified for an INDIVIDUAL account, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's passport and the selfie or liveness capture collected during your own onboarding as multipart/form-data. Enabled per partner: returns 403 when KYC reliance is not enabled for your business. Individual accounts only; calling it on a business account returns 400. The review is not instant — poll Get Verification Status until it completes.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an individual account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "passport",
+                  "selfie",
+                  "country"
+                ],
+                "properties": {
+                  "passport": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The account holder's passport image or PDF"
+                  },
+                  "selfie": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Selfie or liveness capture from your own verification. Image or video"
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "CN",
+                    "description": "2-letter ISO code of the country that issued the passport"
+                  },
+                  "documentNumber": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "E12345678"
+                  },
+                  "issueDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2020-03-14"
+                  },
+                  "expirationDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2030-03-13"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "KYC reliance submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "KYC reliance submitted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "verified": {
+                          "type": "boolean",
+                          "example": true
+                        },
+                        "reviewStatus": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "completed"
+                        },
+                        "reviewAnswer": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "GREEN"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "KYC reliance is not enabled for your business",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/accounts/{accountId}/approve": {
       "post": {
         "operationId": "approveAccountSandbox",
