@@ -22,7 +22,7 @@ Enum values:
 - `employment.annualIncome` — `<25k`, `25k-50k`, `50k-100k`, `100k-250k`, `250k-500k`, `500k+`
 
 <Warning>
-  Identity verification **blocks submission**. The applicant must complete their [KYC link](/api-reference/endpoint/accounts/individual-kyc-link) before [Submit Application](/api-reference/endpoint/accounts/submit) will succeed — until then it returns `409 KYC_INCOMPLETE` and `readyToSubmit` stays `false`.
+  Identity verification **blocks submission**. The applicant must complete their [KYC link](/api-reference/endpoint/accounts/individual-kyc-link) — or you must supply an already-verified identity via [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance) — before [Submit Application](/api-reference/endpoint/accounts/submit) will succeed. Until then it returns `409 KYC_INCOMPLETE` and `readyToSubmit` stays `false`.
 </Warning>
 
 ## Example Request

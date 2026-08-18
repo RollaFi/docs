@@ -1,0 +1,89 @@
+---
+title: 'Submit KYC Reliance'
+openapi: 'POST /accounts/{accountId}/kyc-reliance'
+---
+
+Submits identity documents you have **already verified yourself** for an **individual account**, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's passport and the selfie or liveness capture you collected during your own onboarding, and we register them against the account's verification.
+
+This is the alternative to [Generate Individual KYC Link](/api-reference/endpoint/accounts/individual-kyc-link). Use it when your customers have already completed identity verification on your side and re-verifying them would be redundant.
+
+<Note>
+  KYC reliance is **enabled per partner**. If it is not enabled for your business the endpoint returns `403`. Contact your Rolla representative to have it turned on — enabling it means agreeing on the verification standard your own KYC meets.
+</Note>
+
+<Warning>
+  Individual accounts **only**. Calling this on a business account returns `400`. A business account's owners and directors must each complete verification through the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link).
+</Warning>
+
+## Request
+
+Send as `multipart/form-data`. Both files are required.
+
+| Part | Type | Required | Description |
+|------|------|----------|-------------|
+| `passport` | file | Yes | The account holder's passport image or PDF |
+| `selfie` | file | Yes | The selfie or liveness capture from your own verification. Image or video |
+| `country` | string | Yes | 2-letter ISO country code that issued the passport, e.g. `CN` |
+| `documentNumber` | string | No | Passport number |
+| `issueDate` | string | No | `YYYY-MM-DD` |
+| `expirationDate` | string | No | `YYYY-MM-DD` |
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/kyc-reliance" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "passport=@/path/to/passport.jpg" \
+  -F "selfie=@/path/to/selfie.jpg" \
+  -F "country=CN" \
+  -F "documentNumber=E12345678" \
+  -F "issueDate=2020-03-14" \
+  -F "expirationDate=2030-03-13"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "KYC reliance submitted successfully",
+  "data": {
+    "verified": true,
+    "reviewStatus": "completed",
+    "reviewAnswer": "GREEN"
+  }
+}
+```
+
+The response is the account's verification status, the same shape returned by [Get Verification Status](/api-reference/endpoint/accounts/verification-status).
+
+## Key Behaviours
+
+<Info>
+  The review is **not instant**. The upload puts the account into review; `reviewStatus` may come back as `pending` with `reviewAnswer` as `null`. Poll [Get Verification Status](/api-reference/endpoint/accounts/verification-status) or watch [Get Requirements](/api-reference/endpoint/accounts/requirements) until `identityVerification` reads `verified`.
+</Info>
+
+<Warning>
+  Verification still **blocks submission**. [Submit Application](/api-reference/endpoint/accounts/submit) returns `409 KYC_INCOMPLETE` until the review completes successfully — reliance replaces the hosted liveness step, not the requirement itself.
+</Warning>
+
+<Tip>
+  The passport uploaded here is reused when a USD account is issued, so a bank-account request will not ask for it again. See [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+</Tip>
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400` | A file is missing, `country` is absent or not a 2-letter code, the account is a business, or the identity provider rejected the upload |
+| `403` | KYC reliance is not enabled for your business |
+| `404` | Account not found, or not owned by your API key's business |
+
+When the identity provider rejects an upload, the reason is passed through rather than hidden behind a generic failure:
+
+```json
+{
+  "success": false,
+  "message": "Identity provider rejected the upload: document is unreadable (code 1002)"
+}
+```

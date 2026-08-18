@@ -9,6 +9,10 @@ Generates a hosted identity verification link for an **individual account** — 
   This endpoint is **only** for individual accounts. For a business account's owners and directors, use the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link) instead — calling this on a business account returns `400`.
 </Note>
 
+<Tip>
+  Already verify identity in your own onboarding? [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance) lets you upload the passport and liveness capture you collected instead of sending the account holder through this hosted flow. It is enabled per partner.
+</Tip>
+
 ## Example Request
 
 ```bash

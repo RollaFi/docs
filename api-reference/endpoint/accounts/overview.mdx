@@ -49,6 +49,8 @@ Every account you create belongs to the same owner as the business your API key 
   </Step>
   <Step title="Complete identity verification">
     `POST /accounts/{accountId}/verification` returns a verification SDK token for ID upload and liveness checks. Poll `GET /accounts/{accountId}/verification` for the result.
+
+    If you already verify identity yourself, [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance) lets you send the passport and liveness capture you collected instead, so your customers are not asked to verify twice.
   </Step>
   <Step title="Submit">
     Once `GET /accounts/{accountId}/requirements` reports `readyToSubmit: true`, call `POST /accounts/{accountId}/submit`.
