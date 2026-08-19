@@ -59,7 +59,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-
 }
 ```
 
-`verification` is that representative's own status — the same value [Get Requirements](/api-reference/endpoint/accounts/requirements) reports for them under `relatedPersons`. `readyToSubmit` reflects the **whole application**, so it stays `false` while any other representative or required field is outstanding.
+`verification` is that representative's own status — the same value [Get Requirements](/api-reference/endpoint/accounts/requirements) reports for them under `relatedPersons`. `readyToSubmit` reflects the **whole application** — fields, documents and every representative's KYC — so it stays `false` while any of them is outstanding.
 
 ## Key Behaviours
 

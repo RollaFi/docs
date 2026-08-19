@@ -37,6 +37,10 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-
 
 ## Error Responses
 
+<Info>
+  When more than one thing is outstanding you get the most actionable one first: missing fields or documents are reported as `400 APPLICATION_INCOMPLETE` and always list what is missing; `409 KYC_INCOMPLETE` is returned only once the application data is complete and identity verification is the sole remaining hold.
+</Info>
+
 ### Application incomplete (`400`)
 
 ```json
@@ -99,7 +103,7 @@ reports the same list without attempting a submit.
 </Info>
 
 <Info>
-  **Business accounts:** at least one beneficial owner or director must be declared, and every one of them must have completed identity verification. Generate [KYC links](/api-reference/endpoint/accounts/kyc-link) for any `unverified` person and retry once they finish.
+  **Business accounts:** at least one beneficial owner or director must be declared, and every one of them must have completed identity verification. Generate [KYC links](/api-reference/endpoint/accounts/kyc-link) for any `unverified` person — or, if you verify identity yourself, [submit reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance) for them — and retry once they finish.
 </Info>
 
 <Info>

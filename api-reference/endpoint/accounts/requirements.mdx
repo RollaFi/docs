@@ -76,7 +76,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `readyToSubmit` | boolean | `true` when nothing is outstanding. For an **individual** this also requires `identityVerification` to be `verified` |
+| `readyToSubmit` | boolean | `true` only when **everything** is cleared: no missing fields, no missing documents, and identity verification complete — `identityVerification` for an individual, every entry in `relatedPersons` for a business |
 | `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName`. Entries prefixed `related_persons.<id>.` belong to that person |
 | `missingDocuments` | string[] | Required document types not yet uploaded, including each related person's own documents |
 | `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) and their own `missingFields` / `missingDocuments` |

@@ -9697,7 +9697,7 @@
           },
           "readyToSubmit": {
             "type": "boolean",
-            "description": "True when all required fields and documents are present"
+            "description": "True only when everything is cleared: all required fields and documents are present AND identity verification is complete — identityVerification for an individual, every relatedPersons entry for a business"
           },
           "missingFields": {
             "type": "array",

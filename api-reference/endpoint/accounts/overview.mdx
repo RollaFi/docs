@@ -33,7 +33,7 @@ Every account you create belongs to the same owner as the business your API key 
     If you already verify these people yourself, [Submit Representative KYC Reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance) lets you send the passport and liveness capture you collected instead, one call per person.
   </Step>
   <Step title="Submit">
-    Check `GET /accounts/{accountId}/requirements` until `readyToSubmit` is `true` and every related person is `verified`, then call `POST /accounts/{accountId}/submit`.
+    Check `GET /accounts/{accountId}/requirements` until `readyToSubmit` is `true` — it covers the required fields, the documents, and every related person's KYC — then call `POST /accounts/{accountId}/submit`.
   </Step>
 </Steps>
 
