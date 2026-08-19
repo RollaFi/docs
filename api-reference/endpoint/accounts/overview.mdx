@@ -29,6 +29,8 @@ Every account you create belongs to the same owner as the business your API key 
   </Step>
   <Step title="Register related persons">
     `POST /accounts/{accountId}/related-persons` for each beneficial owner and director, then generate a hosted KYC link for each with `POST .../related-persons/{personId}/kyc-link` and share it with them. Each person must complete ID verification and a liveness check.
+
+    If you already verify these people yourself, [Submit Representative KYC Reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance) lets you send the passport and liveness capture you collected instead, one call per person.
   </Step>
   <Step title="Submit">
     Check `GET /accounts/{accountId}/requirements` until `readyToSubmit` is `true` and every related person is `verified`, then call `POST /accounts/{accountId}/submit`.

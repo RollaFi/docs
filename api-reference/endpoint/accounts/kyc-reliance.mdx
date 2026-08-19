@@ -12,7 +12,7 @@ This is the alternative to [Generate Individual KYC Link](/api-reference/endpoin
 </Note>
 
 <Warning>
-  Individual accounts **only**. Calling this on a business account returns `400`. A business account's owners and directors must each complete verification through the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link).
+  Individual accounts **only**. Calling this on a business account returns `400`. For a business, verify each owner and director with [Submit Representative KYC Reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance), or send them a [related-person KYC link](/api-reference/endpoint/accounts/kyc-link).
 </Warning>
 
 ## Request
