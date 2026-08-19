@@ -44,10 +44,16 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-
   "status": 400,
   "message": "Application is incomplete",
   "code": "APPLICATION_INCOMPLETE",
-  "missingFields": [],
+  "missingFields": [
+    "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.taxId"
+  ],
   "missingDocuments": ["proof_of_address"]
 }
 ```
+
+Per-person entries are prefixed `related_persons.<personId>.`, so you can tell which
+representative each one belongs to. [Get Requirements](/api-reference/endpoint/accounts/requirements)
+reports the same list without attempting a submit.
 
 ### No beneficial owners declared (`400`)
 
@@ -94,6 +100,10 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-
 
 <Info>
   **Business accounts:** at least one beneficial owner or director must be declared, and every one of them must have completed identity verification. Generate [KYC links](/api-reference/endpoint/accounts/kyc-link) for any `unverified` person and retry once they finish.
+</Info>
+
+<Info>
+  **Every related person needs a government identifier** — `taxId`, or `nin` for Nigerian residents. It is *not* required when you add the person, only here at submission, where a missing one appears as `related_persons.<personId>.taxId` in `missingFields`. It can be patched onto an existing person with [Update Related Person](/api-reference/endpoint/accounts/update-related-person), so representatives added without one do not need re-creating. See [the per-country formats](/api-reference/endpoint/accounts/add-related-person#government-identifier).
 </Info>
 
 <Warning>

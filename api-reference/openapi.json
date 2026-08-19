@@ -6903,6 +6903,178 @@
         }
       }
     },
+    "/accounts/{accountId}/related-persons/{personId}/kyc-reliance": {
+      "post": {
+        "operationId": "uploadRelatedPersonKycReliance",
+        "summary": "Submit Representative KYC Reliance",
+        "description": "Submit an already-verified passport and liveness capture for one representative (beneficial owner or director) of a business account, instead of sending them through Rolla's hosted liveness check. One call per representative. Enabled per partner.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of a business account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "personId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of the related person, as returned by Add Related Person",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "passport",
+                  "selfie",
+                  "country"
+                ],
+                "properties": {
+                  "passport": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The account holder's passport image or PDF"
+                  },
+                  "selfie": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Selfie or liveness capture from your own verification. Image or video"
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "CN",
+                    "description": "2-letter ISO code of the country that issued the passport"
+                  },
+                  "documentNumber": {
+                    "type": "string",
+                    "maxLength": 64,
+                    "example": "E12345678"
+                  },
+                  "issueDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2020-03-14"
+                  },
+                  "expirationDate": {
+                    "type": "string",
+                    "format": "date",
+                    "example": "2030-03-13"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "KYC reliance submitted for the representative",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "KYC reliance submitted successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "relatedPersonId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "firstName": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "Chidi"
+                        },
+                        "lastName": {
+                          "type": "string",
+                          "nullable": true,
+                          "example": "Okafor"
+                        },
+                        "verification": {
+                          "type": "string",
+                          "enum": [
+                            "verified",
+                            "pending",
+                            "unknown"
+                          ],
+                          "example": "pending"
+                        },
+                        "readyToSubmit": {
+                          "type": "boolean",
+                          "example": false
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "KYC reliance is not enabled for your business",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, not owned by your API key's business, or no representative with that personId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/accounts/{accountId}/approve": {
       "post": {
         "operationId": "approveAccountSandbox",
@@ -9180,13 +9352,18 @@
           "sourceOfWealthExplanation": {
             "type": "string"
           },
+          "taxId": {
+            "type": "string",
+            "description": "The person's government identifier, in the format their country of residence issues — Mainland China: 18-character resident ID; Hong Kong: HKID; United States: SSN or ITIN; elsewhere: national ID or tax number as issued. Nigerian residents send `nin` instead. Required before the application can be submitted, and can be patched onto an existing person. The format is validated by the USD provider when the account is issued.",
+            "example": "440301199209153216"
+          },
           "bvn": {
             "type": "string",
-            "description": "Bank Verification Number"
+            "description": "Bank Verification Number (11 digits). Nigerian residents only."
           },
           "nin": {
             "type": "string",
-            "description": "National Identification Number"
+            "description": "National Identification Number (11 digits). Nigerian residents only; accepted in place of `taxId`."
           }
         }
       },

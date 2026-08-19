@@ -103,4 +103,5 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 | `ownershipPercentage` | number | No | Ownership stake, 0–100 |
 | `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`) |
 | `sourceOfWealthExplanation` | string | No | Free-text source of wealth |
-| `bvn` / `nin` | string | No | Nigerian identifiers, if applicable |
+| `taxId` | string | Not on this call — required before submission | The person's government identifier, in [the format their country of residence issues](#government-identifier). Nigerian residents send `nin` instead. Can be patched later via [Update Related Person](/api-reference/endpoint/accounts/update-related-person) |
+| `bvn` / `nin` | string | No | Nigerian identifiers. `nin` (11 digits) is what Nigerian residents send in place of `taxId` |

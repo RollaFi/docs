@@ -5,6 +5,10 @@ openapi: 'POST /accounts/{accountId}/related-persons/{personId}/kyc-link'
 
 Generates a hosted identity verification link for a related person. Share the link with the person — it opens a Rolla-hosted page where they upload an ID document and complete a liveness check. Their verification status is reflected in [Get Requirements](/api-reference/endpoint/accounts/requirements).
 
+<Tip>
+  Already verify these people in your own onboarding? [Submit Representative KYC Reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance) lets you upload the passport and liveness capture you collected instead of sending them through this hosted flow. It is enabled per partner, and can be mixed with hosted links across the same account.
+</Tip>
+
 ## Example Request
 
 ```bash

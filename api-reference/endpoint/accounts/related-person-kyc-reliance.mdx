@@ -1,0 +1,97 @@
+---
+title: 'Submit Representative KYC Reliance'
+openapi: 'POST /accounts/{accountId}/related-persons/{personId}/kyc-reliance'
+---
+
+Submits identity documents you have **already verified yourself** for one representative — a beneficial owner or director — of a **business account**, instead of sending them through Rolla's hosted liveness check.
+
+This is the per-representative parallel of [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance), which covers individual accounts. Use it when the people behind a business have already completed identity verification on your side and re-verifying them would be redundant.
+
+<Note>
+  KYC reliance is **enabled per partner**. If it is not enabled for your business the endpoint returns `403`. Contact your Rolla representative to have it turned on — enabling it means agreeing on the verification standard your own KYC meets.
+</Note>
+
+<Warning>
+  **One call per representative.** Each beneficial owner and director is verified separately and must be submitted on their own `personId`. Verifying one does not verify the others, and [Submit Application](/api-reference/endpoint/accounts/submit) still requires every one of them to pass.
+</Warning>
+
+## Request
+
+Send as `multipart/form-data`. Both files are required.
+
+| Part | Type | Required | Description |
+|------|------|----------|-------------|
+| `passport` | file | Yes | That representative's passport image or PDF |
+| `selfie` | file | Yes | The selfie or liveness capture from your own verification. Image or video |
+| `country` | string | Yes | 2-letter ISO country code that issued the passport, e.g. `NG` |
+| `documentNumber` | string | No | Passport number |
+| `issueDate` | string | No | `YYYY-MM-DD` |
+| `expirationDate` | string | No | `YYYY-MM-DD` |
+
+`personId` is the `id` returned by [Add Related Person](/api-reference/endpoint/accounts/add-related-person) — the same id used for the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link) and for that person's document uploads.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-8c92-5f7a0e913d19/related-persons/1c0742e5-5a58-4705-a473-ddd1ae213787/kyc-reliance" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "passport=@/path/to/passport.jpg" \
+  -F "selfie=@/path/to/selfie.jpg" \
+  -F "country=NG" \
+  -F "documentNumber=A01234567" \
+  -F "issueDate=2020-03-14" \
+  -F "expirationDate=2030-03-13"
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "KYC reliance submitted successfully",
+  "data": {
+    "relatedPersonId": "1c0742e5-5a58-4705-a473-ddd1ae213787",
+    "firstName": "Chidi",
+    "lastName": "Okafor",
+    "verification": "pending",
+    "readyToSubmit": false
+  }
+}
+```
+
+`verification` is that representative's own status — the same value [Get Requirements](/api-reference/endpoint/accounts/requirements) reports for them under `relatedPersons`. `readyToSubmit` reflects the **whole application**, so it stays `false` while any other representative or required field is outstanding.
+
+## Key Behaviours
+
+<Info>
+  The review is **not instant**. `verification` commonly comes back as `pending` on the call that submits it. Poll [Get Requirements](/api-reference/endpoint/accounts/requirements) until that person reads `verified`.
+</Info>
+
+<Warning>
+  Verification still **blocks submission**. [Submit Application](/api-reference/endpoint/accounts/submit) returns `409 KYC_INCOMPLETE` until every representative's review completes successfully — reliance replaces the hosted liveness step, not the requirement itself.
+</Warning>
+
+<Tip>
+  Reliance and the hosted link can be mixed on the same account: verify some representatives yourself and send a [KYC link](/api-reference/endpoint/accounts/kyc-link) to the rest. Both resolve to the same per-person verification.
+</Tip>
+
+<Tip>
+  A passport uploaded here is reused when a USD account is issued, so a bank-account request will not ask for it again. See [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+</Tip>
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400` | A file is missing, `country` is absent or not a 2-letter code, the account is an individual, or the identity provider rejected the upload |
+| `403` | KYC reliance is not enabled for your business |
+| `404` | Account not found, not owned by your API key's business, or no representative with that `personId` |
+
+When the identity provider rejects an upload, the reason is passed through rather than hidden behind a generic failure:
+
+```json
+{
+  "success": false,
+  "message": "Identity provider rejected the upload: document is unreadable (code 1002)"
+}
+```
