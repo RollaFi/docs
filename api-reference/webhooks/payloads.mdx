@@ -26,6 +26,8 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
     "destination_currency": "…",
     "exchange_rate": 0,
     "fee_amount": 0,
+    "fee_transaction_id": "…",
+    "fee_reference": "…",
     "description": "…",
     "timestamp": "…",
     "beneficiary": { },
@@ -52,10 +54,11 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
 | `data.status` | The transaction status this event represents — one of `pending`, `processing`, `sent`, `completed`, `failed`, `rejected`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events) |
 | `data.rail` | `fiat` or `stablecoin` |
 | `data.amount` / `data.currency` | The **net** amount the counterparty receives (in **minor units** — see [Amount format](#amount-format)), and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
-| `data.source_amount` / `data.source_currency` | The debit leg, in **minor units**. For a **payout** this is the **gross** amount, i.e. `amount` **+ fee**; for FX it's the source-currency amount. |
+| `data.source_amount` / `data.source_currency` | The debit leg, in **minor units**; for FX it's the source-currency amount. For a **payout** this is normally the **gross** amount, i.e. `amount` **+ fee** — but **not** when the fee is charged to a separate account rather than deducted from the payout (see [Fees paid by another account](#fees-paid-by-another-account)), in which case `source_amount` equals `amount` and the fee sits on its own transaction. **Never derive the fee as `source_amount − amount`** — read `fee_amount` directly. |
 | `data.destination_amount` / `data.destination_currency` | The credit leg, in **minor units** — what the beneficiary/wallet actually receives. |
 | `data.exchange_rate` | The effective rate for the conversion, computed as `destination_amount / source_amount` (destination per source, in minor units) — the same convention as the external [transactions API](/api-reference/endpoint/transactions). Present only for **FX** transactions (source and destination currencies differ); **omitted** otherwise. |
-| `data.fee_amount` | Fee applied, in **minor units** |
+| `data.fee_amount` | Fee applied, in **minor units**. Always the authoritative fee for the transaction, whichever account pays it. |
+| `data.fee_transaction_id` / `data.fee_reference` | The id and reference (`FEE-XXXXXXXX`) of the separate transaction the fee was booked as, when the fee is charged to another account rather than deducted from this one. **Both omitted** when no separate fee transaction exists, which is the ordinary case — treat them as optional. See [Fees paid by another account](#fees-paid-by-another-account). |
 | `data.beneficiary` | Beneficiary details — present for **payouts**, **omitted** otherwise (see below). Only fields relevant to the payout are included. |
 | `data.virtual_account` | The destination virtual account a **deposit** was paid into — present for **deposits**, **omitted** for payouts. Lets you reconcile the deposit to a specific account. Same shape as the [`account.virtual_account.created`](/api-reference/webhooks/events) payload (see below). |
 | `data.payer` | The sender/originator of a **deposit** — present for **deposits** when the provider supplies sender details, **omitted** for payouts. See below for availability by rail. |
@@ -86,8 +89,39 @@ To display a value, divide by 100 (e.g. `amount / 100`) for any currency.
 </Note>
 
 <Tip>
-  For a payout, **`amount`** is what you asked to send (the beneficiary's amount). **`source_amount`** is what's debited from your wallet, including the fee. So `source_amount = amount + fee_amount` (when fees are charged on top). All scaled by 100.
+  For a payout, **`amount`** is what you asked to send (the beneficiary's amount). **`source_amount`** is what's debited from the paying wallet. Where the fee is deducted from the payout itself, that means `source_amount = amount + fee_amount`. Where the fee is charged to a different account, `source_amount = amount` and the fee is debited separately — see below. Either way, **`fee_amount` is the fee**; don't compute it from the other two. All scaled by 100.
 </Tip>
+
+### Fees paid by another account
+
+Your account can be configured so that fees on transactions are charged to a different account of yours rather than deducted from each transaction. When that applies, the fee is booked as its **own transaction** on the paying account, and the payout carries a link to it:
+
+| Field | Meaning |
+|---|---|
+| `data.fee_transaction_id` | Id of the fee transaction |
+| `data.fee_reference` | Its reference, in the form `FEE-XXXXXXXX` |
+
+```json
+{
+  "amount": 10,
+  "source_amount": 10,
+  "fee_amount": 200,
+  "fee_transaction_id": "358f2c4a-4b86-4806-a502-c2b98866b831",
+  "fee_reference": "FEE-9J76UADV"
+}
+```
+
+Three things to know when reconciling:
+
+- **The fee does not arrive as its own webhook.** Only deposits and payouts emit webhooks — fee transactions never do. The link above is the only notification you receive.
+- **`source_amount` excludes the fee here**, because the fee never touched this transaction. It equals `amount`.
+- **On the fee transaction itself, `fee_amount` is `0`** and the fee value is carried as its `source_amount` / `destination_amount`. This keeps the fee from being counted twice when totalling `fee_amount` across transactions. Read the fee from the payout's `fee_amount`.
+
+Looking the fee transaction up over REST (`GET /wallet/transactions`) returns it with `related_transaction_id` and `related_reference` pointing back at the payout, so you can reconcile from either direction.
+
+<Note>
+  Both fields are **omitted entirely** — not `null` — when no separate fee transaction exists. Branch on their presence. They were introduced on **18 August 2026**; webhooks you captured before then do not carry them even where a fee transaction exists.
+</Note>
 
 ### The `beneficiary` object (payouts)
 

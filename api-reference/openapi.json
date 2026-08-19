@@ -7935,11 +7935,30 @@
           },
           "fee_amount": {
             "type": "number",
-            "description": "Fee charged for this transaction"
+            "description": "Fee charged for this transaction. On a `fee` transaction this is `0` — the fee value is carried as that row's source_amount/destination_amount, so totalling fee_amount across transactions does not double-count it."
+          },
+          "fee_transaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Where the fee is charged to a different account rather than deducted from this transaction, the id of the separate transaction it was booked as. Omitted when no such transaction exists."
+          },
+          "fee_reference": {
+            "type": "string",
+            "description": "Reference of that fee transaction, in the form `FEE-XXXXXXXX`. Omitted when no separate fee transaction exists.",
+            "example": "FEE-9J76UADV"
+          },
+          "related_transaction_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "On a `fee` transaction, the id of the transaction the fee was charged for — the reverse of fee_transaction_id. Omitted on transactions that are not fees."
+          },
+          "related_reference": {
+            "type": "string",
+            "description": "Reference of that originating transaction. Omitted on transactions that are not fees."
           },
           "source_amount": {
             "type": "number",
-            "description": "Amount debited from the source wallet"
+            "description": "Amount debited from the source wallet. Normally amount + fee for a payout, but equal to the amount when the fee is charged to a separate account. Never derive the fee from this — read fee_amount."
           },
           "destination_amount": {
             "type": "number",
