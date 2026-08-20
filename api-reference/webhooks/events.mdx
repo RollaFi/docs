@@ -21,6 +21,50 @@ Each event maps 1:1 to a transaction status.
 | `transaction.rejected` | `rejected` | The transaction was rejected (e.g. declined during approval or compliance review). |
 | `transaction.refunded` | `refunded` | A previously completed transaction was reversed/refunded. |
 
+### Fee events
+
+A fee your account bears for an account you manage moves through three stages, and each is announced separately. Subscribe to all three, or only to the one you act on.
+
+| Event | `effect` | When it's sent |
+|-------|----------|----------------|
+| `fee.pending` | `held` | The fee has been placed as a hold. **Your available balance already reflects it** — this is when the money becomes unavailable, not when it is taken. |
+| `fee.charged` | `charged` | The fee posted. The money has left. |
+| `fee.released` | `released` | The transaction that incurred the fee was unwound, so the hold is released and nothing was charged. Reverse any accrual you made on `fee.pending`. |
+
+<Warning>
+  If you subscribe to `fee.charged` alone, your balance will move without an event to explain it — sometimes for a long time, since a fee is held for as long as the transaction that incurred it stays unsettled. Take `fee.pending` and `fee.released` too if you reconcile on available balance.
+</Warning>
+
+```json
+{
+  "event": "fee.charged",
+  "event_id": "5f2c1a9e-7b3d-4a8e-9c1f-2d3e4b5a6c7d",
+  "created_at": "2026-08-19T10:00:01.000Z",
+  "data": {
+    "transaction_id": "c1b2a3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+    "reference": "FEE-8KD02M1X",
+    "status": "completed",
+    "effect": "charged",
+    "amount": 25000,
+    "currency": "NGN",
+    "fee_type": "withdrawal",
+    "description": "Fee for sub-account withdrawal",
+    "related_transaction_id": "b0a1c2d3-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "related_reference": "NG-J46RHHKV",
+    "incurred_by_account": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+    "created_at": "2026-08-19T10:00:01.000Z"
+  }
+}
+```
+
+All three carry the same shape; `event` and `effect` say which stage it is. `amount` is in smallest currency units, like every amount on this API. `fee_type` is what the fee was charged for — `withdrawal`, `payin` or `card_funding`. `related_transaction_id` is the movement that incurred it and `incurred_by_account` the account that made it, so the charge can be attributed without matching on amount or timing.
+
+Each stage carries its own `event_id`, so a redelivery of the same stage is recognisable while the three stages never suppress one another.
+
+<Note>
+  A fee borne by the account that incurred it does not produce these events — there is no separate charge to announce, and the fee is reported as `fee_amount` on that account's own transaction. To list fees rather than be pushed them, filter [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) on `transactionType=fee`.
+</Note>
+
 ### Account events
 
 These cover the onboarding lifecycle of the accounts you manage via the API (the additional business/individual accounts you create under your profile), plus the deposit accounts provisioned for them.

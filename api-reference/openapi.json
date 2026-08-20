@@ -4765,6 +4765,231 @@
         }
       }
     },
+    "/accounts/transactions": {
+      "get": {
+        "summary": "List Transactions Across Accounts",
+        "description": "Every transaction across all the accounts you manage — your own and each account you have onboarded — newest first, with the account each row belongs to. Partner API keys only. Reconcile over a closed date range so the pages stay stable while you read them.",
+        "tags": [
+          "Accounts"
+        ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "description": "Page number, starting at 1."
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            },
+            "description": "Rows per page. Caps at 100, matching the per-account listing."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by source currency, e.g. `USD`."
+          },
+          {
+            "name": "transactionType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "deposit",
+                "withdrawal",
+                "fx_withdrawal",
+                "swap",
+                "transfer",
+                "fee"
+              ]
+            },
+            "description": "Filter by type. Use `fee` to list only fees charged to you."
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by status, e.g. `completed`."
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Inclusive start, `YYYY-MM-DD` or ISO-8601."
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Inclusive end, `YYYY-MM-DD` or ISO-8601."
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Match on external reference."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "csv"
+              ]
+            },
+            "description": "`csv` returns the same rows as a file; paging comes back in the `X-Total-Count` and `X-Total-Pages` headers."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transactions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "description": "Stable identifier for the transaction — key your records on this."
+                              },
+                              "account_id": {
+                                "type": "string",
+                                "nullable": true,
+                                "description": "The account this transaction belongs to."
+                              },
+                              "account_name": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "transaction_type": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
+                              "external_reference": {
+                                "type": "string"
+                              },
+                              "source_amount": {
+                                "type": "integer",
+                                "description": "Smallest currency units."
+                              },
+                              "source_currency": {
+                                "type": "string"
+                              },
+                              "destination_amount": {
+                                "type": "integer"
+                              },
+                              "destination_currency": {
+                                "type": "string"
+                              },
+                              "fee_amount": {
+                                "type": "integer"
+                              },
+                              "fee_transaction_id": {
+                                "type": "string",
+                                "description": "On a payout whose fee you were charged: the fee row."
+                              },
+                              "fee_reference": {
+                                "type": "string"
+                              },
+                              "related_transaction_id": {
+                                "type": "string",
+                                "description": "On a fee row: the movement that incurred it."
+                              },
+                              "related_reference": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        },
+                        "hasMore": {
+                          "type": "boolean",
+                          "description": "False on the last page."
+                        },
+                        "totalCount": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "pageSize": {
+                          "type": "integer"
+                        },
+                        "totalPages": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid API key"
+          },
+          "403": {
+            "description": "Not a partner key"
+          }
+        }
+      }
+    },
     "/accounts/{accountId}": {
       "get": {
         "operationId": "getAccount",

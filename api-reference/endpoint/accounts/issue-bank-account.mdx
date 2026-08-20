@@ -44,6 +44,14 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ## USD accounts
 
+<Info>
+  **Every USD account we open is a real bank account** — the first one and every one after it. Each has its own account number, in the client's name, at the same bank. There is no "physical" tier and no "virtual" tier: accounts opened later are not virtual accounts layered over the first.
+
+  You will see the term anyway, because our storage for deposit accounts is called *virtual accounts* — which is why the webhook announcing even a client's **first** USD account is [`account.virtual_account.created`](/api-reference/webhooks/events). That is an internal name, not a product distinction.
+
+  The only real distinction is **primary** vs **additional**, and it is visible on every account as the `reference` field: `null` on the primary, set on the ones you named. See [Multiple USD deposit accounts](#multiple-usd-deposit-accounts) below.
+</Info>
+
 USD accounts require **review**. The first call records the request and returns `202 Accepted`; the deposit account is set up once the request is approved:
 
 ```bash
@@ -152,9 +160,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 }
 ```
 
-Only the **account number** differs — bank name, routing number and account holder are shared, because all of these accounts belong to one client. That account number is what separates the money: funds sent to it are credited against that reference, so you can tell which source a deposit came from without reconciling by amount or sender name. `reference` and `label` are echoed back on [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) and [Get Funding Instructions](/api-reference/endpoint/accounts/funding-instructions), so you can hand the right details to the right source without keeping your own mapping.
+Only the **account number** differs — bank name, routing number and account holder are shared, because all of these accounts belong to one client at the same bank. Each is still a real account with its own number, not a label over the primary. That account number is what separates the money: funds sent to it are credited against that reference, so you can tell which source a deposit came from without reconciling by amount or sender name. `reference` and `label` are echoed back on [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) and [Get Funding Instructions](/api-reference/endpoint/accounts/funding-instructions), so you can hand the right details to the right source without keeping your own mapping.
 
 The client's **primary** account is the one issued without a `reference`, and it reports `reference: null`.
+
+That field is the reliable way to tell the two apart, and it is returned on [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) and [Get Funding Instructions](/api-reference/endpoint/accounts/funding-instructions) as well as at creation — so you can classify an account at any time rather than having to remember the order you created things in. A client can only ever hold one account with `reference: null`: a second call without a `reference` returns the existing account rather than opening another.
 
 <Info>
   **The reference is the idempotency key.** The same reference always returns the same account with `status: already_exists`, so a retry, a duplicated job or a replayed request can never mint a second account for one source. There is no cap on how many references a client can have.
