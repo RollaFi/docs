@@ -1,0 +1,127 @@
+---
+title: 'List Transactions Across Accounts'
+openapi: 'GET /accounts/transactions'
+---
+
+Every transaction across **all the accounts you manage** — your own and each account you have onboarded — newest first, in one call.
+
+This is the endpoint to reconcile against. [List Wallet Transactions](/api-reference/endpoint/wallet/transactions) returns one account at a time, so reconciling a book of accounts through it means one request per account and then working out yourself which rows came from where. Here, each row names the account it belongs to.
+
+<Info>
+  Available to partner API keys — a key that manages onboarded accounts. An ordinary key receives `403`.
+</Info>
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?pageSize=100" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```json
+{
+  "success": true,
+  "data": {
+    "transactions": [
+      {
+        "id": "b0a1c2d3-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+        "account_id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+        "account_name": "Beta Logistics LLC",
+        "transaction_type": "withdrawal",
+        "status": "completed",
+        "external_reference": "NG-J46RHHKV",
+        "source_amount": 5000000,
+        "source_currency": "NGN",
+        "fee_amount": 25000,
+        "fee_transaction_id": "c1b2a3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+        "fee_reference": "FEE-8KD02M1X",
+        "created_at": "2026-08-19T10:00:00.000Z"
+      },
+      {
+        "id": "c1b2a3d4-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+        "account_id": "9f1e2d3c-4b5a-4968-8877-665544332211",
+        "account_name": "Your Company Ltd",
+        "transaction_type": "fee",
+        "status": "completed",
+        "external_reference": "FEE-8KD02M1X",
+        "related_transaction_id": "b0a1c2d3-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+        "related_reference": "NG-J46RHHKV",
+        "source_amount": 25000,
+        "source_currency": "NGN",
+        "created_at": "2026-08-19T10:00:01.000Z"
+      }
+    ],
+    "totalCount": 4182,
+    "page": 1,
+    "pageSize": 100,
+    "totalPages": 42,
+    "hasMore": true
+  }
+}
+```
+
+## What it includes
+
+Everything that happened, so a reconciliation balances:
+
+- **Failed movements.** A payout that failed still debited and returned the money. The per-account endpoints leave these out of their default view — this one reports them, because a ledger that never sees the reversal cannot be balanced against ours.
+- **Deposits still awaiting confirmation**, reported with `status: "pending"`. Funds have been detected but are not yet final, so treat them as expected rather than settled.
+
+Pass `status` to narrow it yourself — `status=completed` for settled activity only.
+
+## Paging
+
+`page` and `pageSize`, the same as every other transaction listing on this API. `pageSize` defaults to 20 and caps at 100.
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?page=2&pageSize=100" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+`totalPages` tells you how many pages to collect; `hasMore` is `false` on the last one.
+
+<Warning>
+  **Reconcile over a closed date range.** Ask for a day that has finished — `startDate=2026-08-19&endDate=2026-08-19` — and then page through it. Paging an open-ended list while transactions are still arriving means new rows land at the top and shift everything down, so a row can move past a page boundary between two calls and never be returned. A range that is already closed cannot take new rows, so the pages are stable while you read them.
+</Warning>
+
+## Filtering
+
+`currency`, `transactionType`, `status`, `startDate`, `endDate` and `search` all apply across every account, not just your own. A daily run typically filters by date:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?startDate=2026-08-19&endDate=2026-08-19" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+To pull only the fees charged to you, filter on the type:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?transactionType=fee" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## CSV
+
+Add `format=csv` for the same rows as a file, for a finance team that works in a spreadsheet:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?format=csv&startDate=2026-08-19" \
+  -H "X-API-Key: your_api_key_here" -o transactions.csv
+```
+
+Paging comes back in the `X-Total-Count` and `X-Total-Pages` response headers, since a CSV body has nowhere to carry it.
+
+## Reconciling fees
+
+When a fee is charged to **your** account rather than to the account that incurred it, it is a transaction on your account in its own right — `transaction_type: "fee"`, reference `FEE-XXXXXXXX` — and it appears in this feed alongside the movement that caused it. The two are linked in both directions:
+
+| On | Field | Points to |
+| --- | --- | --- |
+| the payout | `fee_transaction_id`, `fee_reference` | the fee row |
+| the fee row | `related_transaction_id`, `related_reference` | the payout |
+
+So a fee never has to be matched by amount or timing.
+
+A fee appears here as soon as it is **held**, with `status: "pending"` — that is when your available balance moves, not when the fee posts. It reaches `completed` when the money is actually taken, or `failed` if the transaction that incurred it was unwound and the hold released. To be told at each of those points rather than discovering them on the next run, subscribe to [`fee.pending`, `fee.charged` and `fee.released`](/api-reference/webhooks/events).
+
+<Note>
+  **`transaction_id` is the stable identifier.** `external_reference` is yours to recognise a transaction by, but `id` is what we guarantee for the life of the transaction — key your records on it.
+</Note>

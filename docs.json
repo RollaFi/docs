@@ -52,7 +52,8 @@
           {
             "group": "Transactions",
             "pages": [
-              "api-reference/endpoint/transactions"
+              "api-reference/endpoint/transactions",
+              "api-reference/endpoint/accounts/list-transactions"
             ]
           },
           {
