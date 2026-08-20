@@ -57,7 +57,7 @@ A fee your account bears for an account you manage moves through three stages, a
 }
 ```
 
-All three carry the same shape; `event` and `effect` say which stage it is. `amount` is in smallest currency units, like every amount on this API. `fee_type` is what the fee was charged for — `withdrawal`, `payin` or `card_funding`. `related_transaction_id` is the movement that incurred it and `incurred_by_account` the account that made it, so the charge can be attributed without matching on amount or timing.
+All three carry the same shape; `event` and `effect` say which stage it is. `amount` is in **minor units** — `25000` means 250.00. Note the transaction listing endpoints report amounts in major units instead, so convert before comparing the two. `fee_type` is what the fee was charged for — `withdrawal`, `payin` or `card_funding`. `related_transaction_id` is the movement that incurred it and `incurred_by_account` the account that made it, so the charge can be attributed without matching on amount or timing.
 
 Each stage carries its own `event_id`, so a redelivery of the same stage is recognisable while the three stages never suppress one another.
 
