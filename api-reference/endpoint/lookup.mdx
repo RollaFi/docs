@@ -3,7 +3,13 @@ title: 'Account Lookup'
 openapi: 'POST /lookup'
 ---
 
-Validate a bank account number and retrieve the account holder's name. This is useful for confirming beneficiary details before initiating a payout.
+Validate a **Nigerian** bank account number and retrieve the account holder's name. This is useful for confirming beneficiary details before initiating a payout.
+
+<Note>
+  **Nigerian accounts only.** This confirms an account holder's name through Nigeria's NIP name enquiry, which is why it takes a `bankCode`. There is no equivalent for USD, GBP or EUR — those rails do not allow a name to be confirmed against an account number before a payment is sent, so no provider can offer it.
+
+  USD support is coming: it will take a `routingNumber` and return the **bank**, so you do not have to supply the bank name and address by hand. It will not return an account holder's name, because that cannot be verified on US rails.
+</Note>
 
 ## Example Request
 
