@@ -59,6 +59,10 @@ Per-person entries are prefixed `related_persons.<personId>.`, so you can tell w
 representative each one belongs to. [Get Requirements](/api-reference/endpoint/accounts/requirements)
 reports the same list without attempting a submit.
 
+To find out what a submit would return without calling it, read `submitBlocker` on
+[Get Requirements](/api-reference/endpoint/accounts/requirements) — it carries the same
+`code` and details as the errors below.
+
 ### No beneficial owners declared (`400`)
 
 ```json

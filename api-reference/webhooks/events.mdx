@@ -79,6 +79,7 @@ These cover the onboarding lifecycle of the accounts you manage via the API (the
 | `account.virtual_account.created` | A deposit (virtual) account — bank transfer or crypto — was provisioned for the account. |
 | `account.virtual_account.changes_requested` | A deposit account request needs corrected details before it can proceed. Re-issue with the corrections to reopen it. |
 | `account.virtual_account.declined` | A deposit account request was declined. `data.bank_account_request.reason` carries why. |
+| `account.verification.completed` | An identity check finished. Sent for the account holder on an individual account, and once per beneficial owner on a business. `data.ready_to_submit` says whether the account can now be submitted. |
 
 ## Account lifecycle
 
