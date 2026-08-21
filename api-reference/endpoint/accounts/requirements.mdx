@@ -67,10 +67,60 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
     "readyToSubmit": true,
     "missingFields": [],
     "missingDocuments": [],
-    "identityVerification": "verified"
+    "identityVerification": "verified",
+    "submitBlocker": null
   }
 }
 ```
+
+## Why an account is not ready
+
+When `readyToSubmit` is `false`, `submitBlocker` names the reason — the same one [Submit](/api-reference/endpoint/accounts/submit) would return if you called it now. Check it instead of re-deriving the reason from the other fields.
+
+```json
+{
+  "submitBlocker": {
+    "code": "APPLICATION_INCOMPLETE",
+    "message": "Application is incomplete",
+    "details": {
+      "missingFields": ["individualInfo.nin"],
+      "missingDocuments": ["proof_of_address"]
+    }
+  }
+}
+```
+
+Missing data is reported first. Once the application is complete and identity verification is the only hold, the code becomes `KYC_INCOMPLETE`:
+
+```json
+{
+  "submitBlocker": {
+    "code": "KYC_INCOMPLETE",
+    "message": "Identity verification is not complete",
+    "details": { "identityVerification": "pending" }
+  }
+}
+```
+
+For a business, `details.unverified` lists who is outstanding:
+
+```json
+{
+  "submitBlocker": {
+    "code": "KYC_INCOMPLETE",
+    "message": "Not every beneficial owner has completed KYC",
+    "details": {
+      "unverified": [
+        { "personId": "a3d4f21e-f499-488f-8508-43228dfea485", "name": "Jane Doe" }
+      ]
+    }
+  }
+}
+```
+
+<Info>
+  An account can have `identityVerification: "verified"` and still not be submittable — a passed identity check does not mean the application data is complete. `submitBlocker` is what tells the two apart.
+</Info>
 
 ## Response Fields
 
@@ -81,6 +131,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 | `missingDocuments` | string[] | Required document types not yet uploaded, including each related person's own documents |
 | `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) and their own `missingFields` / `missingDocuments` |
 | `identityVerification` | string | Individual only: identity verification state (`verified`, `pending`, `unknown`) |
+| `submitBlocker` | object \| null | `null` when the account is ready. Otherwise `code` (`APPLICATION_INCOMPLETE` or `KYC_INCOMPLETE`), a human-readable `message`, and `details` carrying the specifics |
 
 <Info>
   A business must declare **at least one** beneficial owner or director. Until one is added, `missingFields` contains `related_persons`.
