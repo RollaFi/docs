@@ -1,0 +1,68 @@
+---
+title: "Operate Customer Accounts"
+description: "Scope any request to a customer with X-Account-Id — funding, payouts, and reconciliation across your tenancy"
+---
+
+Once a customer account is approved, you operate it with the **same endpoints** the Business docs describe. One header changes whose money moves.
+
+## The `X-Account-Id` header
+
+Add `X-Account-Id: <accountId>` to any request and the **entire request** runs as that customer — their wallets, their beneficiaries, their transactions:
+
+```bash
+# The customer's balances
+curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: 3f1c2d4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+```
+
+| Behaviour | Result |
+|-----------|--------|
+| Header omitted | The request acts as your own (tenant) account |
+| Header set to an account in your tenancy | The request is scoped to that account |
+| Header set, but your key isn't a tenant key | `403` — tenant keys only |
+| Header naming an account outside your tenancy | `404` — not in your tenancy |
+
+The `accountId` is the `id` returned by [Create Account](/api-reference/endpoint/accounts/create) (or [List Accounts](/api-reference/endpoint/accounts/list)). Accounts you create with your tenant key — and customers who onboard themselves through your white-label app — are automatically part of your tenancy.
+
+<Note>
+  There is no need to create per-customer API keys: one tenant key operates the whole book. Keep it server-side and [IP-allowlisted](/concepts/authentication#ip-allowlisting) — payouts require it.
+</Note>
+
+## Funding customer accounts
+
+- **NGN** — [issue an NGN account](/api-reference/endpoint/accounts/issue-bank-account); deposits to it credit the customer's NGN wallet.
+- **USD** — issue a USD account (provider review applies). Need one deposit account per purpose? Pass a distinct `reference` per account — issuance is idempotent per reference, and deposits attribute to the right one.
+- **Any currency** — [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions) returns complete payment details for every currency provisioned on the account, ready to show your customer.
+
+## Moving customer money
+
+Everything in [Send Payouts](/guides/send-payouts) and [Convert Currencies](/guides/convert-currencies) applies — just add the header:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: 3f1c2d4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100000,
+    "currency": "NGN",
+    "beneficiaryId": "...",
+    "externalReference": "cust-3f1c-payout-042",
+    "metadata": { "your_user_id": "user_8412" }
+  }'
+```
+
+Beneficiaries are per-account too: create and reuse them under the customer's scope. Use `externalReference` and `metadata` to tie every transaction back to your own records — both come back on responses and [webhooks](/api-reference/webhooks/payloads).
+
+## Staying in sync
+
+As the tenant, **your** webhook endpoints receive events for every account in your tenancy:
+
+- `transaction.*` for customer deposits and payouts — payloads identify the account, and carry your `metadata`
+- `account.*` for onboarding progress and deposit-account issuance
+- `fee.*` with `incurred_by_account`, so you know which customer incurred what
+
+## Reconciliation
+
+[List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) is your book-level feed: every transaction across all managed accounts, newest first, each row naming its account — JSON or CSV. For a single customer, use the regular [transaction endpoints](/concepts/transactions) under their `X-Account-Id` scope.

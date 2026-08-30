@@ -1,0 +1,136 @@
+---
+title: "Platform Quickstart"
+description: "Onboard a customer, issue them an account, fund it, and pay out on their behalf — end to end in sandbox"
+---
+
+This walkthrough takes a **tenant API key** from zero to a payout made on behalf of a customer. Run it in your sandbox environment, where you can self-approve accounts and simulate deposits instead of waiting on real compliance review and real money.
+
+## Prerequisites
+
+- Your business activated as a **white-label tenant** (contact [support](mailto:support@rolla.xyz) if `/accounts` returns `403`)
+- A **sandbox** API key with at least one [allowlisted IP](/concepts/authentication#ip-allowlisting) (required for payouts)
+
+## Step 1: Create a customer account
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "business",
+    "name": "Beta Logistics LLC",
+    "email": "ops@betalogistics.com"
+  }'
+```
+
+The response returns an `accountId` and a draft application. Each account needs its own unique email (`409 ACCOUNT_EMAIL_EXISTS` otherwise). Save the `accountId` — it's the value you'll put in `X-Account-Id` for the rest of this guide.
+
+## Step 2: Complete and submit the application
+
+A real onboarding fills in business details, uploads documents, and verifies related persons — the [onboarding guide](/platform/onboard-customers) covers every step. The short version:
+
+```bash
+# What's still missing?
+curl "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/requirements" \
+  -H "X-API-Key: your_tenant_api_key"
+
+# ...fill details, upload documents, complete KYC...
+
+# Then submit
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/submit" \
+  -H "X-API-Key: your_tenant_api_key"
+```
+
+[Get Requirements](/api-reference/endpoint/accounts/requirements) reports `readyToSubmit: true` once everything is in place.
+
+## Step 3: Approve it (sandbox only)
+
+In production, submitted applications are reviewed by Rolla's compliance team. In sandbox, approve it yourself:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/approve" \
+  -H "X-API-Key: your_tenant_api_key"
+```
+
+This runs the real approval path — wallets are provisioned and the `account.approved` [webhook](/api-reference/webhooks/events) fires, exactly like a live approval.
+
+## Step 4: Issue a deposit account
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/bank-accounts" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "currency": "NGN" }'
+```
+
+NGN accounts are issued **instantly**; USD accounts go through provider review first (`202`). If the provider needs details the application didn't capture, [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) lists what to pass in `accountData`. Share the returned account number with your customer — or fetch complete payment details any time with [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions).
+
+## Step 5: Fund it (simulated)
+
+Simulate an NGN deposit into the account you just issued — note the `X-Account-Id` header scoping the request to your customer, and that simulate endpoints take the amount in **major units** as a string:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: {accountId}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_number": "ACCOUNT_NUMBER_FROM_STEP_4",
+    "amount": "5000",
+    "sender_name": "Test Sender"
+  }'
+```
+
+For USD, issue a USD account and use [Simulate an Account Deposit](/api-reference/endpoint/accounts/simulate-deposit) instead. Either way the simulated deposit fires the same `transaction.*` webhooks a real one would — and as the tenant, you receive events for all your customers' transactions.
+
+## Step 6: Pay out on the customer's behalf
+
+Now the key move: the same [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) endpoint every Business user calls, scoped to your customer with `X-Account-Id`. The payout comes out of **their** wallet:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: {accountId}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100000,
+    "currency": "NGN",
+    "inlineBeneficiary": {
+      "account_number": "0123456789",
+      "bank_name": "Access Bank",
+      "bank_code": "000014"
+    },
+    "description": "Customer payout",
+    "externalReference": "cust-A-payout-001"
+  }'
+```
+
+`100000` kobo = ₦1,000, in [minor units](/concepts/amounts-and-currencies) as everywhere. The same header works on any endpoint — check the customer's balance with `GET /wallet/wallets` + `X-Account-Id`, list their transactions, manage their beneficiaries.
+
+## Step 7: Reconcile
+
+One call returns every transaction across your whole tenancy, each row naming its account:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/accounts/transactions?page=1&pageSize=50" \
+  -H "X-API-Key: your_tenant_api_key"
+```
+
+Add `format=csv` for a file. See [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions).
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Onboard your customers" icon="user-plus" href="/platform/onboard-customers">
+    The full production onboarding journey — details, documents, related persons, KYC options.
+  </Card>
+  <Card title="Operate customer accounts" icon="gears" href="/platform/operate-accounts">
+    Everything about X-Account-Id scoping, funding, payouts, and reconciliation.
+  </Card>
+  <Card title="Webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Account lifecycle and transaction events for your whole tenancy.
+  </Card>
+  <Card title="Account Onboarding reference" icon="book" href="/api-reference/endpoint/accounts/overview">
+    Every /accounts endpoint, field by field.
+  </Card>
+</CardGroup>

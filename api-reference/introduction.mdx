@@ -26,7 +26,7 @@ See [Authentication](/concepts/authentication) for key management, environments,
 
 ## Acting on a tenant account (`X-Account-Id`)
 
-If your business is a Rolla **white-label tenant**, a single API key can act on any account inside your tenancy — your own account, or any account you've onboarded under it. Add the optional **`X-Account-Id`** header naming the target account, and the **entire** request is scoped to that account: onboarding, documents, wallets, funding instructions, payouts, beneficiaries — everything runs as that account.
+If your business uses the [Platform](/platform/overview) product (a **white-label tenant**), a single API key can act on any account inside your tenancy — your own account, or any account you've onboarded under it. Add the optional **`X-Account-Id`** header naming the target account, and the **entire** request is scoped to that account: onboarding, documents, wallets, funding instructions, payouts, beneficiaries — everything runs as that account.
 
 ```bash
 # Fetch funding instructions for one of your tenant's accounts

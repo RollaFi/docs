@@ -1,0 +1,70 @@
+---
+title: "Onboard Your Customers"
+description: "Create, verify, and activate accounts for your customers through the API"
+---
+
+Every customer on your platform is a full Rolla account, created and verified through the [Account Onboarding API](/api-reference/endpoint/accounts/overview). This guide walks the journey at a high level; the reference pages carry every field.
+
+An application moves through five statuses:
+
+```
+draft ──▶ submitted ──▶ approved
+              │
+              ├──▶ changes_requested ──▶ (edit & resubmit)
+              └──▶ rejected
+```
+
+You'll hear about every move via [webhooks](/api-reference/webhooks/events#account-events): `account.submitted`, `account.approved`, `account.changes_requested`, `account.rejected`.
+
+## Business customers
+
+<Steps>
+  <Step title="Create the account">
+    [Create Account](/api-reference/endpoint/accounts/create) with `type: "business"`, the business name, and a unique email. You get an `accountId` and a draft application.
+  </Step>
+  <Step title="Fill in business details">
+    [Update Business Details](/api-reference/endpoint/accounts/update-business) with `business_info`, `business_address`, `contact_info`, and optionally `banking_info`. Sections merge, so you can save progress across calls.
+  </Step>
+  <Step title="Upload documents">
+    [Upload Document](/api-reference/endpoint/accounts/upload-document) for each requirement — incorporation certificate, articles, proof of address, director and shareholder registers, bank statement.
+  </Step>
+  <Step title="Verify related persons">
+    [Add each beneficial owner and director](/api-reference/endpoint/accounts/add-related-person), then get each verified — see [KYC options](#kyc-options) below.
+  </Step>
+  <Step title="Submit">
+    Poll [Get Requirements](/api-reference/endpoint/accounts/requirements) until `readyToSubmit: true`, then [Submit](/api-reference/endpoint/accounts/submit).
+  </Step>
+</Steps>
+
+## Individual customers
+
+Same shape, shorter path: [create](/api-reference/endpoint/accounts/create) with `type: "individual"`, fill in [personal details](/api-reference/endpoint/accounts/update-individual), upload proof of address, complete [identity verification](#kyc-options), and [submit](/api-reference/endpoint/accounts/submit) once requirements are clear.
+
+## KYC options
+
+You choose how identity verification happens, per account and per related person:
+
+| Option | How it works | Use when |
+|---|---|---|
+| **Hosted KYC link** | [Generate a link](/api-reference/endpoint/accounts/individual-kyc-link) ([per related person](/api-reference/endpoint/accounts/kyc-link) for businesses) and send it to the person — they complete ID upload and liveness on a Rolla-hosted page | You don't run your own KYC |
+| **Verification SDK token** | [Create a verification token](/api-reference/endpoint/accounts/verification) and embed the verification flow in your own app; [poll the status](/api-reference/endpoint/accounts/verification-status) | You want the flow inside your product |
+| **KYC reliance** | [Submit the passport and liveness capture you already collected](/api-reference/endpoint/accounts/kyc-reliance) ([per related person](/api-reference/endpoint/accounts/related-person-kyc-reliance)) | You're a licensed entity running your own KYC — so customers aren't verified twice |
+
+<Note>
+  KYC reliance is gated per partner — ask Rolla to enable it for your tenancy.
+</Note>
+
+The `account.verification.completed` webhook fires as each person passes, with `ready_to_submit` telling you whether the application is now complete.
+
+## After approval
+
+Approval provisions the account's wallets (and fires `account.approved`). From there:
+
+1. **Issue deposit accounts** — [NGN instantly, USD after provider review](/api-reference/endpoint/accounts/issue-bank-account); share details from [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions).
+2. **Operate the account** — every wallet, payout, and transaction endpoint, scoped with `X-Account-Id`. See [Operate customer accounts](/platform/operate-accounts).
+
+If review comes back `changes_requested` instead, the webhook and [Get Account](/api-reference/endpoint/accounts/get) carry the reason — fix and resubmit.
+
+## Testing the journey
+
+In sandbox, [Approve Account](/api-reference/endpoint/accounts/approve-account) lets you self-approve a submitted application and run the whole flow — onboarding to payout — without waiting on compliance review. The [Platform Quickstart](/platform/quickstart) does exactly that.

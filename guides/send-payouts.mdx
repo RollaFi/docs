@@ -95,7 +95,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 Remember: `amount` is in [minor units](/concepts/amounts-and-currencies) — `100000` kobo = ₦1,000, and for USD `100` = $1.00. Always set an `externalReference` so you can [recover safely from timeouts](/concepts/idempotency).
 
 <Info>
-  **White-label tenants:** add the `X-Account-Id` header to pay out from a managed account's wallet instead of your own. See [tenant scoping](/api-reference/introduction#acting-on-a-tenant-account-x-account-id).
+  **Platforms:** add the `X-Account-Id` header to pay out from a customer's wallet instead of your own. See [Operate Customer Accounts](/platform/operate-accounts).
 </Info>
 
 ## 5. Track to completion

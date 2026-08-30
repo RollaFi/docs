@@ -11,13 +11,12 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Get Started",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Welcome",
             "pages": [
-              "index",
-              "quickstart"
+              "index"
             ]
           },
           {
@@ -30,6 +29,18 @@
               "concepts/idempotency",
               "concepts/errors"
             ]
+          }
+        ]
+      },
+      {
+        "tab": "Business",
+        "groups": [
+          {
+            "group": "Manage Your Own Money",
+            "pages": [
+              "business/overview",
+              "quickstart"
+            ]
           },
           {
             "group": "Guides",
@@ -38,6 +49,25 @@
               "guides/send-payouts",
               "swift-payouts",
               "guides/convert-currencies"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Platform",
+        "groups": [
+          {
+            "group": "Banking For Your Customers",
+            "pages": [
+              "platform/overview",
+              "platform/quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "platform/onboard-customers",
+              "platform/operate-accounts"
             ]
           }
         ]
@@ -127,7 +157,7 @@
             ]
           },
           {
-            "group": "Account Onboarding",
+            "group": "Account Onboarding (Platform)",
             "pages": [
               "api-reference/endpoint/accounts/overview",
               {

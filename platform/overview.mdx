@@ -1,0 +1,59 @@
+---
+title: "Platform Overview"
+description: "Offer accounts, wallets, and payouts to your own customers — white-label, through one API key"
+---
+
+The **Platform** product turns Rolla into your banking backend. MSBs, fintechs, and financial institutions use it to onboard their own customers, give each of them wallets and real deposit accounts, and move money on their behalf — all under your brand, all through the same API you'd use as a [Business](/business/overview).
+
+<Warning>
+  Platform capabilities are enabled per business. If your API key isn't activated as a **white-label tenant**, the `/accounts` endpoints return `403` and `X-Account-Id` is rejected. Contact [Rolla](mailto:support@rolla.xyz) to get activated.
+</Warning>
+
+## The model: a tenancy of accounts
+
+As a Platform, your Rolla business becomes a **tenant** that owns a book of customer **accounts**:
+
+```
+Your business (tenant) ── one API key
+├── Customer account A   (business)   → wallets, deposit accounts, payouts
+├── Customer account B   (individual) → wallets, deposit accounts, payouts
+└── Customer account C   ...
+```
+
+Three ideas carry the whole product:
+
+1. **Accounts** — each customer is a full Rolla account you create and verify through the [Account Onboarding API](/api-reference/endpoint/accounts/overview): application → documents → KYC → submit → approved.
+2. **One key, scoped per request** — your tenant API key acts on any account in your tenancy. Add the `X-Account-Id` header and the *entire* request — wallets, payouts, beneficiaries, funding instructions — runs as that customer. Omit it and you act as yourself. See [Operate customer accounts](/platform/operate-accounts).
+3. **Everything else is the same API** — once a request is scoped to a customer, you use exactly the endpoints the Business docs describe: [withdraw](/api-reference/endpoint/wallet/withdraw), [swap](/api-reference/endpoint/wallet/swap), [transactions](/concepts/transactions). Nothing to relearn.
+
+## What your customers get
+
+<CardGroup cols={2}>
+  <Card title="Verified accounts" icon="id-card" href="/platform/onboard-customers">
+    API-driven KYC/KYB: hosted verification links, document uploads, or reliance on your own KYC.
+  </Card>
+  <Card title="Real deposit accounts" icon="building-columns" href="/api-reference/endpoint/accounts/issue-bank-account">
+    NGN accounts issued instantly; USD accounts after provider review. Funding instructions per currency.
+  </Card>
+  <Card title="Payouts on their behalf" icon="paper-plane" href="/platform/operate-accounts">
+    Every payout rail — local, SWIFT, mobile money, stablecoins — from each customer's own wallet.
+  </Card>
+  <Card title="One reconciliation feed" icon="scale-balanced" href="/api-reference/endpoint/accounts/list-transactions">
+    Every transaction across all your accounts in one listing, each row naming its account. JSON or CSV.
+  </Card>
+</CardGroup>
+
+## Staying in sync
+
+[Webhooks](/api-reference/webhooks/overview) cover the platform lifecycle end to end: `account.submitted`, `account.approved`, `account.changes_requested`, `account.verification.completed`, deposit-account events, and every `transaction.*` event for your customers' money — delivered to **your** endpoints, since you're the tenant. [Fee events](/api-reference/webhooks/events#fee-events) tell you what each account incurred.
+
+## Start here
+
+<CardGroup cols={2}>
+  <Card title="Platform Quickstart" icon="rocket" href="/platform/quickstart">
+    Onboard a test customer, issue them an account, fund it, and pay out on their behalf — end to end in sandbox.
+  </Card>
+  <Card title="Onboard your customers" icon="user-plus" href="/platform/onboard-customers">
+    The full onboarding journey for business and individual customers, including KYC options.
+  </Card>
+</CardGroup>

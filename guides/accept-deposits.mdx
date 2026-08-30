@@ -40,6 +40,10 @@ Show the returned `account_number` and `bank_name` to your user. Every transfer 
   Customer virtual accounts require the end user's BVN for KYC. It is stored securely and never returned by the API.
 </Note>
 
+<Info>
+  Deposits to customer virtual accounts land in **your** wallet, tagged by customer — you keep the ledger. If each customer should instead hold their **own** verified account and wallet, that's the [Platform](/platform/overview) product.
+</Info>
+
 ## Getting notified
 
 Don't poll. Configure a [webhook endpoint](/api-reference/webhooks/overview) subscribed to `transaction.completed`, and match deposits by `virtual_account` and `customer_identifier` in the [event payload](/api-reference/webhooks/payloads):
