@@ -3,7 +3,7 @@ title: 'Get Transaction'
 openapi: 'GET /wallet/transaction/{transactionId}'
 ---
 
-Retrieve the full details of a specific wallet transaction by its ID.
+Retrieve the full details of a specific wallet transaction, by **either** Rolla's transaction ID **or** the `externalReference` you set when you created it.
 
 ## Example Request
 
@@ -45,9 +45,47 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/a1b2c3d4-e
 }
 ```
 
+## Looking one up by your own reference
+
+The path segment accepts two things, and Rolla picks by shape:
+
+| What you pass | What it matches |
+|---------------|-----------------|
+| A UUID | Rolla's transaction `id` |
+| Anything else | The `external_reference` on the transaction — the `externalReference` you sent when creating the payout, transfer or swap |
+
+So if you kept only your own reference, you can read the transaction back without ever storing our ID:
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/invoice-8842" \
+  -H "X-API-Key: your_api_key_here"
+```
+
 <Note>
-  The `transactionId` must be a valid UUID. You can obtain transaction IDs from the `/wallet/transactions` list endpoint.
+  An `external_reference` is only unique within the account that set it. If the same reference exists on more than one transaction in scope, the most recent one is returned. Pass the transaction `id` when you need an exact, single row — for example when reconciling.
 </Note>
+
+<Note>
+  Transaction IDs and references both come back from the [`/wallet/transactions`](/api-reference/endpoint/wallet/transactions) and [`/accounts/transactions`](/api-reference/endpoint/accounts/list-transactions) list endpoints, and from every [webhook payload](/api-reference/webhooks/payloads).
+</Note>
+
+## What you can read
+
+The lookup is scoped to what your key can see:
+
+- **An ordinary key** reads transactions belonging to its own business.
+- **A partner (white-label tenant) key** reads any transaction across its whole tenancy — its own account and every account it has onboarded. A row you found in [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) is fetchable by ID here directly; you do **not** need to work out which account owns it first.
+- Adding the [`X-Account-Id`](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) header narrows the lookup to that one account, as it does on every other endpoint.
+
+A transaction that doesn't exist and one that belongs to somebody else both return the same `404`, so IDs can't be probed:
+
+```json
+{
+  "status": 404,
+  "success": false,
+  "message": "Transaction not found: a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+}
+```
 
 ## Payment tracking references
 
