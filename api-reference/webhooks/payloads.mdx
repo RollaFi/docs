@@ -64,7 +64,7 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
 | `data.payer` | The sender/originator of a **deposit** — present for **deposits** when the provider supplies sender details, **omitted** for payouts. See below for availability by rail. |
 | `data.network` | On-chain details — present only for genuinely **on-chain** transactions (a real chain and/or wallet address). `chain` is the full network name (`Solana`); `tx_hash` is the on-chain transaction hash. **Omitted** for transactions with no on-chain leg — including stablecoin-funded payouts that settle to a fiat bank (e.g. a USDT → USD wire). |
 | `data.customer_identifier` | Present **only** for deposits into a **customer** (per-end-user) virtual account — the identifier you set when creating the account via [Generate Customer Virtual Account](/api-reference/endpoint/wallet/virtual-accounts-generate-customer). Use it to attribute the deposit to the specific end-user the account belongs to. **Omitted** for every other transaction (regular deposits and all payouts). |
-| `data.metadata` | Any metadata you supplied when creating the transaction |
+| `data.metadata` | Any metadata you supplied when creating the transaction — see [Attaching your own metadata](/api-reference/endpoint/wallet/withdraw#attaching-your-own-metadata). Returned exactly as you sent it; **omitted** when you supplied none |
 
 ### Amount format
 
@@ -445,7 +445,7 @@ your own record without a further call.
 | `data.currency` / `data.amount` | The beneficiary's currency and amount, in **minor units** (see [Amount format](#amount-format)) — enough to confirm you matched the right payout. |
 | `data.beneficiary` | The payout's beneficiary, in the [same shape](#the-beneficiary-object-payouts) as the status events. |
 | `data.timestamp` | When the reference was **recorded** (ISO 8601). Earlier than `created_at`, which is when this event was generated — quote `timestamp` when tracing a payment. |
-| `data.metadata` | Any metadata you supplied when creating the payout, passed through unchanged. |
+| `data.metadata` | Any metadata you supplied when [creating the payout](/api-reference/endpoint/wallet/withdraw#attaching-your-own-metadata), passed through unchanged. |
 
 <Note>
   The fee, FX and amount-leg fields (`source_amount`, `exchange_rate`, `fee_amount`, …)

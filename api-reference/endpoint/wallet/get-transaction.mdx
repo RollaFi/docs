@@ -48,3 +48,40 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/a1b2c3d4-e
 <Note>
   The `transactionId` must be a valid UUID. You can obtain transaction IDs from the `/wallet/transactions` list endpoint.
 </Note>
+
+## Payment tracking references
+
+A cross-border payout carries `uetr` and `tracking_codes` once the SWIFT network returns
+them — the references a beneficiary's bank is chased with.
+
+```json
+{
+  "id": "9a56d01f-dc72-4ace-bbbc-a237bdb1c599",
+  "transaction_type": "withdrawal",
+  "status": "sent",
+  "uetr": "97ed4827-7b6f-4491-a06f-b548d5a7512d",
+  "tracking_codes": {
+    "UETR": "97ed4827-7b6f-4491-a06f-b548d5a7512d",
+    "IMAD": "20260818B1QGC01C000123"
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `uetr` | The payout's **UETR** (Unique End-to-end Transaction Reference) — the UUID that identifies the payment across every bank that touches it. Quote it when tracing or recalling a payment. |
+| `tracking_codes` | Every reference recorded against the payout, keyed by name — the `UETR`, plus `IMAD` on corridors that produce one. Read `uetr` for the UETR; use this if you also surface the others. |
+
+<Warning>
+  **Both fields are omitted until the reference exists** — they are not returned as
+  `null`. The UETR is assigned by the correspondent network *after* the payout is sent,
+  typically within minutes but sometimes hours later, so a payout read back immediately
+  after you create it will not carry one. Local-rail and stablecoin payouts never get one.
+  Branch on the field's presence; never block your flow waiting for it.
+</Warning>
+
+<Tip>
+  To be told the moment a UETR lands rather than polling for it, subscribe to the
+  [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
+  webhook. It carries the same value.
+</Tip>

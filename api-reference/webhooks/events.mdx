@@ -47,9 +47,11 @@ it arrives as its own event:
 </Steps>
 
 <Note>
-  This event is the **only** channel that carries the UETR — it is not returned by the
-  transaction endpoints. Subscribe to it if you display or store payment references for
-  your users.
+  This event is how you learn the UETR **as soon as it exists** — subscribe to it if you
+  display or store payment references for your users. You can also read it back at any
+  time from the transaction endpoints, which return `uetr` and `tracking_codes` on the
+  payout once it has one. Use the event to be told, and the endpoints to look up a payout
+  you already know about.
 </Note>
 
 Two things to expect:

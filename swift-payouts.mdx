@@ -199,7 +199,9 @@ don't return one. So the withdraw response can't carry it.
 
 We push it to you instead, on the
 [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
-webhook:
+webhook — and once a payout has one, it is also returned on that payout by
+[Get Transaction](/api-reference/endpoint/wallet/get-transaction) and the transaction
+listings, so you can look it up whenever you need it:
 
 ```json
 {
@@ -221,9 +223,9 @@ webhook:
 
 Three things worth knowing:
 
-- **This webhook is the only place you can get it.** The UETR is not returned by the
-  transaction endpoints, so subscribe to the event if you show payment references to your
-  users or handle their tracing requests.
+- **The webhook is how you learn it without asking.** Subscribe if you show payment
+  references to your users or handle their tracing requests; otherwise read `uetr` off the
+  payout whenever you need it. Both carry the same value.
 - **It may arrive after the payout has completed.** It reports a reference becoming
   available, not a change to the payment — don't advance your own payment state on it.
 - **Not every payout gets one.** Local-rail and stablecoin payouts have no UETR, and no
