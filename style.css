@@ -1,0 +1,14 @@
+/* Cards that share a row always share that row's height. */
+.card-group {
+  align-items: stretch;
+}
+
+.card-group > .card {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-group > .card > [data-component-part="card-content-container"] {
+  flex: 1 1 auto;
+}
