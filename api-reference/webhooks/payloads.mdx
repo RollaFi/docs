@@ -51,7 +51,7 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
 | `data.transaction_id` | Rolla transaction id |
 | `data.reference` | Transaction reference (the external reference) |
 | `data.type` | `deposit` or `payout` |
-| `data.status` | The transaction status this event represents — one of `pending`, `processing`, `sent`, `completed`, `failed`, `rejected`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events) |
+| `data.status` | The transaction status this event represents — one of `pending`, `processing`, `sent`, `completed`, `failed`, `rejected`, `refunded` (matches the `event` type). See [Events](/api-reference/webhooks/events). On [`transaction.uetr.assigned`](#sample-payout-uetr-assigned), which announces no status change, it reports the payout's status instead — see that section. |
 | `data.rail` | `fiat` or `stablecoin` |
 | `data.amount` / `data.currency` | The **net** amount the counterparty receives (in **minor units** — see [Amount format](#amount-format)), and its currency — a deposit's credited amount, or a payout's amount to the beneficiary. Equals `destination_amount`. |
 | `data.source_amount` / `data.source_currency` | The debit leg, in **minor units**; for FX it's the source-currency amount. For a **payout** this is normally the **gross** amount, i.e. `amount` **+ fee** — but **not** when the fee is charged to a separate account rather than deducted from the payout (see [Fees paid by another account](#fees-paid-by-another-account)), in which case `source_amount` equals `amount` and the fee sits on its own transaction. **Never derive the fee as `source_amount − amount`** — read `fee_amount` directly. |
@@ -394,6 +394,64 @@ A cross-currency payout. `exchange_rate` is populated (the quoted rate for the p
   }
 }
 ```
+
+---
+
+## Sample: Payout UETR assigned
+
+`transaction.uetr.assigned` reports that a cross-border payout's SWIFT reference became
+available — see [Events](/api-reference/webhooks/events#payout-tracking-events). Its
+`data` is deliberately narrow: the reference, plus enough of the payout to match it to
+your own record without a further call.
+
+```json
+{
+  "event": "transaction.uetr.assigned",
+  "event_id": "4eb1c0d7-2a83-5f19-b6c4-1d7e9a2f8b30",
+  "created_at": "2026-08-18T13:12:44.000Z",
+  "data": {
+    "transaction_id": "9a56d01f-dc72-4ace-bbbc-a237bdb1c599",
+    "reference": "NG-D7NUAS9Q",
+    "type": "payout",
+    "status": "sent",
+    "uetr": "97ed4827-7b6f-4491-a06f-b548d5a7512d",
+    "tracking_codes": {
+      "UETR": "97ed4827-7b6f-4491-a06f-b548d5a7512d"
+    },
+    "currency": "USD",
+    "amount": 100000,
+    "beneficiary": {
+      "id": "79ee09c0-1518-4a5c-86c7-d880a78ec6e5",
+      "account_name": "Anna Müller",
+      "iban": "DE89370400440532013000",
+      "bank_name": "Commerzbank AG",
+      "swift_code": "COBADEFFXXX",
+      "currency": "USD",
+      "withdrawal_method": "international_wire"
+    },
+    "timestamp": "2026-08-18T13:12:41.907Z",
+    "metadata": { "invoice_id": "INV-2026-042" }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `data.transaction_id` / `data.reference` | The payout the reference belongs to — match on either. |
+| `data.type` | Always `payout`. |
+| `data.status` | The payout's status **at the time the reference was recorded**. Unlike the status events, this one carries no status of its own, so `status` reports the row — commonly `sent`, and `completed` when the payout settled before the reference came back. It is context, **not** a status change: never advance your own state machine on it. |
+| `data.uetr` | The UETR itself. |
+| `data.tracking_codes` | Every tracking code recorded against the payout, keyed by name — the `UETR` always, and `IMAD` on the corridors that produce one. Read `data.uetr` for the UETR; use this object if you also surface the others. |
+| `data.currency` / `data.amount` | The beneficiary's currency and amount, in **minor units** (see [Amount format](#amount-format)) — enough to confirm you matched the right payout. |
+| `data.beneficiary` | The payout's beneficiary, in the [same shape](#the-beneficiary-object-payouts) as the status events. |
+| `data.timestamp` | When the reference was **recorded** (ISO 8601). Earlier than `created_at`, which is when this event was generated — quote `timestamp` when tracing a payment. |
+| `data.metadata` | Any metadata you supplied when creating the payout, passed through unchanged. |
+
+<Note>
+  The fee, FX and amount-leg fields (`source_amount`, `exchange_rate`, `fee_amount`, …)
+  are **not** on this payload — nothing about the money changed. Take them from the
+  payout's own status events.
+</Note>
 
 ## Account event payloads
 
