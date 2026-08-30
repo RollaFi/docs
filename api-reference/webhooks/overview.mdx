@@ -5,7 +5,7 @@ description: 'Receive real-time deposit and payout status updates instead of pol
 
 ## What are webhooks?
 
-Webhooks let Rolla notify **your** server in real time whenever one of your deposits or payouts changes status — so you no longer need to poll the transaction endpoints. When an event occurs, Rolla sends an HTTP `POST` request to a URL you configure, with a JSON payload describing the transaction.
+Webhooks let Rolla notify **your** server in real time whenever one of your deposits or payouts changes status — so you no longer need to poll the transaction endpoints. They also announce things that appear well after a payout is sent, such as its [UETR](/api-reference/webhooks/events#payout-tracking-events) — which you can read back from the transaction endpoints, but only if you know to go looking. When an event occurs, Rolla sends an HTTP `POST` request to a URL you configure, with a JSON payload describing the transaction.
 
 Webhooks cover **all supported transaction types and corridors**:
 

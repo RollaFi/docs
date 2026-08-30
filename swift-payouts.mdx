@@ -155,7 +155,9 @@ your USD wallet.
   </Step>
   <Step title="Track the payout">
     Monitor status via [Transactions](/api-reference/endpoint/transactions) or
-    webhooks.
+    webhooks, and subscribe to
+    [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
+    for the payment's UETR (see below).
   </Step>
 </Steps>
 
@@ -182,6 +184,55 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     }
   }'
 ```
+
+## Tracing a payout: the UETR
+
+Every payment on the SWIFT network carries a **UETR** (Unique End-to-end Transaction
+Reference) — a UUID that identifies the payment across every bank that touches it. It's
+the reference a beneficiary's bank recognises, so it's what you quote when a recipient
+asks where their money is, or when you need a payment traced or recalled.
+
+The UETR is **not available when you send**. It is assigned by the correspondent network
+and comes back to us afterwards — usually within minutes, sometimes hours later during
+the destination market's banking day, and occasionally not at all on corridors that
+don't return one. So the withdraw response can't carry it.
+
+We push it to you instead, on the
+[`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
+webhook — and once a payout has one, it is also returned on that payout by
+[Get Transaction](/api-reference/endpoint/wallet/get-transaction) and the transaction
+listings, so you can look it up whenever you need it:
+
+```json
+{
+  "event": "transaction.uetr.assigned",
+  "event_id": "4eb1c0d7-2a83-5f19-b6c4-1d7e9a2f8b30",
+  "created_at": "2026-08-18T13:12:44.000Z",
+  "data": {
+    "transaction_id": "9a56d01f-dc72-4ace-bbbc-a237bdb1c599",
+    "reference": "NG-D7NUAS9Q",
+    "type": "payout",
+    "status": "sent",
+    "uetr": "97ed4827-7b6f-4491-a06f-b548d5a7512d",
+    "currency": "USD",
+    "amount": 100000,
+    "timestamp": "2026-08-18T13:12:41.907Z"
+  }
+}
+```
+
+Three things worth knowing:
+
+- **The webhook is how you learn it without asking.** Subscribe if you show payment
+  references to your users or handle their tracing requests; otherwise read `uetr` off the
+  payout whenever you need it. Both carry the same value.
+- **It may arrive after the payout has completed.** It reports a reference becoming
+  available, not a change to the payment — don't advance your own payment state on it.
+- **Not every payout gets one.** Local-rail and stablecoin payouts have no UETR, and no
+  event is sent when a corridor never returns one. Never gate your flow on it.
+
+See [Payloads](/api-reference/webhooks/payloads#sample-payout-uetr-assigned) for the full
+field reference.
 
 <Card title="Need a corridor checked?" icon="headset" href="mailto:support@rolla.xyz">
   Contact our team to confirm coverage or required fields for a specific

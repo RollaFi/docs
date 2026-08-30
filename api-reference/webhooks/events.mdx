@@ -21,6 +21,47 @@ Each event maps 1:1 to a transaction status.
 | `transaction.rejected` | `rejected` | The transaction was rejected (e.g. declined during approval or compliance review). |
 | `transaction.refunded` | `refunded` | A previously completed transaction was reversed/refunded. |
 
+### Payout tracking events
+
+| Event | When it's sent |
+|-------|----------------|
+| `transaction.uetr.assigned` | The **UETR** for a cross-border payout became available. |
+
+A **UETR** (Unique End-to-end Transaction Reference) is the SWIFT-network reference for
+a payment. It is the reference a beneficiary's bank recognises, so it's what you quote
+when a recipient asks where their money is or when you need a payment traced.
+
+The UETR is **not known when the payout is sent**. It is assigned by the correspondent
+network and we retrieve it afterwards — typically within minutes, sometimes hours later,
+during the destination market's banking day. So it can't be part of a status event, and
+it arrives as its own event:
+
+<Steps>
+  <Step title="transaction.sent">
+    The payout has been dispatched. No UETR yet.
+  </Step>
+  <Step title="transaction.uetr.assigned">
+    The reference is now available. It may arrive **after** `transaction.completed` —
+    treat the two as independent.
+  </Step>
+</Steps>
+
+<Note>
+  This event is how you learn the UETR **as soon as it exists** — subscribe to it if you
+  display or store payment references for your users. You can also read it back at any
+  time from the transaction endpoints, which return `uetr` and `tracking_codes` on the
+  payout once it has one. Use the event to be told, and the endpoints to look up a payout
+  you already know about.
+</Note>
+
+Two things to expect:
+
+- **Not every payout gets one.** The UETR exists for cross-border payouts on the SWIFT
+  network. Local-rail payouts and stablecoin transfers have no UETR, and a corridor that
+  never returns one emits no event. Never block your own flow waiting for it.
+- **It is sent once per payout.** The reference doesn't change once assigned, so the
+  event carries a stable `event_id` and a redelivery is recognisable as the same event.
+
 ### Fee events
 
 A fee your account bears for an account you manage moves through three stages, and each is announced separately. Subscribe to all three, or only to the one you act on.
@@ -142,6 +183,10 @@ A typical transaction emits `transaction.pending` and then one or more later eve
 <Info>
   Not every transaction emits every event, and intermediate events (`processing`, `sent`) may be skipped depending on the rail and how fast the transaction settles. A deposit that is auto-confirmed may jump from `pending` to `completed`; a payout that fails will emit `transaction.pending` then `transaction.failed`. Always treat the event's status as the source of truth and don't assume ordering.
 </Info>
+
+`transaction.uetr.assigned` sits outside this sequence. It reports a reference becoming
+available rather than a change to the payment, carries no status of its own, and may
+arrive at any point after the payout is sent — including after it has completed.
 
 ## The `event_id` field
 
