@@ -1,0 +1,116 @@
+---
+title: "Send Payouts"
+description: "Pay bank accounts, mobile money wallets, and on-chain addresses from your Rolla wallet"
+---
+
+All payouts flow through one endpoint — [Withdraw Funds](/api-reference/endpoint/wallet/withdraw). The beneficiary's `withdrawal_method` decides the rail: NGN local transfers, US ACH and domestic wires, USD over SWIFT to 185+ countries, mobile money, or USDC/USDT on-chain. This guide walks the full payout loop.
+
+<Warning>
+  Payout endpoints require your API key to have at least one [allowlisted IP](/concepts/authentication#ip-allowlisting). Set that up first.
+</Warning>
+
+## 1. Quote the fee (optional but recommended)
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "transactionType": "withdrawal",
+    "amount": 100000
+  }'
+```
+
+By default fees come out of the amount you send; pass `deductFeesFromBalance: true` on the withdrawal if the beneficiary must receive the exact amount.
+
+## 2. Resolve the destination
+
+For NGN bank payouts, verify the account before sending — it returns the registered account name so you (or your user) can confirm it's the right person:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "bankCode": "000014", "accountNumber": "0123456789" }'
+```
+
+Bank codes come from [List Banks](/api-reference/endpoint/banks).
+
+## 3. Create a beneficiary — or go inline
+
+For recipients you'll pay repeatedly, [create a beneficiary](/api-reference/endpoint/beneficiaries/create) once and reference its `id` forever after. For one-off payouts, pass `inlineBeneficiary` directly on the withdrawal (add `saveBeneficiary: true` to keep it).
+
+The required fields depend on the rail — see [Amounts & Currencies](/concepts/amounts-and-currencies#payout-rails) for the overview and [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) for the per-method field tables. Two examples:
+
+<CodeGroup>
+
+```bash NGN local transfer
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "NGN",
+    "label": "Supplier — Lagos",
+    "account_name": "JOHN DOE",
+    "account_number": "0123456789",
+    "bank_name": "Access Bank",
+    "bank_code": "000014"
+  }'
+```
+
+```bash USD over SWIFT
+curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD",
+    "withdrawal_method": "international_wire",
+    "account_name": "ACME GMBH",
+    "iban": "DE89370400440532013000",
+    "swift_code": "COBADEFFXXX",
+    "bank_name": "Commerzbank AG",
+    "bank_address": { "street": "Kaiserplatz", "city": "Frankfurt", "country": "DE" },
+    "beneficiary_address": { "street": "Hauptstrasse 1", "city": "Berlin", "country": "DE" }
+  }'
+```
+
+</CodeGroup>
+
+## 4. Send it
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100000,
+    "currency": "NGN",
+    "beneficiaryId": "BENEFICIARY_ID",
+    "description": "Invoice 4021",
+    "externalReference": "payout-4021"
+  }'
+```
+
+Remember: `amount` is in [minor units](/concepts/amounts-and-currencies) — `100000` kobo = ₦1,000, and for USD `100` = $1.00. Always set an `externalReference` so you can [recover safely from timeouts](/concepts/idempotency).
+
+<Info>
+  **White-label tenants:** add the `X-Account-Id` header to pay out from a managed account's wallet instead of your own. See [tenant scoping](/api-reference/introduction#acting-on-a-tenant-account-x-account-id).
+</Info>
+
+## 5. Track to completion
+
+The response gives you the transaction `id` immediately, but a payout is only done when it reaches a terminal status. Subscribe to [webhooks](/api-reference/webhooks/overview):
+
+- `transaction.completed` — the beneficiary was paid
+- `transaction.failed` / `transaction.rejected` — the payout didn't go through and **funds are back in your wallet**
+- `transaction.uetr.assigned` — for SWIFT payouts, the network tracing reference ([more](/swift-payouts#tracing-a-payout-the-uetr))
+
+Or fetch on demand with [Get Transaction](/api-reference/endpoint/wallet/get-transaction) by `id` or your `externalReference`.
+
+## Other destinations
+
+- **Mobile money** — XAF, XOF, and GHS wallets via `withdrawal_method: "mobile_money"` with `mobile_money_provider` and `phone_number`.
+- **Stablecoins** — `crypto_usdc` / `crypto_usdt` with `wallet_address` and `wallet_chain`.
+- **Another Rolla business** — skip beneficiaries entirely and use [Rolla Transfer](/api-reference/endpoint/wallet/transfer) for instant transfers between Rolla accounts.
+- **USD SWIFT worldwide** — country coverage, IBAN rules, and required fields in the [SWIFT payouts guide](/swift-payouts).

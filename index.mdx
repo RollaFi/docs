@@ -1,109 +1,97 @@
 ---
-title: "Introduction"
-description: "Welcome to the Rolla Developer API documentation"
+title: "Rolla Developer API"
+description: "Multi-currency wallets, local and cross-border payouts, and collections — one API"
 ---
 
-## What is Rolla?
+Rolla is financial infrastructure for businesses operating across Africa and beyond. The Developer API gives you programmatic access to everything the Rolla dashboard can do: hold balances in multiple currencies, collect payments through virtual accounts, pay out over local rails, SWIFT, and stablecoins, and convert between currencies at live rates.
 
-Rolla is a financial infrastructure platform that enables businesses to manage multi-currency wallets and handle cross-border transactions. Our Developer API gives you programmatic access to these capabilities.
+## Start building
 
-<Card
-  title="Quick Start"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Get up and running with the Rolla API in minutes.
-</Card>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Create an API key, fund a wallet, and send your first payout in minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/concepts/authentication">
+    API keys, IP allowlisting, and acting on tenant accounts.
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Every endpoint, request field, and response shape.
+  </Card>
+  <Card title="Webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Real-time deposit, payout, and account events pushed to your server.
+  </Card>
+</CardGroup>
 
-## Core Capabilities
+## What you can build
+
+<CardGroup cols={2}>
+  <Card title="Accept deposits" icon="arrow-down-to-bracket" href="/guides/accept-deposits">
+    Collect NGN payments with dynamic, static, or per-customer virtual accounts, and USD or stablecoin deposits into your wallet.
+  </Card>
+  <Card title="Send payouts" icon="paper-plane" href="/guides/send-payouts">
+    Pay bank accounts over local rails, USD wires and SWIFT, mobile money, or stablecoin — from one endpoint.
+  </Card>
+  <Card title="Convert currencies" icon="arrows-rotate" href="/guides/convert-currencies">
+    Quote a live rate, lock it with a rate token, and swap between your wallets.
+  </Card>
+  <Card title="Onboard your customers" icon="user-plus" href="/api-reference/endpoint/accounts/overview">
+    White-label partners can create, verify, and manage accounts for their own customers — each with its own wallets and deposit accounts.
+  </Card>
+</CardGroup>
+
+## Explore the API
+
+The reference is organised by resource, in roughly the order you'll meet each one:
 
 <Columns cols={3}>
-  <Card
-    title="Account Lookup"
-    icon="magnifying-glass-dollar"
-    href="/api-reference/endpoint/lookup"
-  >
-    Verify bank account details before sending payments.
+  <Card title="Wallets" icon="wallet" href="/api-reference/endpoint/wallet/wallets">
+    Balances and supported currencies.
   </Card>
-  <Card
-    title="Bank Directory"
-    icon="building-columns"
-    href="/api-reference/endpoint/banks"
-  >
-    Access our complete list of supported Nigerian banks.
+  <Card title="Deposits & Virtual Accounts" icon="building-columns" href="/api-reference/endpoint/wallet/virtual-accounts">
+    Generate deposit accounts and collect funds.
   </Card>
-  <Card
-    title="Transactions"
-    icon="clock-rotate-left"
-    href="/api-reference/endpoint/transactions"
-  >
-    Query and filter your transaction records via API.
+  <Card title="Banks & Account Lookup" icon="magnifying-glass-dollar" href="/api-reference/endpoint/banks">
+    Bank directory and account name resolution.
   </Card>
-  <Card
-    title="Wallet"
-    icon="wallet"
-    href="/api-reference/endpoint/wallet/wallets"
-  >
-    Multi-currency wallets, funding, swaps, withdrawals, and virtual accounts.
+  <Card title="Beneficiaries" icon="address-book" href="/api-reference/endpoint/beneficiaries/list">
+    Saved payout recipients across all rails.
   </Card>
-  <Card
-    title="Beneficiaries"
-    icon="address-book"
-    href="/api-reference/endpoint/beneficiaries/list"
-  >
-    Create and manage saved payment recipients.
+  <Card title="Payouts & Transfers" icon="paper-plane" href="/api-reference/endpoint/wallet/withdraw">
+    Fee quotes, withdrawals, and Rolla-to-Rolla transfers.
   </Card>
-  <Card
-    title="Teams"
-    icon="users"
-    href="/api-reference/endpoint/teams/members"
-  >
-    Invite members, assign roles, and manage your team.
+  <Card title="FX & Swaps" icon="arrows-rotate" href="/api-reference/endpoint/wallet/rates">
+    Live rates and wallet-to-wallet conversion.
   </Card>
-  <Card
-    title="Broker"
-    icon="handshake"
-    href="/api-reference/endpoint/broker/get-referral-link"
-  >
-    Referral links, commissions, and referred business tracking.
+  <Card title="Transactions & Statements" icon="clock-rotate-left" href="/api-reference/endpoint/wallet/transactions">
+    History, single-transaction lookup, exports, and statements.
   </Card>
-  <Card
-    title="KYB"
-    icon="id-card"
-    href="/api-reference/endpoint/kyb/get-application"
-  >
-    Business verification applications and document uploads.
+  <Card title="Webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Events, payloads, signatures, and delivery.
   </Card>
-  <Card
-    title="Account Onboarding"
-    icon="user-plus"
-    href="/api-reference/endpoint/accounts/overview"
-  >
-    Onboard additional business or individual accounts via the API.
+  <Card title="Account Onboarding" icon="id-card" href="/api-reference/endpoint/accounts/overview">
+    White-label customer accounts, KYC, and issued bank accounts.
   </Card>
 </Columns>
 
-## Getting Started
+## How the pieces fit
 
 <Steps>
-  <Step title="Get API Access">
-    Sign up at [app.rolla.xyz](https://app.rolla.xyz) and complete business verification.
+  <Step title="Authenticate">
+    Create an [API key](/concepts/authentication) in the dashboard and send it in the `X-API-Key` header on every request.
   </Step>
-  <Step title="Generate API Key">
-    Navigate to **Settings → API Keys** in your dashboard to create a key.
+  <Step title="Fund a wallet">
+    Generate a [virtual account](/guides/accept-deposits) and receive deposits, or fund via your issued account details.
   </Step>
-  <Step title="Make Your First Request">
-    Use your API key to call any endpoint with the `X-API-Key` header.
+  <Step title="Move money">
+    [Withdraw](/api-reference/endpoint/wallet/withdraw) to a beneficiary, [transfer](/api-reference/endpoint/wallet/transfer) to another Rolla business, or [swap](/api-reference/endpoint/wallet/swap) between currencies.
+  </Step>
+  <Step title="Track everything">
+    Subscribe to [webhooks](/api-reference/webhooks/overview) for status changes and reconcile with the [transaction endpoints](/concepts/transactions).
   </Step>
 </Steps>
 
-## Need Help?
+## Need help?
 
-<Card
-  title="Contact Support"
-  icon="headset"
-  href="mailto:support@rolla.xyz"
->
-  Reach out to our team for integration assistance.
+<Card title="Contact Support" icon="headset" href="mailto:support@rolla.xyz" horizontal>
+  Reach out to our team for integration assistance or to confirm coverage for a specific corridor.
 </Card>

@@ -1,0 +1,64 @@
+---
+title: "Transactions"
+description: "The transaction object, its lifecycle, and which listing endpoint to use"
+---
+
+Every movement of money on Rolla — a deposit, payout, swap, or fee — is recorded as a **transaction**. This page explains the object's lifecycle, the references that identify it, and which of the listing endpoints answers which question.
+
+## Types
+
+| `transaction_type` | Meaning |
+|---|---|
+| `deposit` | Money in — a virtual account or issued bank account was funded |
+| `withdrawal` | Money out — a payout in the wallet's own currency |
+| `fx_withdrawal` | Money out with conversion — paid out in a different currency |
+| `swap` | Conversion between two of your own wallets |
+| `payin` | An incoming Rolla-to-Rolla transfer |
+| `fee` | A fee booked as its own transaction (appears as a filterable type on listings) |
+
+## Lifecycle
+
+```
+pending ──▶ processing ──▶ sent ──▶ completed
+   │             │           │
+   └─────────────┴───────────┴────▶ failed / rejected
+
+completed ────────────────────────▶ refunded (rare, on reversal)
+```
+
+| Status | Meaning |
+|---|---|
+| `pending` | Created and awaiting processing. For a payout, funds are already debited from your wallet. |
+| `processing` | Actively being processed — submitted to the bank or network. |
+| `sent` | Dispatched to the provider/network and in flight, not yet confirmed final. |
+| `completed` | Final. Deposit: funds available in your wallet. Payout: beneficiary paid. |
+| `failed` | Could not complete. Payout funds are returned to your wallet. |
+| `rejected` | Declined during approval or compliance review. Funds returned. |
+| `refunded` | A previously completed transaction was reversed. |
+
+Not every transaction passes through every state — fast rails can jump from `pending` straight to `completed`. Treat the status you receive as the source of truth and don't assume ordering. Each status change emits a [webhook event](/api-reference/webhooks/events) of the same name.
+
+## References
+
+A transaction carries up to four identifiers:
+
+| Field | Assigned by | Use it for |
+|---|---|---|
+| `id` | Rolla | API lookups — [Get Transaction](/api-reference/endpoint/wallet/get-transaction) |
+| `reference` | Rolla | Human-readable reference shown in the dashboard and webhooks |
+| `externalReference` | **You**, at creation | Reconciliation against your own system — Get Transaction accepts it too |
+| `uetr` | SWIFT network | Tracing cross-border USD payouts — see [the SWIFT guide](/swift-payouts#tracing-a-payout-the-uetr) |
+
+You can also attach up to 20 keys of your own `metadata` to a payout; it is echoed verbatim on every response and webhook for that transaction.
+
+## Which listing endpoint?
+
+| Endpoint | Scope | Use when |
+|---|---|---|
+| [List Wallet Transactions](/api-reference/endpoint/wallet/transactions) | Your account | Day-to-day history with currency, type, status, date, and search filters |
+| [Get Transactions](/api-reference/endpoint/transactions) | Your account | Simple paginated feed filtered by status and date |
+| [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) | You **plus** every account you manage | White-label reconciliation — each row names its account; supports CSV |
+| [Export Transactions](/api-reference/endpoint/wallet/export-transactions) | Your account | CSV download of your history |
+| [Get Statement](/api-reference/endpoint/wallet/statement) | Your account | Balance-carrying statement over a period |
+
+For anything real-time, prefer [webhooks](/api-reference/webhooks/overview) over polling these endpoints.

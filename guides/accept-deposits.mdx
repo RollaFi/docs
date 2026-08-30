@@ -1,0 +1,74 @@
+---
+title: "Accept Deposits"
+description: "Collect payments with virtual accounts and get notified the moment funds land"
+---
+
+Rolla credits your wallet whenever money arrives at one of your **deposit endpoints**. For NGN, those are virtual accounts you generate through the API; for USD and stablecoins, they are the account details and addresses provisioned on your wallet.
+
+## Choose a virtual account type
+
+| Type | Lives for | Best for |
+|---|---|---|
+| [Dynamic](/api-reference/endpoint/wallet/virtual-accounts-generate) | One payment (expires) | Checkout flows — one account per expected payment, optionally pinned to an exact `amount` |
+| [Static](/api-reference/endpoint/wallet/virtual-accounts-generate-static) | Forever | A permanent top-up account for your business |
+| [Customer](/api-reference/endpoint/wallet/virtual-accounts-generate-customer) | Forever, per end user | Giving each of your users their own dedicated NGN account number |
+
+## Example: a dedicated account per customer
+
+Customer virtual accounts are keyed on your `customer_identifier`, so the call is idempotent — repeat it and you get the same account back (`200`) instead of a duplicate (`201` on first creation):
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/customer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_identifier": "user_8412",
+    "first_name": "Ada",
+    "last_name": "Obi",
+    "email": "ada@example.com",
+    "phone": "08012345678",
+    "bvn": "22222222222",
+    "date_of_birth": "04/02/1995",
+    "address": "12 Marina Road, Lagos",
+    "gender": "2"
+  }'
+```
+
+Show the returned `account_number` and `bank_name` to your user. Every transfer they make to it lands in **your** NGN wallet, tagged with their `customer_identifier` so you can credit the right user. List them any time with [List Customer Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts-customers).
+
+<Note>
+  Customer virtual accounts require the end user's BVN for KYC. It is stored securely and never returned by the API.
+</Note>
+
+## Getting notified
+
+Don't poll. Configure a [webhook endpoint](/api-reference/webhooks/overview) subscribed to `transaction.completed`, and match deposits by `virtual_account` and `customer_identifier` in the [event payload](/api-reference/webhooks/payloads):
+
+```json
+{
+  "event": "transaction.completed",
+  "data": {
+    "type": "deposit",
+    "status": "completed",
+    "currency": "NGN",
+    "amount": 500000,
+    "customer_identifier": "user_8412",
+    "virtual_account": { "account_number": "1234567890" }
+  }
+}
+```
+
+A deposit can arrive as `transaction.pending` first and complete moments later — treat `transaction.completed` as the signal that funds are spendable.
+
+## USD and stablecoin deposits
+
+USD and crypto deposit details are provisioned on your wallets rather than generated per payment — find them on [Get Wallets](/api-reference/endpoint/wallet/wallets) and, for accounts you manage as a white-label tenant, [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions). Deposit webhooks fire for these exactly as for NGN, with `rail: "stablecoin"` and a `network` block (chain, tx hash, addresses) on on-chain deposits.
+
+## Testing
+
+In sandbox environments you can credit wallets without real money:
+
+- [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) — NGN, by `account_number` or `customer_identifier`
+- [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) — your USD wallet
+
+Both fire the same webhooks as real deposits, so you can exercise your whole pipeline end to end.

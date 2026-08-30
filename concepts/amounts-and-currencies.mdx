@@ -1,0 +1,47 @@
+---
+title: "Amounts & Currencies"
+description: "Minor units, supported currencies, and payout rails"
+---
+
+## Amounts are always in minor units
+
+Every `amount` field on the API — in requests **and** responses — is an integer in the currency's **smallest unit**:
+
+| Currency | Smallest unit | Example |
+|---|---|---|
+| NGN | kobo | `100000` = ₦1,000.00 |
+| USD | cent | `100` = $1.00 |
+| XAF | franc | `1000` = 1,000 FCFA (no minor unit) |
+| USDC / USDT | cent | `100` = 1.00 |
+
+A fractional or zero amount is rejected with a validation error (`amount must be a whole number of smallest currency units`). This keeps money arithmetic exact — no floating point.
+
+<Warning>
+  Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending $100 sends $1,000.
+</Warning>
+
+## Supported currencies
+
+Fiat wallets: **NGN**, **USD**, **XAF**. Stablecoins: **USDC**, **USDT**.
+
+The list grows over time and is served by the API itself — treat [Get Supported Currencies](/api-reference/endpoint/wallet/supported-currencies) as the source of truth rather than hard-coding it.
+
+## Payout rails
+
+A payout's rail is chosen by the beneficiary's `withdrawal_method`:
+
+| `withdrawal_method` | What it is | Notes |
+|---|---|---|
+| `local_transfer` | Domestic bank transfer (e.g. NGN via NIP) | Bank code + account number; name auto-resolved via [lookup](/api-reference/endpoint/lookup) |
+| `domestic_wire` | US domestic wire | Requires `routing_number`, bank and beneficiary country/address |
+| `ach` | US ACH | Requires `routing_number`, bank and beneficiary country/address |
+| `international_wire` | USD over SWIFT, worldwide | Requires `swift_code` and account number or IBAN — see the [SWIFT payouts guide](/swift-payouts) |
+| `mobile_money` | Mobile money wallets | XAF, XOF, and GHS corridors; requires `mobile_money_provider` + `phone_number` |
+| `crypto_usdc` / `crypto_usdt` | Stablecoin payout to an on-chain address | Requires `wallet_address` + `wallet_chain` |
+| `rolla_transfer` | Another Rolla business | Instant, or use [Rolla Transfer](/api-reference/endpoint/wallet/transfer) directly |
+
+The exact required fields per currency and method are listed on [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) and [Withdraw Funds](/api-reference/endpoint/wallet/withdraw). To know what a payout will cost before sending it, quote it with [Get Transaction Fee](/api-reference/endpoint/wallet/fee).
+
+## FX
+
+Cross-currency rates come from [Get Exchange Rates](/api-reference/endpoint/wallet/rates), which returns a `rateToken` you can pass into [Swap Currency](/api-reference/endpoint/wallet/swap) to execute at the quoted rate. See [Convert currencies](/guides/convert-currencies).

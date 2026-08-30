@@ -1,0 +1,54 @@
+---
+title: "Idempotency & Retries"
+description: "How to retry requests safely without double-moving money"
+---
+
+Network failures happen: a timeout after you called [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) leaves you not knowing whether the payout was created. This page covers the tools the API gives you to retry safely.
+
+<Warning>
+  The API does **not** support a global `Idempotency-Key` header. Blindly retrying a money-moving `POST` can create a second transaction. Use the patterns below instead.
+</Warning>
+
+## Payouts: check before you retry
+
+Give every withdrawal an `externalReference` — a unique ID from **your** system:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 100000,
+    "currency": "NGN",
+    "beneficiaryId": "...",
+    "externalReference": "payout-2026-08-30-0042"
+  }'
+```
+
+If the request times out or errors ambiguously, **look the reference up before retrying**. [Get Transaction](/api-reference/endpoint/wallet/get-transaction) accepts your `externalReference` in place of a transaction ID:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/transaction/payout-2026-08-30-0042" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+- **Found** → the payout was created; don't resend.
+- **`404`** → it never landed; safe to retry with the same reference.
+
+## Naturally idempotent endpoints
+
+Some creation endpoints are keyed on an identifier you supply and can be retried freely:
+
+| Endpoint | Idempotency key | Behaviour on repeat |
+|---|---|---|
+| [Generate Customer Virtual Account](/api-reference/endpoint/wallet/virtual-accounts-generate-customer) | `customer_identifier` | Returns the existing account with `200` (a new one returns `201`) |
+| [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account) (USD) | `reference` | The same reference always returns the same account |
+
+## Webhooks: deduplicate on `event_id`
+
+Webhook deliveries may arrive more than once (retries, redelivery). Every event carries a **deterministic** `event_id` — the same logical event always has the same ID — so store processed IDs and skip duplicates. See [Delivery & Retries](/api-reference/webhooks/delivery).
+
+## Retry etiquette
+
+- Retry `5xx` and network errors with exponential backoff; treat `4xx` (other than `429`) as terminal — fix the request instead.
+- For money-moving calls, always run the lookup-then-retry pattern above rather than resending on a timer.

@@ -1,27 +1,26 @@
 ---
 title: "Quickstart"
-description: "Start making API calls in under 5 minutes"
+description: "Create an API key, check your balance, fund your wallet, and send your first payout"
 ---
+
+This guide takes you from zero to a completed NGN payout. Along the way you'll touch the four things almost every integration uses: wallets, virtual accounts, beneficiaries, and withdrawals.
 
 ## Prerequisites
 
-Before you begin, make sure you have:
+- A verified Rolla business account at [app.rolla.xyz](https://app.rolla.xyz)
+- Funds — or a plan to deposit some in Step 3
 
-- A Rolla business account at [app.rolla.xyz](https://app.rolla.xyz)
-- An API key from your dashboard (**Settings → API Keys**)
-- NGN balance in your wallet
-
-## Step 1: Get Your API Key
+## Step 1: Create an API key
 
 <Steps>
-  <Step title="Log in to your dashboard">
-    Go to [app.rolla.xyz](https://app.rolla.xyz) and sign in.
+  <Step title="Open the dashboard">
+    Log in at [app.rolla.xyz](https://app.rolla.xyz) and go to **Settings → API Keys**.
   </Step>
-  <Step title="Navigate to API Keys">
-    Click **Settings** in the sidebar, then select **API Keys**.
+  <Step title="Create a key">
+    Click **Create API Key**, name it, and copy the key. It is shown **once** — store it securely.
   </Step>
-  <Step title="Create a new key">
-    Click **Create API Key**, give it a name, and copy the key. Store it securely—you won't be able to see it again.
+  <Step title="Allowlist your server IPs">
+    Add your server's IP addresses to the key's allowlist. Reads work without it, but **withdrawals and transfers are rejected unless the key has at least one allowlisted IP** and the request comes from it.
   </Step>
 </Steps>
 
@@ -29,47 +28,66 @@ Before you begin, make sure you have:
   Keep your API key secret. Never expose it in frontend code or public repositories.
 </Warning>
 
-## Step 2: Test Your API Key
+## Step 2: Make your first request
 
-Make a simple request to list available banks:
+Send the key in the `X-API-Key` header. List your wallets to confirm everything works:
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
+curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
   -H "X-API-Key: your_api_key_here"
 ```
 
-You should receive a response like:
-
 ```json
 {
-  "status": true,
-  "message": "Banks retrieved successfully",
+  "status": 200,
+  "success": true,
+  "message": "Business wallets retrieved successfully",
   "data": {
-    "data": [
-      { "bankName": "Access Bank", "bankCode": "000014" },
-      { "bankName": "GTBank", "bankCode": "000013" }
+    "wallets": [
+      {
+        "currency": "NGN",
+        "balance": {
+          "availableBalance": 950000,
+          "postedBalance": 1000000,
+          "pendingBalance": 50000
+        }
+      }
     ]
   }
 }
 ```
 
-## Step 3: Validate an Account
+Every successful response carries `status` (the HTTP code), `success: true`, a human-readable `message`, and the payload under `data`. All amounts are in the currency's **smallest unit** — kobo for NGN, cents for USD. See [Amounts & Currencies](/concepts/amounts-and-currencies).
 
-Validate a bank account using the lookup endpoint:
+## Step 3: Fund your wallet
+
+Generate a dynamic virtual account and transfer money to it from any Nigerian bank. Rolla credits your NGN wallet when the deposit lands:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/dynamic" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "amount": 500000 }'
+```
+
+The response contains a `bank_name` and `account_number` to pay into. `500000` kobo = ₦5,000.
+
+<Info>
+  Testing without real money? Sandbox environments expose [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) to credit your wallet instantly.
+</Info>
+
+## Step 4: Create a beneficiary
+
+First resolve the recipient's account so you know the name matches:
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
-  -d '{
-    "bankCode": "000014",
-    "accountNumber": "0123456789"
-  }'
+  -d '{ "bankCode": "000014", "accountNumber": "0123456789" }'
 ```
 
-## Step 4: Create a Beneficiary
-
-Save the validated account as a beneficiary so you can send payments to it:
+Then save them as a beneficiary (get bank codes from [List Banks](/api-reference/endpoint/banks)):
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
@@ -85,15 +103,13 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   }'
 ```
 
-Copy the `id` from the response — you'll use it in the next step.
+Copy the `id` from the response.
 
 <Info>
-  You can also skip this step and provide inline beneficiary details directly in the withdrawal request. See the [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) reference for details.
+  In a hurry? [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) also accepts `inlineBeneficiary` details directly, so you can skip this step for one-off payouts.
 </Info>
 
-## Step 5: Withdraw from Your Wallet
-
-Use the beneficiary ID to withdraw funds from your wallet to their bank account:
+## Step 5: Send the payout
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
@@ -103,36 +119,43 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
     "amount": 100000,
     "currency": "NGN",
     "beneficiaryId": "BENEFICIARY_ID_FROM_STEP_4",
-    "description": "Test withdrawal"
+    "description": "Test payout",
+    "externalReference": "your-unique-ref-001"
   }'
 ```
 
-<Info>
-  The `amount` is in minor units (kobo for NGN). So `100000` = ₦1,000. Fees are deducted from the withdrawal amount by default.
-</Info>
+`100000` kobo = ₦1,000. Fees are deducted from the withdrawal amount by default; want a fee quote first? Call [Get Transaction Fee](/api-reference/endpoint/wallet/fee).
 
-<Info>
-  USD withdrawals use cents the same way: **`100`** = **\$1.00** USD.
-</Info>
+<Warning>
+  This request must come from an IP on your key's allowlist (Step 1), or it is rejected with `403`.
+</Warning>
 
-## Next Steps
+The response includes a transaction `id` and a `reference`. The `externalReference` is your own reconciliation handle on the payout — you can [fetch the transaction by it](/api-reference/endpoint/wallet/get-transaction) later. See [Idempotency & Retries](/concepts/idempotency) before retrying failed requests.
+
+## Step 6: Track it
+
+Poll the transaction:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/transaction/TRANSACTION_ID" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+Or — better — configure a [webhook endpoint](/api-reference/webhooks/overview) in the dashboard and receive `transaction.completed` / `transaction.failed` events the moment the payout settles, instead of polling.
+
+## Next steps
 
 <CardGroup cols={2}>
-
-<Card title="API Reference" icon="book" href="/api-reference/introduction">
-  Explore all available endpoints and parameters.
-</Card>
-
-<Card title="Wallet Withdrawals" icon="money-bill-transfer" href="/api-reference/endpoint/wallet/withdraw">
-  Explore withdrawal options including USD wires and crypto.
-</Card>
-
-<Card title="Transactions" icon="list" href="/api-reference/endpoint/transactions">
-  Query and filter your transaction history.
-</Card>
-
-<Card title="Get Support" icon="headset" href="mailto:support@rolla.xyz">
-  Contact our team for help with your integration.
-</Card>
-
+  <Card title="Accept deposits" icon="arrow-down-to-bracket" href="/guides/accept-deposits">
+    Static and per-customer virtual accounts for collections at scale.
+  </Card>
+  <Card title="Send payouts" icon="paper-plane" href="/guides/send-payouts">
+    All rails: local transfers, USD wires, SWIFT, mobile money, stablecoins.
+  </Card>
+  <Card title="Set up webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Stop polling — get pushed every status change.
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Every endpoint, field by field.
+  </Card>
 </CardGroup>

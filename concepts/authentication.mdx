@@ -1,0 +1,62 @@
+---
+title: "Authentication"
+description: "API keys, IP allowlisting, environments, and tenant account scoping"
+---
+
+Every request to the Rolla API is authenticated with an API key sent in the `X-API-Key` header:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+A missing key returns `401 API key missing`; an unknown or revoked key returns `401 Invalid or inactive API key`.
+
+## Managing API keys
+
+Keys are created and managed in the dashboard under **Settings → API Keys**. When you create a key you choose:
+
+| Setting | Meaning |
+|---|---|
+| **Label** | A name so you can tell keys apart |
+| **Environment** | `production` or `sandbox` — webhook endpoints are scoped to the same environments |
+| **Allowlisted IPs** | Optional list of IPs the key may be used from |
+
+The key value is shown **once** at creation. Rolla stores only a hash of it, so a lost key cannot be recovered — regenerate it instead (the old value stops working immediately).
+
+<Warning>
+  Treat API keys like passwords: keep them server-side, out of client code and repositories, and rotate them if you suspect exposure.
+</Warning>
+
+## IP allowlisting
+
+Each key can carry a list of allowlisted IP addresses. When the list is non-empty, requests from any other IP are rejected with `403 IP address <ip> not authorized`.
+
+For most endpoints allowlisting is optional — but for the two money-moving endpoints it is **mandatory**:
+
+<Warning>
+  [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) and [Rolla Transfer](/api-reference/endpoint/wallet/transfer) refuse keys that have **no** allowlisted IPs. Add at least one IP to your key before sending payouts.
+</Warning>
+
+If your server sits behind a proxy or NAT, allowlist the egress IP your requests actually leave from. The dashboard's API Keys page can show you the IP you're currently calling from.
+
+## Account status requirements
+
+Beyond the key itself, the business it belongs to must be in good standing:
+
+- API access must be enabled for the account (`403 API access has been disabled for this account` otherwise)
+- The business's KYB application must be approved and the account active — deactivated or restricted accounts receive `403` with the code `ACCOUNT_RESTRICTED`
+
+See [Errors](/concepts/errors) for the full list of error codes.
+
+## Acting on tenant accounts
+
+If your business is a Rolla **white-label tenant**, a single API key can act on any account inside your tenancy by adding the optional `X-Account-Id` header. The entire request — wallets, payouts, documents, everything — then runs as that account.
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
+  -H "X-API-Key: your_tenant_api_key" \
+  -H "X-Account-Id: 3f1c2d4e-5a6b-7c8d-9e0f-1a2b3c4d5e6f"
+```
+
+See [the tenant scoping reference](/api-reference/introduction#acting-on-a-tenant-account-x-account-id) for the exact behaviour table, and [Account Onboarding](/api-reference/endpoint/accounts/overview) for creating accounts in your tenancy.
