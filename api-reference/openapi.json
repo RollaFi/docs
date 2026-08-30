@@ -1242,16 +1242,25 @@
       "get": {
         "operationId": "getWalletTransaction",
         "summary": "Get Transaction",
-        "description": "Retrieves details of a specific wallet transaction by ID.",
+        "description": "Retrieves a specific wallet transaction by either Rolla's transaction ID (a UUID) or the `externalReference` you set when creating it. A non-UUID path segment is matched against the transaction's `external_reference`; if it matches more than one transaction in scope, the most recent is returned.\n\nPartner (white-label tenant) keys read across their whole tenancy, so a transaction found in `GET /accounts/transactions` can be fetched here directly. Send the `X-Account-Id` header to narrow the lookup to a single account.",
         "parameters": [
           {
             "name": "transactionId",
             "in": "path",
             "required": true,
-            "description": "Transaction UUID",
+            "description": "Rolla's transaction ID (UUID), or the `externalReference` you set when creating the transaction.",
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
+            },
+            "examples": {
+              "byId": {
+                "summary": "Rolla's transaction ID",
+                "value": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+              },
+              "byExternalReference": {
+                "summary": "Your own external reference",
+                "value": "invoice-8842"
+              }
             }
           }
         ],
