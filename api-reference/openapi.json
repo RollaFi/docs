@@ -6994,7 +6994,7 @@
       "post": {
         "operationId": "uploadKycReliance",
         "summary": "Submit KYC Reliance",
-        "description": "Submits identity documents the partner has already verified for an INDIVIDUAL account, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's passport and the selfie or liveness capture collected during your own onboarding as multipart/form-data. Enabled per partner: returns 403 when KYC reliance is not enabled for your business. Individual accounts only; calling it on a business account returns 400. The review is not instant — poll Get Verification Status until it completes.",
+        "description": "Submits identity documents the partner has already verified for an INDIVIDUAL account, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's identity document and the selfie or liveness capture collected during your own onboarding as multipart/form-data. A passport, national ID card, driver's licence or residence permit is accepted — name it with documentType, and send documentBack as well for a two-sided document. The legacy `passport` file field still works in place of `document`. Enabled per partner: returns 403 when KYC reliance is not enabled for your business. Individual accounts only; calling it on a business account returns 400. The review is not instant — poll Get Verification Status until it completes.",
         "parameters": [
           {
             "name": "accountId",
@@ -7014,32 +7014,51 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "passport",
+                  "document",
                   "selfie",
                   "country"
                 ],
                 "properties": {
-                  "passport": {
+                  "document": {
                     "type": "string",
                     "format": "binary",
-                    "description": "The account holder's passport image or PDF"
+                    "description": "The account holder's identity document, image or PDF. Front side for a two-sided document"
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required for ID_CARD, DRIVER_LICENSE and RESIDENCE_PERMIT"
                   },
                   "selfie": {
                     "type": "string",
                     "format": "binary",
                     "description": "Selfie or liveness capture from your own verification. Image or video"
                   },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "PASSPORT",
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "PASSPORT",
+                    "example": "ID_CARD",
+                    "description": "Which identity document is being sent. Defaults to PASSPORT"
+                  },
                   "country": {
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 2,
                     "example": "CN",
-                    "description": "2-letter ISO code of the country that issued the passport"
+                    "description": "2-letter ISO code of the country that issued the document"
                   },
                   "documentNumber": {
                     "type": "string",
                     "maxLength": 64,
-                    "example": "E12345678"
+                    "example": "E12345678",
+                    "description": "The document's number"
                   },
                   "issueDate": {
                     "type": "string",
@@ -7050,6 +7069,12 @@
                     "type": "string",
                     "format": "date",
                     "example": "2030-03-13"
+                  },
+                  "passport": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Deprecated alias for `document`, kept so existing integrations keep working"
                   }
                 }
               }
@@ -7097,7 +7122,7 @@
             }
           },
           "400": {
-            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "description": "Missing file, a two-sided document sent without documentBack, an unrecognised documentType, invalid country, wrong account type, or the identity provider rejected the upload",
             "content": {
               "application/json": {
                 "schema": {
@@ -7135,6 +7160,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "description": "The account holder is already verified, so KYC reliance cannot be resubmitted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
           }
         }
       }
@@ -7143,7 +7178,7 @@
       "post": {
         "operationId": "uploadRelatedPersonKycReliance",
         "summary": "Submit Representative KYC Reliance",
-        "description": "Submit an already-verified passport and liveness capture for one representative (beneficial owner or director) of a business account, instead of sending them through Rolla's hosted liveness check. One call per representative. Enabled per partner.",
+        "description": "Submit an already-verified identity document and liveness capture for one representative (beneficial owner or director) of a business account, instead of sending them through Rolla's hosted liveness check. One call per representative. Enabled per partner. A passport, national ID card, driver's licence or residence permit is accepted — name it with documentType, and send documentBack as well for a two-sided document. The legacy `passport` file field still works in place of `document`. A rejected submission can be sent again for the same subject; one that already passed returns 409.",
         "parameters": [
           {
             "name": "accountId",
@@ -7173,32 +7208,51 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "passport",
+                  "document",
                   "selfie",
                   "country"
                 ],
                 "properties": {
-                  "passport": {
+                  "document": {
                     "type": "string",
                     "format": "binary",
-                    "description": "The account holder's passport image or PDF"
+                    "description": "That representative's identity document, image or PDF. Front side for a two-sided document"
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required for ID_CARD, DRIVER_LICENSE and RESIDENCE_PERMIT"
                   },
                   "selfie": {
                     "type": "string",
                     "format": "binary",
                     "description": "Selfie or liveness capture from your own verification. Image or video"
                   },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "PASSPORT",
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "PASSPORT",
+                    "example": "ID_CARD",
+                    "description": "Which identity document is being sent. Defaults to PASSPORT"
+                  },
                   "country": {
                     "type": "string",
                     "minLength": 2,
                     "maxLength": 2,
-                    "example": "CN",
-                    "description": "2-letter ISO code of the country that issued the passport"
+                    "example": "NG",
+                    "description": "2-letter ISO code of the country that issued the document"
                   },
                   "documentNumber": {
                     "type": "string",
                     "maxLength": 64,
-                    "example": "E12345678"
+                    "example": "E12345678",
+                    "description": "The document's number"
                   },
                   "issueDate": {
                     "type": "string",
@@ -7209,6 +7263,12 @@
                     "type": "string",
                     "format": "date",
                     "example": "2030-03-13"
+                  },
+                  "passport": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Deprecated alias for `document`, kept so existing integrations keep working"
                   }
                 }
               }
@@ -7269,7 +7329,7 @@
             }
           },
           "400": {
-            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "description": "Missing file, a two-sided document sent without documentBack, an unrecognised documentType, invalid country, wrong account type, or the identity provider rejected the upload",
             "content": {
               "application/json": {
                 "schema": {
@@ -7300,6 +7360,16 @@
           },
           "404": {
             "description": "Account not found, not owned by your API key's business, or no representative with that personId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "That representative is already verified, so KYC reliance cannot be resubmitted",
             "content": {
               "application/json": {
                 "schema": {
