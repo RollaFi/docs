@@ -7045,7 +7045,7 @@
                     ],
                     "default": "PASSPORT",
                     "example": "ID_CARD",
-                    "description": "Which identity document is being sent. Defaults to PASSPORT"
+                    "description": "Which identity document is being sent. Defaults to PASSPORT. INTERNATIONAL_PASSPORT is an alias for PASSPORT and is recorded identically — it exists because our own onboarding uses that wording."
                   },
                   "country": {
                     "type": "string",
@@ -7239,7 +7239,7 @@
                     ],
                     "default": "PASSPORT",
                     "example": "ID_CARD",
-                    "description": "Which identity document is being sent. Defaults to PASSPORT"
+                    "description": "Which identity document is being sent. Defaults to PASSPORT. INTERNATIONAL_PASSPORT is an alias for PASSPORT and is recorded identically — it exists because our own onboarding uses that wording."
                   },
                   "country": {
                     "type": "string",

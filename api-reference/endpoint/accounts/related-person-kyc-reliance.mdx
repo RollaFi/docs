@@ -26,7 +26,7 @@ Send as `multipart/form-data`.
 | `document` | file | Yes | That representative's identity document, image or PDF. Front side for a two-sided document |
 | `documentBack` | file | Conditional | The reverse side. **Required** for `ID_CARD`, `DRIVER_LICENSE` and `RESIDENCE_PERMIT` |
 | `selfie` | file | Yes | The selfie or liveness capture from your own verification. Image or video |
-| `documentType` | string | No | One of `PASSPORT`, `INTERNATIONAL_PASSPORT`, `ID_CARD`, `DRIVER_LICENSE`, `RESIDENCE_PERMIT`. Defaults to `PASSPORT` |
+| `documentType` | string | No | One of `PASSPORT`, `INTERNATIONAL_PASSPORT`, `ID_CARD`, `DRIVER_LICENSE`, `RESIDENCE_PERMIT`. Defaults to `PASSPORT`. `INTERNATIONAL_PASSPORT` is an alias for `PASSPORT` and behaves identically — either is fine |
 | `country` | string | Yes | 2-letter ISO code of the country that issued the document, e.g. `NG` |
 | `documentNumber` | string | No | The document's number |
 | `issueDate` | string | No | `YYYY-MM-DD` |
