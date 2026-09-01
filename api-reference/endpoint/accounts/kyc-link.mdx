@@ -39,5 +39,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 </Info>
 
 <Tip>
-  The link `status` becomes `completed` once the person passes verification, or `rejected` if it fails — in which case you can generate a fresh link for a retry.
+  The link `status` becomes `completed` once the person passes verification, or `rejected` if it fails.
+
+  After a failure, generate a fresh link and the previous failed attempt is cleared for you, so that person can try again. You do not need to contact Rolla. A link already marked `rejected` never becomes usable again — always send them the new one. A person who has already **passed** is left untouched: generating a link never discards a good verification.
 </Tip>
