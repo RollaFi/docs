@@ -62,6 +62,7 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
 | `data.beneficiary` | Beneficiary details — present for **payouts**, **omitted** otherwise (see below). Only fields relevant to the payout are included. |
 | `data.virtual_account` | The destination virtual account a **deposit** was paid into — present for **deposits**, **omitted** for payouts. Lets you reconcile the deposit to a specific account. Same shape as the [`account.virtual_account.created`](/api-reference/webhooks/events) payload (see below). |
 | `data.payer` | The sender/originator of a **deposit** — present for **deposits** when the provider supplies sender details, **omitted** for payouts. See below for availability by rail. |
+| `data.payment_rail` | Which rail an incoming **deposit** arrived on — `ach`, `wire_domestic` or `wire_international`. Present on **USD bank deposits** once the provider reports the transfer method; **omitted** otherwise, and never present on payouts. Not to be confused with `data.rail` above, which is `fiat` or `stablecoin`. See [Which rail a deposit arrived on](#which-rail-a-deposit-arrived-on). |
 | `data.network` | On-chain details — present only for genuinely **on-chain** transactions (a real chain and/or wallet address). `chain` is the full network name (`Solana`); `tx_hash` is the on-chain transaction hash. **Omitted** for transactions with no on-chain leg — including stablecoin-funded payouts that settle to a fiat bank (e.g. a USDT → USD wire). |
 | `data.customer_identifier` | Present **only** for deposits into a **customer** (per-end-user) virtual account — the identifier you set when creating the account via [Generate Customer Virtual Account](/api-reference/endpoint/wallet/virtual-accounts-generate-customer). Use it to attribute the deposit to the specific end-user the account belongs to. **Omitted** for every other transaction (regular deposits and all payouts). |
 | `data.metadata` | Any metadata you supplied when creating the transaction — see [Attaching your own metadata](/api-reference/endpoint/wallet/withdraw#attaching-your-own-metadata). Returned exactly as you sent it; **omitted** when you supplied none |
@@ -146,6 +147,30 @@ Who sent the deposit, as reported by the provider. Fields: `name`, `account_numb
 
 `payer` is **omitted** when the provider sends no sender details. Crypto deposits expose the sender via the `network.source_address` field instead of `payer`.
 
+### Which rail a deposit arrived on
+
+`payment_rail` tells you how an incoming USD payment reached the account, so you can reconcile per channel instead of parsing the narration.
+
+| Value | Meaning |
+|-------|---------|
+| `ach` | US domestic ACH |
+| `wire_domestic` | US domestic wire (Fedwire) |
+| `wire_international` | International wire — this is the **SWIFT** case |
+
+```json
+"payment_rail": "wire_international"
+```
+
+<Info>
+  There is no `swift` value: an international wire **is** the SWIFT case, reported as `wire_international`.
+
+  `payment_rail` is **omitted** — not `null` — when the provider does not report a transfer method, and it never appears on payouts or crypto deposits. Treat its absence as "rail unknown", not as a specific rail.
+</Info>
+
+<Note>
+  Deposits created with the sandbox simulate endpoint do not currently carry a `payment_rail`, so you will only see this field on deposits received through the bank rails.
+</Note>
+
 ---
 
 ## Sample: Fiat deposit completed
@@ -182,6 +207,53 @@ Who sent the deposit, as reported by the provider. Fields: `name`, `account_numb
       "name": "John Doe",
       "account_number": "1234567890",
       "bank_name": "Access Bank"
+    }
+  }
+}
+```
+
+---
+
+## Sample: USD deposit completed (international wire)
+
+A USD deposit received over SWIFT. `payment_rail` identifies the channel; the rest of the shape is the same as any other fiat deposit.
+
+```json
+{
+  "event": "transaction.completed",
+  "event_id": "3d9a7c15-6e22-5b44-9f13-2c8e5a1d7b60",
+  "created_at": "2026-06-10T12:00:05.000Z",
+  "data": {
+    "transaction_id": "5f1c9d0a-2b73-4e86-9a5c-3d8f1e6b0c42",
+    "reference": "US-DEP-7K4M2B",
+    "type": "deposit",
+    "status": "completed",
+    "rail": "fiat",
+    "currency": "USD",
+    "amount": 2500000,
+    "source_amount": 2500000,
+    "source_currency": "USD",
+    "destination_amount": 2500000,
+    "destination_currency": "USD",
+    "fee_amount": 0,
+    "payment_rail": "wire_international",
+    "description": "Deposit from Acme Trading Ltd",
+    "timestamp": "2026-06-10T12:00:04.812Z",
+    "virtual_account": {
+      "id": "9c4e1f77-3a25-4d80-b6f1-0e7a2b5c8d93",
+      "currency": "USD",
+      "method": "bank_transfer",
+      "bank_name": "Lead Bank",
+      "account_number": "9876543210",
+      "account_name": "Acme Ltd / Rolla",
+      "routing_number": "021000021",
+      "swift_code": "LEADUS33"
+    },
+    "payer": {
+      "name": "Acme Trading Ltd",
+      "account_number": "5551234567",
+      "bank_name": "HSBC",
+      "country": "Hong Kong"
     }
   }
 }

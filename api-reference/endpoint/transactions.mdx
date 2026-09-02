@@ -44,6 +44,21 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=
         "destination_currency": "NGN",
         "created_at": "2024-01-15T10:30:00.000Z",
         "updated_at": "2024-01-15T10:30:45.000Z"
+      },
+      {
+        "id": "5f1c9d0a-2b73-4e86-9a5c-3d8f1e6b0c42",
+        "transaction_type": "deposit",
+        "status": "completed",
+        "description": "Deposit from Acme Trading Ltd",
+        "external_reference": "US-DEP-7K4M2B",
+        "payment_rail": "wire_international",
+        "fee_amount": 0,
+        "source_amount": 2500000,
+        "destination_amount": 2500000,
+        "source_currency": "USD",
+        "destination_currency": "USD",
+        "created_at": "2024-01-15T11:02:00.000Z",
+        "updated_at": "2024-01-15T11:02:10.000Z"
       }
     ],
     "totalCount": 150,
@@ -90,6 +105,20 @@ them — the references a beneficiary's bank is chased with.
   [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
   webhook. It carries the same value.
 </Tip>
+
+## Identifying the transfer method on deposits
+
+Incoming USD deposits carry a `payment_rail` field saying how the money arrived, so you can reconcile per channel rather than parsing the description.
+
+| Value | Meaning |
+|-------|---------|
+| `ach` | US domestic ACH |
+| `wire_domestic` | US domestic wire (Fedwire) |
+| `wire_international` | International wire — this is the **SWIFT** case |
+
+There is no `swift` value; an international wire **is** the SWIFT case. The field is **omitted** (not `null`) when the provider does not report a transfer method, and never appears on payouts or crypto deposits — treat its absence as "rail unknown".
+
+The same field is delivered on the [deposit webhook](/api-reference/webhooks/payloads#which-rail-a-deposit-arrived-on).
 
 <Tip>
   Use date range filters to export transaction data for specific periods. Combine with status filter to find failed transactions that may need to be retried.

@@ -8239,6 +8239,16 @@
             "nullable": true,
             "description": "External reference ID"
           },
+          "payment_rail": {
+            "type": "string",
+            "enum": [
+              "ach",
+              "wire_domestic",
+              "wire_international"
+            ],
+            "description": "Which rail an incoming **deposit** arrived on. `ach` is US domestic ACH, `wire_domestic` a US domestic wire, and `wire_international` an international (SWIFT) wire. Present on USD bank deposits once the provider reports the transfer method; **omitted** when the method is not reported, and never present on payouts or crypto deposits. Not the same field as the webhook payload’s `rail`, which is `fiat` or `stablecoin`.",
+            "example": "wire_international"
+          },
           "fee_amount": {
             "type": "number",
             "description": "Fee charged for this transaction. On a `fee` transaction this is `0` — the fee value is carried as that row's source_amount/destination_amount, so totalling fee_amount across transactions does not double-count it."
