@@ -1,6 +1,6 @@
 ---
 title: "Business Overview"
-description: "Use the Rolla API to manage your own business's money"
+description: "Use Rolla's API to manage your own business's money"
 ---
 
 As a **Business** user, everything the API does happens on your own account: your wallets, your deposits, your payouts. If you're building internal treasury tooling, automating supplier payments, or plugging Rolla into your product's back office, this is your path.
@@ -13,7 +13,7 @@ As a **Business** user, everything the API does happens on your own account: you
 
 <CardGroup cols={2}>
   <Card title="Hold multi-currency balances" icon="wallet" href="/api-reference/endpoint/wallet/wallets">
-    NGN, USD, XAF, and stablecoin wallets, each with available, posted, and pending balances.
+    USD, NGN, BRL, and stablecoin (USDC/USDT) wallets, each with available, posted, and pending balances.
   </Card>
   <Card title="Accept deposits" icon="arrow-down-to-bracket" href="/guides/accept-deposits">
     Dynamic, static, and per-customer NGN virtual accounts; USD and on-chain deposits into your wallet.
@@ -30,7 +30,7 @@ As a **Business** user, everything the API does happens on your own account: you
 
 <Steps>
   <Step title="Create an API key">
-    In the [dashboard](https://app.rolla.xyz) under **Settings → API Keys**. Allowlist your server IPs — payouts require it. See [Authentication](/concepts/authentication).
+    In the [dashboard](https://app.rolla.xyz) under **Settings → API Keys**. Allowlist your server IPs — every key needs one. See [Authentication](/concepts/authentication).
   </Step>
   <Step title="Fund your wallet">
     Generate a [virtual account](/guides/accept-deposits) and deposit into it, or receive from your existing counterparties.

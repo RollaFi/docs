@@ -13,7 +13,6 @@ Every movement of money on Rolla — a deposit, payout, swap, or fee — is reco
 | `withdrawal` | Money out — a payout in the wallet's own currency |
 | `fx_withdrawal` | Money out with conversion — paid out in a different currency |
 | `swap` | Conversion between two of your own wallets |
-| `payin` | An incoming Rolla-to-Rolla transfer |
 | `fee` | A fee booked as its own transaction (appears as a filterable type on listings) |
 
 ## Lifecycle
@@ -51,13 +50,15 @@ A transaction carries up to four identifiers:
 
 You can also attach up to 20 keys of your own `metadata` to a payout; it is echoed verbatim on every response and webhook for that transaction.
 
-## Which listing endpoint?
+## Finding your transactions
+
+There's more than one listing endpoint because they answer different questions — pick the one that matches what you're trying to do:
 
 | Endpoint | Scope | Use when |
 |---|---|---|
 | [List Wallet Transactions](/api-reference/endpoint/wallet/transactions) | Your account | Day-to-day history with currency, type, status, date, and search filters |
 | [Get Transactions](/api-reference/endpoint/transactions) | Your account | Simple paginated feed filtered by status and date |
-| [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) | You **plus** every account you manage | White-label reconciliation — each row names its account; supports CSV |
+| [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) | You **plus** every account you manage | Platform reconciliation — each row names its account; supports CSV |
 | [Export Transactions](/api-reference/endpoint/wallet/export-transactions) | Your account | CSV download of your history |
 | [Get Statement](/api-reference/endpoint/wallet/statement) | Your account | Balance-carrying statement over a period |
 

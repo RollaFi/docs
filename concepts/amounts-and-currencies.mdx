@@ -11,20 +11,33 @@ Every `amount` field on the API — in requests **and** responses — is an inte
 | --- | --- | --- |
 | NGN | kobo | `100000` = ₦1,000.00 |
 | USD | cent | `100` = \$1.00 |
-| XAF | franc | `1000` = 1,000 FCFA (no minor unit) |
 | USDC / USDT | cent | `100` = 1.00 |
 
 A fractional or zero amount is rejected with a validation error (`amount must be a whole number of smallest currency units`). This keeps money arithmetic exact — no floating point.
 
+<Note>
+  A handful of currencies have no minor unit at all — JPY, KRW, XAF, and XOF among them. For those, the "smallest unit" is just the currency unit itself: `1000` XAF is 1,000 francs, not 10.
+</Note>
+
 <Warning>
-  Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending $$100 sends $$1,000.
+  Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending \$100 sends \$1,000.
 </Warning>
 
-## Supported currencies
+## Currencies you can collect and hold in
 
-Fiat wallets: **NGN**, **USD**, **XAF**. Stablecoins: **USDC**, **USDT**.
+Your wallets can hold a balance in, and be funded via virtual accounts or deposit instructions in:
 
-The list grows over time and is served by the API itself — treat [Get Supported Currencies](/api-reference/endpoint/wallet/supported-currencies) as the source of truth rather than hard-coding it.
+**USD · NGN · BRL · USDC · USDT**
+
+This is the set of currencies you can receive deposits in and carry a balance for. It's served by the API itself — treat [Get Supported Currencies](/api-reference/endpoint/wallet/supported-currencies) as the source of truth rather than hard-coding it, since it grows over time.
+
+## Currencies you can pay out in
+
+Payouts reach far beyond your wallet currencies. Fund a payout from any wallet balance you hold, and Rolla converts and delivers it to the beneficiary in **their** local currency — across local rails, SWIFT, and mobile money, worldwide. Currently supported destination currencies include:
+
+**USD · EUR · GBP · CAD · AUD · NGN · GHS · XAF · XOF · JPY · CNY · KRW · THB · IDR** — and more are added regularly.
+
+Which currencies and rails are available to a given beneficiary depends on their country and bank — see [Payout rails](#payout-rails) below, [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) for the exact fields per method, and the [SWIFT payouts guide](/swift-payouts) for USD-over-SWIFT country coverage specifically. Not sure a corridor is supported? [Ask us](mailto:support@rolla.xyz) — we're adding new ones all the time.
 
 ## Payout rails
 
@@ -36,7 +49,7 @@ A payout's rail is chosen by the beneficiary's `withdrawal_method`:
 | `domestic_wire` | US domestic wire | Requires `routing_number`, bank and beneficiary country/address |
 | `ach` | US ACH | Requires `routing_number`, bank and beneficiary country/address |
 | `international_wire` | USD over SWIFT, worldwide | Requires `swift_code` and account number or IBAN — see the [SWIFT payouts guide](/swift-payouts) |
-| `mobile_money` | Mobile money wallets | XAF, XOF, and GHS corridors; requires `mobile_money_provider` + `phone_number` |
+| `mobile_money` | Mobile money wallets | Available in select corridors, incl. XAF, XOF, and GHS; requires `mobile_money_provider` + `phone_number` |
 | `crypto_usdc` / `crypto_usdt` | Stablecoin payout to an on-chain address | Requires `wallet_address` + `wallet_chain` |
 | `rolla_transfer` | Another Rolla business | Instant, or use [Rolla Transfer](/api-reference/endpoint/wallet/transfer) directly |
 

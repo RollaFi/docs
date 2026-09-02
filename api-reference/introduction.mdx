@@ -3,7 +3,7 @@ title: 'Introduction'
 description: 'Base URL, authentication, and conventions shared by every endpoint'
 ---
 
-The Rolla Developer API is a REST API: JSON in, JSON out, predictable resource-based paths. This page covers the conventions every endpoint shares.
+Rolla's API is a REST API: JSON in, JSON out, predictable resource-based paths. This page covers the conventions every endpoint shares.
 
 **Base URL**: `https://api.rolla.xyz/api/v1/external`
 
@@ -16,9 +16,9 @@ curl "https://api.rolla.xyz/api/v1/external/banks" \
   -H "X-API-Key: your_api_key_here"
 ```
 
-Keys are created in the [Rolla Dashboard](https://app.rolla.xyz) under **Settings → API Keys**, and can optionally be locked to allowlisted IP addresses. Note that [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) and [Rolla Transfer](/api-reference/endpoint/wallet/transfer) **require** the key to have at least one allowlisted IP.
+Keys are created in the [Rolla Dashboard](https://app.rolla.xyz) under **Settings → API Keys**, and every key must be locked to at least one allowlisted IP address — that applies across the board, not just to payouts.
 
-See [Authentication](/concepts/authentication) for key management, environments, and security guidance.
+See [Authentication](/concepts/authentication) for key management and security guidance.
 
 <Warning>
   Keep your API key secure. Do not expose it in client-side code or public repositories.

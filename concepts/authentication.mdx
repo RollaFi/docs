@@ -1,9 +1,9 @@
 ---
 title: "Authentication"
-description: "API keys, IP allowlisting, environments, and tenant account scoping"
+description: "API keys, IP allowlisting, and tenant account scoping"
 ---
 
-Every request to the Rolla API is authenticated with an API key sent in the `X-API-Key` header:
+Every request to Rolla's API is authenticated with an API key sent in the `X-API-Key` header:
 
 ```bash
 curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
@@ -19,8 +19,7 @@ Keys are created and managed in the dashboard under **Settings → API Keys**. W
 | Setting | Meaning |
 |---|---|
 | **Label** | A name so you can tell keys apart |
-| **Environment** | `production` or `sandbox` — webhook endpoints are scoped to the same environments |
-| **Allowlisted IPs** | Optional list of IPs the key may be used from |
+| **Allowlisted IPs** | The IP addresses the key may be used from — required on every key, see below |
 
 The key value is shown **once** at creation. Rolla stores only a hash of it, so a lost key cannot be recovered — regenerate it instead (the old value stops working immediately).
 
@@ -30,13 +29,7 @@ The key value is shown **once** at creation. Rolla stores only a hash of it, so 
 
 ## IP allowlisting
 
-Each key can carry a list of allowlisted IP addresses. When the list is non-empty, requests from any other IP are rejected with `403 IP address <ip> not authorized`.
-
-For most endpoints allowlisting is optional — but for the two money-moving endpoints it is **mandatory**:
-
-<Warning>
-  [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) and [Rolla Transfer](/api-reference/endpoint/wallet/transfer) refuse keys that have **no** allowlisted IPs. Add at least one IP to your key before sending payouts.
-</Warning>
+Every API key must carry at least one allowlisted IP address, and it applies to **every endpoint** — there's no read-only exception. Requests from any other IP are rejected with `403 IP address <ip> not authorized`.
 
 If your server sits behind a proxy or NAT, allowlist the egress IP your requests actually leave from. The dashboard's API Keys page can show you the IP you're currently calling from.
 
@@ -51,7 +44,7 @@ See [Errors](/concepts/errors) for the full list of error codes.
 
 ## Acting on tenant accounts
 
-If your business is a Rolla **white-label tenant**, a single API key can act on any account inside your tenancy by adding the optional `X-Account-Id` header. The entire request — wallets, payouts, documents, everything — then runs as that account.
+If your business uses the [Platform](/platform/overview) product (a **white-label tenant**), a single API key can act on any account inside your tenancy by adding the optional `X-Account-Id` header. The entire request — wallets, payouts, documents, everything — then runs as that account.
 
 ```bash
 curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
