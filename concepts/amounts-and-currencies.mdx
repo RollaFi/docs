@@ -8,16 +8,16 @@ description: "Minor units, supported currencies, and payout rails"
 Every `amount` field on the API — in requests **and** responses — is an integer in the currency's **smallest unit**:
 
 | Currency | Smallest unit | Example |
-|---|---|---|
+| --- | --- | --- |
 | NGN | kobo | `100000` = ₦1,000.00 |
-| USD | cent | `100` = $1.00 |
+| USD | cent | `100` = \$1.00 |
 | XAF | franc | `1000` = 1,000 FCFA (no minor unit) |
 | USDC / USDT | cent | `100` = 1.00 |
 
 A fractional or zero amount is rejected with a validation error (`amount must be a whole number of smallest currency units`). This keeps money arithmetic exact — no floating point.
 
 <Warning>
-  Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending $100 sends $1,000.
+  Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending $$100 sends $$1,000.
 </Warning>
 
 ## Supported currencies
@@ -31,7 +31,7 @@ The list grows over time and is served by the API itself — treat [Get Supporte
 A payout's rail is chosen by the beneficiary's `withdrawal_method`:
 
 | `withdrawal_method` | What it is | Notes |
-|---|---|---|
+| --- | --- | --- |
 | `local_transfer` | Domestic bank transfer (e.g. NGN via NIP) | Bank code + account number; name auto-resolved via [lookup](/api-reference/endpoint/lookup) |
 | `domestic_wire` | US domestic wire | Requires `routing_number`, bank and beneficiary country/address |
 | `ach` | US ACH | Requires `routing_number`, bank and beneficiary country/address |
