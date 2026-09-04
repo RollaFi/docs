@@ -35,6 +35,12 @@ For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents =
 
 ## `inlineBeneficiary` — Required Fields by Currency
 
+<Warning>
+  On `ach`, `domestic_wire` and `international_wire`, `beneficiary_address` and `bank_address` are newly **enforced**, and each needs all five of `street`, `city`, `state`, `postalCode` and `country`. They have always been listed as required here, but the server previously accepted a partial address and the payout then failed at the bank. Every missing field is now named in a single `400`.
+
+  `country` must be a two-letter ISO 3166-1 code — `USA` and `United States` are rejected. The same rule applies to a saved beneficiary; see [Create Beneficiary](/api-reference/endpoint/beneficiaries/create).
+</Warning>
+
 ### NGN
 
 | Field | Required |

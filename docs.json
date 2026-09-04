@@ -262,6 +262,21 @@
       "href": "https://app.rolla.xyz"
     }
   },
+  "contextual": {
+    "options": [
+      "copy",
+      "assistant",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor",
+      "vscode",
+      "mcp"
+    ]
+  },
+  "search": {
+    "prompt": "Search or ask about the Rolla API"
+  },
   "api": {
     "baseUrl": [
       "https://api.rolla.xyz/api/v1/external"
