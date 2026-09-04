@@ -69,20 +69,14 @@ Pass `status` to narrow it yourself — `status=completed` for settled activity 
 
 ## Amounts
 
-Amounts on this endpoint are in **major units** — `12.50` means $12.50 — and may carry decimals.
+Amounts on this endpoint are in **minor units** — `1250` means $12.50 — matching every other
+amount on the API, including the webhook payloads.
 
-<Warning>
-  **Webhook payloads report the same amount in minor units.** One fee, two surfaces:
-
-  | | `fee_amount` |
-  | --- | --- |
-  | this endpoint | `2` |
-  | `fee.charged` / `transaction.completed` webhook | `200` |
-
-  Both are $2.00. If you join a webhook to a row here — following `fee_transaction_id` to its `FEE-*` row, for instance — convert before you compare, or the two will differ by a factor of 100.
-
-  We intend to make this consistent. Changing it would silently alter every amount for integrations already reading this endpoint, so it will come as a versioned change with notice rather than in place.
-</Warning>
+<Note>
+  **This changed on 9 September 2026.** These amounts were previously reported in major units
+  (`12.50` for $12.50). If your integration multiplied them by 100 to line them up with the
+  webhooks, remove that conversion. See [Amounts & Currencies](/concepts/amounts-and-currencies).
+</Note>
 
 ## Paging
 

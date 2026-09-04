@@ -23,6 +23,20 @@ A fractional or zero amount is rejected with a validation error (`amount must be
   Double-check unit conversion before going live. Sending `1000` intending ₦1,000 actually sends ₦10 — and sending `100000` intending \$100 sends \$1,000.
 </Warning>
 
+<Note>
+  **Changed 9 September 2026.** Some responses previously reported amounts in major units
+  (`12.50` for \$12.50) while the webhooks reported the same amount as `1250`. Every response
+  now uses minor units, so the two agree. The affected responses were the transaction
+  listings and export, the statement lines, loans, broker commissions and referral stats,
+  and the `withdraw` and `swap` responses. `GET /wallet/transaction/{id}` and
+  `POST /wallet/transfer` were already correct but returned their amounts as JSON strings
+  (`"4400"`); they now return numbers (`4400`).
+
+  If your integration multiplied any of these by 100, or parsed them as strings, remove that
+  handling. Request bodies, wallet balances, fee quotes, statement totals and every webhook
+  payload are unchanged.
+</Note>
+
 ## Currencies you can collect and hold in
 
 Your wallets can hold a balance in, and be funded via virtual accounts or deposit instructions in:

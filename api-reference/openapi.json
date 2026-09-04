@@ -4932,21 +4932,21 @@
                               },
                               "source_amount": {
                                 "type": "number",
-                                "description": "Major units (e.g. 12.50 for $12.50). Note this differs from webhook payloads, which report the same amount in minor units."
+                                "description": "Minor units (e.g. 1250 for $12.50) — the same scale as the webhook payloads."
                               },
                               "source_currency": {
                                 "type": "string"
                               },
                               "destination_amount": {
                                 "type": "number",
-                                "description": "Major units (e.g. 12.50 for $12.50). Note this differs from webhook payloads, which report the same amount in minor units."
+                                "description": "Minor units (e.g. 1250 for $12.50) — the same scale as the webhook payloads."
                               },
                               "destination_currency": {
                                 "type": "string"
                               },
                               "fee_amount": {
                                 "type": "number",
-                                "description": "Major units (e.g. 12.50 for $12.50). Note this differs from webhook payloads, which report the same amount in minor units."
+                                "description": "Minor units (e.g. 1250 for $12.50) — the same scale as the webhook payloads."
                               },
                               "fee_transaction_id": {
                                 "type": "string",
