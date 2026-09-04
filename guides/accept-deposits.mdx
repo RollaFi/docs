@@ -1,0 +1,131 @@
+---
+title: "Accept Deposits"
+description: "Collect payments in USD or local currency and get notified the moment funds land"
+---
+
+Rolla credits your wallet whenever money arrives at one of your deposit accounts. The details differ by currency — a USD deposit account is provisioned on your wallet automatically, while local-currency deposits go through virtual accounts you generate — but the notification pattern is the same either way.
+
+<Info>
+  Don't poll. Configure a [webhook endpoint](/api-reference/webhooks/overview) subscribed to `transaction.completed` and you'll hear about every deposit the moment it lands, whichever currency it's in.
+</Info>
+
+## Accept a USD deposit
+
+Your USD deposit account is issued to you automatically — there's no account to generate. Fetch its details from [List Wallets](/api-reference/endpoint/wallet/wallets):
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+The USD wallet's `virtualAccounts` entry carries everything a sender needs to wire you money:
+
+```json
+{
+  "bank_name": "Bank of America",
+  "account_number": "9876543210",
+  "account_name": "Rolla / Your Business Name",
+  "routing_number": "101019644",
+  "swift_code": "LEADUS44",
+  "bank_address": {
+    "street": "1801 Main St",
+    "city": "Kansas City",
+    "state": "MO",
+    "postalCode": "64108",
+    "country": "US"
+  }
+}
+```
+
+Share these details with whoever is paying you — a domestic ACH/wire sender uses the `routing_number`, an international sender uses the `swift_code`. Deposits are credited to your USD wallet automatically.
+
+<Info>
+  **Platforms:** issuing USD deposit accounts for your customers works differently — see [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account) and [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions).
+</Info>
+
+Once a deposit lands, you'll get a webhook like this:
+
+```json
+{
+  "event": "transaction.completed",
+  "data": {
+    "type": "deposit",
+    "status": "completed",
+    "currency": "USD",
+    "amount": 500000
+  }
+}
+```
+
+`amount` is in cents, so `500000` = $5,000.00.
+
+<Tip>
+  Testing without a real wire? [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) credits your USD wallet instantly and fires the same webhook.
+</Tip>
+
+## Accept a local currency deposit (e.g. NGN)
+
+Local-currency collections go through **virtual accounts** you generate through the API:
+
+| Type | Lives for | Best for |
+|---|---|---|
+| [Dynamic](/api-reference/endpoint/wallet/virtual-accounts-generate) | One payment (expires) | Checkout flows — one account per expected payment, optionally pinned to an exact `amount` |
+| [Static](/api-reference/endpoint/wallet/virtual-accounts-generate-static) | Forever | A permanent top-up account for your business |
+| [Customer](/api-reference/endpoint/wallet/virtual-accounts-generate-customer) | Forever, per end user | Giving each of your users their own dedicated account number |
+
+### Example: a dedicated account per customer
+
+Customer virtual accounts are keyed on your `customer_identifier`, so the call is idempotent — repeat it and you get the same account back (`200`) instead of a duplicate (`201` on first creation):
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/generate/customer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customer_identifier": "user_8412",
+    "first_name": "Ada",
+    "last_name": "Obi",
+    "email": "ada@example.com",
+    "phone": "08012345678",
+    "bvn": "22222222222",
+    "date_of_birth": "04/02/1995",
+    "address": "12 Marina Road, Lagos",
+    "gender": "2"
+  }'
+```
+
+Show the returned `account_number` and `bank_name` to your user. Every transfer they make to it lands in **your** wallet, tagged with their `customer_identifier` so you can credit the right user. List them any time with [List Customer Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts-customers).
+
+<Note>
+  Customer virtual accounts require the end user's BVN for KYC. It is stored securely and never returned by the API.
+</Note>
+
+<Info>
+  Deposits to customer virtual accounts land in **your** wallet, tagged by customer — you keep the ledger. If each customer should instead hold their **own** verified account and wallet, that's the [Platform](/platform/overview) product.
+</Info>
+
+Once a deposit lands, match it by `virtual_account` and `customer_identifier` in the webhook payload:
+
+```json
+{
+  "event": "transaction.completed",
+  "data": {
+    "type": "deposit",
+    "status": "completed",
+    "currency": "NGN",
+    "amount": 500000,
+    "customer_identifier": "user_8412",
+    "virtual_account": { "account_number": "1234567890" }
+  }
+}
+```
+
+A deposit can arrive as `transaction.pending` first and complete moments later — treat `transaction.completed` as the signal that funds are spendable.
+
+<Tip>
+  Testing without a real transfer? [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) credits an account by `account_number` or `customer_identifier` and fires the same webhook.
+</Tip>
+
+## Stablecoin deposits
+
+Crypto deposit addresses are provisioned on your wallet the same way USD deposit accounts are — find them on [List Wallets](/api-reference/endpoint/wallet/wallets). Deposit webhooks fire exactly as above, with `rail: "stablecoin"` and a `network` block (chain, tx hash, addresses).

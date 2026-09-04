@@ -1,109 +1,74 @@
 ---
-title: "Introduction"
-description: "Welcome to the Rolla Developer API documentation"
+title: "Rolla Developer API"
+description: "Multi-currency wallets, local and cross-border payouts, and collections — for your business, or as a platform for your customers"
 ---
 
-## What is Rolla?
+Rolla is financial infrastructure for businesses moving money around the world: multi-currency wallets, collections through virtual accounts, payouts over local rails, SWIFT, mobile money and stablecoins, and FX between them — all through one API.
 
-Rolla is a financial infrastructure platform that enables businesses to manage multi-currency wallets and handle cross-border transactions. Our Developer API gives you programmatic access to these capabilities.
+## Which are you?
 
-<Card
-  title="Quick Start"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Get up and running with the Rolla API in minutes.
-</Card>
+There are two ways to build on Rolla. Both use the **same API and the same endpoints** — the difference is whose money moves.
 
-## Core Capabilities
+<CardGroup cols={2}>
+  <Card title="Business" icon="briefcase" href="/business/overview">
+    **Manage your own money.** Collect payments, hold multi-currency balances, pay suppliers and partners, and convert between currencies — for your own business account.
+  </Card>
+  <Card title="Platform" icon="building-user" href="/platform/overview">
+    **Offer banking to your customers.** For MSBs, fintechs, and financial institutions: onboard your own users, issue them accounts and wallets, and move money on their behalf — white-label, under your brand.
+  </Card>
+</CardGroup>
+
+<Info>
+  Not sure? If your API calls only ever touch **your own** wallets, you're a Business. If you onboard **other people or companies** and hold or move money for them, you're a Platform. Platforms use everything in the Business docs too — plus account onboarding and the `X-Account-Id` header.
+</Info>
+
+## Shared by both
+
+<CardGroup cols={2}>
+  <Card title="Core Concepts" icon="lightbulb" href="/concepts/authentication">
+    Authentication, amounts and minor units, transactions, pagination, idempotency, errors.
+  </Card>
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Every endpoint, request field, and response shape — organised by resource.
+  </Card>
+  <Card title="Webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Real-time deposit, payout, fee, and account events pushed to your server.
+  </Card>
+  <Card title="Contact Support" icon="headset" href="mailto:support@rolla.xyz">
+    Integration help, corridor coverage checks, and Platform activation.
+  </Card>
+</CardGroup>
+
+## Explore the API
+
+The reference is organised by resource, in roughly the order you'll meet each one:
 
 <Columns cols={3}>
-  <Card
-    title="Account Lookup"
-    icon="magnifying-glass-dollar"
-    href="/api-reference/endpoint/lookup"
-  >
-    Verify bank account details before sending payments.
+  <Card title="Wallets" icon="wallet" href="/api-reference/endpoint/wallet/wallets">
+    Balances and supported currencies.
   </Card>
-  <Card
-    title="Bank Directory"
-    icon="building-columns"
-    href="/api-reference/endpoint/banks"
-  >
-    Access our complete list of supported Nigerian banks.
+  <Card title="Deposits & Virtual Accounts" icon="building-columns" href="/api-reference/endpoint/wallet/virtual-accounts">
+    Generate deposit accounts and collect funds.
   </Card>
-  <Card
-    title="Transactions"
-    icon="clock-rotate-left"
-    href="/api-reference/endpoint/transactions"
-  >
-    Query and filter your transaction records via API.
+  <Card title="Banks & Account Lookup" icon="magnifying-glass-dollar" href="/api-reference/endpoint/banks">
+    Bank directory and account name resolution.
   </Card>
-  <Card
-    title="Wallet"
-    icon="wallet"
-    href="/api-reference/endpoint/wallet/wallets"
-  >
-    Multi-currency wallets, funding, swaps, withdrawals, and virtual accounts.
+  <Card title="Beneficiaries" icon="address-book" href="/api-reference/endpoint/beneficiaries/list">
+    Saved payout recipients across all rails.
   </Card>
-  <Card
-    title="Beneficiaries"
-    icon="address-book"
-    href="/api-reference/endpoint/beneficiaries/list"
-  >
-    Create and manage saved payment recipients.
+  <Card title="Payouts & Transfers" icon="paper-plane" href="/api-reference/endpoint/wallet/withdraw">
+    Fee quotes, withdrawals, and Rolla-to-Rolla transfers.
   </Card>
-  <Card
-    title="Teams"
-    icon="users"
-    href="/api-reference/endpoint/teams/members"
-  >
-    Invite members, assign roles, and manage your team.
+  <Card title="FX & Swaps" icon="arrows-rotate" href="/api-reference/endpoint/wallet/rates">
+    Live rates and wallet-to-wallet conversion.
   </Card>
-  <Card
-    title="Broker"
-    icon="handshake"
-    href="/api-reference/endpoint/broker/get-referral-link"
-  >
-    Referral links, commissions, and referred business tracking.
+  <Card title="Transactions & Statements" icon="clock-rotate-left" href="/api-reference/endpoint/wallet/transactions">
+    History, single-transaction lookup, exports, and statements.
   </Card>
-  <Card
-    title="KYB"
-    icon="id-card"
-    href="/api-reference/endpoint/kyb/get-application"
-  >
-    Business verification applications and document uploads.
+  <Card title="Webhooks" icon="bolt" href="/api-reference/webhooks/overview">
+    Events, payloads, signatures, and delivery.
   </Card>
-  <Card
-    title="Account Onboarding"
-    icon="user-plus"
-    href="/api-reference/endpoint/accounts/overview"
-  >
-    Onboard additional business or individual accounts via the API.
+  <Card title="Account Onboarding (Platform)" icon="id-card" href="/api-reference/endpoint/accounts/overview">
+    Customer accounts, KYC, and issued bank accounts.
   </Card>
 </Columns>
-
-## Getting Started
-
-<Steps>
-  <Step title="Get API Access">
-    Sign up at [app.rolla.xyz](https://app.rolla.xyz) and complete business verification.
-  </Step>
-  <Step title="Generate API Key">
-    Navigate to **Settings → API Keys** in your dashboard to create a key.
-  </Step>
-  <Step title="Make Your First Request">
-    Use your API key to call any endpoint with the `X-API-Key` header.
-  </Step>
-</Steps>
-
-## Need Help?
-
-<Card
-  title="Contact Support"
-  icon="headset"
-  href="mailto:support@rolla.xyz"
->
-  Reach out to our team for integration assistance.
-</Card>

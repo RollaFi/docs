@@ -1,42 +1,32 @@
 ---
 title: 'Introduction'
-description: 'Rolla Developer API for programmatic transaction management'
+description: 'Base URL, authentication, and conventions shared by every endpoint'
 ---
 
-## Overview
-
-The Rolla Developer API enables you to programmatically manage wallets and retrieve transaction data. Use it to automate financial operations across multiple currencies.
-
-<Info>
-  **Amounts**: Unless a route documents otherwise, numeric **`amount`** fields use each currency's **smallest unit** — NGN **kobo** (like the quickstart withdrawal), USD **US cents** (**100** = **\$1.00** USD), etc.
-</Info>
+Rolla's API is a REST API: JSON in, JSON out, predictable resource-based paths. This page covers the conventions every endpoint shares.
 
 **Base URL**: `https://api.rolla.xyz/api/v1/external`
 
 ## Authentication
 
-All API endpoints require authentication using an API key. Include your API key in the `X-API-Key` header with every request.
+Every request must carry your API key in the `X-API-Key` header:
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/banks" \
+curl "https://api.rolla.xyz/api/v1/external/banks" \
   -H "X-API-Key: your_api_key_here"
 ```
+
+Keys are created in the [Rolla Dashboard](https://app.rolla.xyz) under **Settings → API Keys**, and every key must be locked to at least one allowlisted IP address — that applies across the board, not just to payouts.
+
+See [Authentication](/concepts/authentication) for key management and security guidance.
 
 <Warning>
   Keep your API key secure. Do not expose it in client-side code or public repositories.
 </Warning>
 
-### Obtaining an API Key
-
-API keys can be generated from your [Rolla Dashboard](https://app.rolla.xyz). Navigate to **Settings → API Keys** to create and manage your keys.
-
-### IP Whitelisting
-
-For enhanced security, you can optionally whitelist specific IP addresses for your API key. When enabled, requests from non-whitelisted IPs will be rejected.
-
 ## Acting on a tenant account (`X-Account-Id`)
 
-If your business is a Rolla **white-label tenant**, a single API key can act on any account inside your tenancy — your own account, or any account you've onboarded under it. Add the optional **`X-Account-Id`** header naming the target account, and the **entire** request is scoped to that account: onboarding, documents, wallets, funding instructions, payouts, beneficiaries — everything runs as that account.
+If your business uses the [Platform](/platform/overview) product (a **white-label tenant**), a single API key can act on any account inside your tenancy — your own account, or any account you've onboarded under it. Add the optional **`X-Account-Id`** header naming the target account, and the **entire** request is scoped to that account: onboarding, documents, wallets, funding instructions, payouts, beneficiaries — everything runs as that account.
 
 ```bash
 # Fetch funding instructions for one of your tenant's accounts
@@ -56,38 +46,44 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/funding-
   Accounts you create with a tenant API key (via `POST /accounts`) are automatically added to your tenancy, so you can immediately address them with `X-Account-Id` afterwards. Accounts that onboard themselves through your white-label app are part of your tenancy too.
 </Info>
 
-## Response Format
+## Response format
 
-All responses follow a consistent JSON structure:
+Successful responses carry `success: true` with the payload under `data`; errors carry the HTTP code and a message:
 
-```json
+<CodeGroup>
+
+```json Success
 {
-  "status": true,
-  "message": "Description of the result",
+  "status": 200,
+  "message": "Banks retrieved successfully",
+  "success": true,
   "data": { ... }
 }
 ```
 
-### Error Responses
-
-When an error occurs, the response will include `status: false` and a descriptive error message:
-
-```json
+```json Error
 {
-  "status": false,
+  "status": 401,
   "message": "Invalid or inactive API key"
 }
 ```
 
-## Rate Limiting
+</CodeGroup>
 
-API requests are rate-limited to ensure fair usage. If you exceed the limit, you'll receive a `429 Too Many Requests` response.
+`status` is the HTTP status code as a number in both cases. Some errors add a machine-readable `code` — the full taxonomy is in [Errors](/concepts/errors).
 
-## Available Endpoints
+## Amounts
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/banks` | GET | List Nigerian banks |
-| `/lookup` | POST | Validate bank account |
-| `/transactions` | GET | Retrieve transactions |
-| `/accounts` | POST / GET | Onboard and manage additional business or individual accounts |
+Unless a route documents otherwise, numeric `amount` fields use each currency's **smallest unit** in requests and responses — NGN **kobo**, USD **cents** (`100` = $1.00), etc. Fractional amounts are rejected. See [Amounts & Currencies](/concepts/amounts-and-currencies).
+
+## Pagination
+
+List endpoints that paginate take `page` and `pageSize` (max `100`) and return `totalCount`, `totalPages`, and `hasMore` alongside the rows. See [Pagination](/concepts/pagination).
+
+## Idempotency
+
+There is no global idempotency header; money-moving requests should follow the lookup-before-retry pattern with your own `externalReference`. See [Idempotency & Retries](/concepts/idempotency).
+
+## Webhooks
+
+Instead of polling for status changes, register a webhook endpoint and receive [signed events](/api-reference/webhooks/overview) for every deposit, payout, fee, and account update.

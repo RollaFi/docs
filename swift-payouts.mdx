@@ -5,10 +5,7 @@ description: "Country coverage, required beneficiary details, and IBAN requireme
 
 ## Overview
 
-Rolla supports outbound **USD payouts over the SWIFT network** to recipients
-around the world. A SWIFT payout settles into the beneficiary's bank account in
-USD, regardless of the bank's local currency, using the beneficiary's SWIFT/BIC
-and account number (or IBAN).
+Rolla supports outbound **USD payouts over the SWIFT network** to recipients around the world. A SWIFT payout settles into the beneficiary's bank account in USD, regardless of the bank's local currency, using the beneficiary's SWIFT/BIC and account number (or IBAN).
 
 This page answers the three most common questions we get about SWIFT coverage:
 
@@ -18,16 +15,12 @@ This page answers the three most common questions we get about SWIFT coverage:
 
 ## Country coverage
 
-There is **no short allow-list** — we can send USD SWIFT payouts to recipients
-in **185+ countries**: effectively any country that is not under comprehensive
-sanctions and whose banks can receive USD via SWIFT.
+There is **no short allow-list** — we can send USD SWIFT payouts to recipients in **185+ countries**: effectively any country that is not under comprehensive sanctions and whose banks can receive USD via SWIFT.
 
-Rather than maintaining a whitelist, it's easier to think in terms of the
-exclusions. We **cannot** send USD SWIFT payouts to comprehensively sanctioned
-jurisdictions, which currently include:
+Rather than maintaining a whitelist, it's easier to think in terms of the exclusions. We **cannot** send USD SWIFT payouts to comprehensively sanctioned jurisdictions, which currently include:
 
 | Excluded jurisdiction |
-|---|
+| --- |
 | Cuba |
 | Iran |
 | North Korea |
@@ -37,21 +30,15 @@ jurisdictions, which currently include:
 | The Crimea, Donetsk, and Luhansk regions of Ukraine |
 
 <Note>
-  Sanctions programs change over time, and individual payments can still be
-  rejected by intermediary or beneficiary banks for their own compliance
-  reasons. If you need confirmation for a specific corridor before going live,
-  reach out to [support@rolla.xyz](mailto:support@rolla.xyz) and we'll verify it
-  for you.
+  Sanctions programs change over time, and individual payments can still be rejected by intermediary or beneficiary banks for their own compliance reasons. If you need confirmation for a specific corridor before going live, reach out to [support@rolla.xyz](mailto:support@rolla.xyz) and we'll verify it for you.
 </Note>
 
 ## Required beneficiary details
 
-For the vast majority of corridors, USD SWIFT payouts require the **same core
-set of fields**. So yes — the standard requirements are consistent across
-countries:
+For the vast majority of corridors, USD SWIFT payouts require the **same core set of fields**. So yes — the standard requirements are consistent across countries:
 
 | Field | Description | Required |
-|---|---|---|
+| --- | --- | --- |
 | **SWIFT / BIC code** | The beneficiary bank's SWIFT/BIC identifier | Always |
 | **Account number / IBAN** | The beneficiary's account number, or IBAN in [IBAN countries](#countries-that-require-an-iban) | Always |
 | **Account name** | The beneficiary's full name, exactly as registered with their bank | Always |
@@ -61,103 +48,68 @@ countries:
 
 ### The one variation: IBAN vs. account number
 
-The only substantive difference between corridors is **how the account is
-identified**:
+The only substantive difference between corridors is **how the account is identified**:
 
-- In **IBAN countries** (see below), the account is identified by an **IBAN**,
-  which encodes the bank and account in a single standardized string.
-- In **all other countries**, the account is identified by a **local account
-  number** plus the **SWIFT/BIC**.
+- In **IBAN countries** (see below), the account is identified by an **IBAN**, which encodes the bank and account in a single standardized string.
+- In **all other countries**, the account is identified by a **local account number** plus the **SWIFT/BIC**.
 
 ### Occasional extra fields
 
-A small number of corridors require an additional identifier on top of the core
-fields above. These are the exception, not the rule:
+A small number of corridors require an additional identifier on top of the core fields above. These are the exception, not the rule:
 
-- **Intermediary / correspondent bank** details, where the beneficiary bank
-  routes USD through a correspondent (common in some African and Asian
-  corridors).
-- A **national clearing code** (e.g. routing, sort, or bank/branch code) in
-  countries that don't use IBAN.
-- A **beneficiary tax ID** in a handful of jurisdictions (e.g. CPF/CNPJ in
-  Brazil).
+- **Intermediary / correspondent bank** details, where the beneficiary bank routes USD through a correspondent (common in some African and Asian corridors).
+- A **national clearing code** (e.g. routing, sort, or bank/branch code) in countries that don't use IBAN.
+- A **beneficiary tax ID** in a handful of jurisdictions (e.g. CPF/CNPJ in Brazil).
 
 <Tip>
-  When in doubt, collect the six core fields plus the IBAN where applicable.
-  That set clears the overwhelming majority of USD SWIFT payouts on the first
-  attempt.
+  When in doubt, collect the six core fields plus the IBAN where applicable. That set clears the overwhelming majority of USD SWIFT payouts on the first attempt.
 </Tip>
 
 ## Countries that require an IBAN
 
-An **IBAN (International Bank Account Number)** is mandatory for beneficiaries in
-the countries that participate in the official **SWIFT IBAN Registry**
-(ISO 13616). These are concentrated in **Europe (the EU/EEA and UK), the Middle
-East, and parts of North Africa, the Caribbean, and Central Asia**.
+An **IBAN (International Bank Account Number)** is mandatory for beneficiaries in the countries that participate in the official **SWIFT IBAN Registry** (ISO 13616). These are concentrated in **Europe (the EU/EEA and UK), the Middle East, and parts of North Africa, the Caribbean, and Central Asia**.
 
-For beneficiaries in these countries, supply the **IBAN** in place of (or
-alongside) a plain account number. For every other country, a local account
-number is used instead.
+For beneficiaries in these countries, supply the **IBAN** in place of (or alongside) a plain account number. For every other country, a local account number is used instead.
 
 <AccordionGroup>
   <Accordion title="Europe">
-    Albania · Andorra · Austria · Belarus · Belgium · Bosnia and Herzegovina ·
-    Bulgaria · Croatia · Cyprus · Czech Republic · Denmark · Estonia · Faroe
-    Islands · Finland · France · Georgia · Germany · Gibraltar · Greece ·
-    Greenland · Hungary · Iceland · Ireland · Italy · Kosovo · Latvia ·
-    Liechtenstein · Lithuania · Luxembourg · Malta · Moldova · Monaco ·
-    Montenegro · Netherlands · North Macedonia · Norway · Poland · Portugal ·
-    Romania · San Marino · Serbia · Slovakia · Slovenia · Spain ·
-    Sweden · Switzerland · Ukraine · United Kingdom · Vatican City
+    Albania · Andorra · Austria · Belarus · Belgium · Bosnia and Herzegovina · Bulgaria · Croatia · Cyprus · Czech Republic · Denmark · Estonia · Faroe Islands · Finland · France · Georgia · Germany · Gibraltar · Greece · Greenland · Hungary · Iceland · Ireland · Italy · Kosovo · Latvia · Liechtenstein · Lithuania · Luxembourg · Malta · Moldova · Monaco · Montenegro · Netherlands · North Macedonia · Norway · Poland · Portugal · Romania · San Marino · Serbia · Slovakia · Slovenia · Spain · Sweden · Switzerland · Ukraine · United Kingdom · Vatican City
   </Accordion>
+
   <Accordion title="Middle East">
-    Bahrain · Iraq · Israel · Jordan · Kuwait · Lebanon · Oman · Palestine ·
-    Qatar · Saudi Arabia · Turkey · United Arab Emirates · Yemen
+    Bahrain · Iraq · Israel · Jordan · Kuwait · Lebanon · Oman · Palestine · Qatar · Saudi Arabia · Turkey · United Arab Emirates · Yemen
   </Accordion>
+
   <Accordion title="Africa">
-    Burundi · Djibouti · Egypt · Libya · Mauritania · Mauritius · São Tomé and
-    Príncipe · Seychelles · Somalia · Sudan · Tunisia
+    Burundi · Djibouti · Egypt · Libya · Mauritania · Mauritius · São Tomé and Príncipe · Seychelles · Somalia · Sudan · Tunisia
   </Accordion>
+
   <Accordion title="Americas & Caribbean">
-    Brazil · British Virgin Islands · Costa Rica · Dominican Republic · El
-    Salvador · Falkland Islands · Guatemala · Saint Lucia
+    Brazil · British Virgin Islands · Costa Rica · Dominican Republic · El Salvador · Falkland Islands · Guatemala · Saint Lucia
   </Accordion>
+
   <Accordion title="Asia & Central Asia">
     Azerbaijan · Kazakhstan · Mongolia · Pakistan · Timor-Leste
   </Accordion>
 </AccordionGroup>
 
 <Note>
-  The IBAN registry is maintained by SWIFT and is updated periodically as new
-  countries adopt the standard (it currently lists roughly 90 countries). For
-  the definitive, always-current list, consult the official
-  [IBAN.com registry](https://www.iban.com/structure). If a beneficiary's bank
-  provides an IBAN, always use it — even in countries where it is technically
-  optional.
+  The IBAN registry is maintained by SWIFT and is updated periodically as new countries adopt the standard (it currently lists roughly 90 countries). For the definitive, always-current list, consult the official [IBAN.com registry](https://www.iban.com/structure). If a beneficiary's bank provides an IBAN, always use it — even in countries where it is technically optional.
 </Note>
 
 ## Sending a USD SWIFT payout
 
-To send a USD SWIFT payout, create a beneficiary with the
-`international_wire` withdrawal method and the fields above, then withdraw from
-your USD wallet.
+To send a USD SWIFT payout, create a beneficiary with the `international_wire` withdrawal method and the fields above, then withdraw from your USD wallet.
 
 <Steps>
   <Step title="Create the beneficiary">
-    Call [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) with
-    `currency: "USD"`, `withdrawal_method: "international_wire"`, the
-    `swift_code`, the `account_number` (or `iban`), `account_name`, `bank_name`,
-    `bank_address`, and `beneficiary_address`.
+    Call [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) with `currency: "USD"`, `withdrawal_method: "international_wire"`, the `swift_code`, the `account_number` (or `iban`), `account_name`, `bank_name`, `bank_address`, and `beneficiary_address`.
   </Step>
   <Step title="Withdraw from your USD wallet">
-    Call [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) with the
-    beneficiary ID and the amount (in cents — `100` = \$1.00).
+    Call [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) with the beneficiary ID and the amount (in cents — `100` = \$1.00).
   </Step>
   <Step title="Track the payout">
-    Monitor status via [Transactions](/api-reference/endpoint/transactions) or
-    webhooks, and subscribe to
-    [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
-    for the payment's UETR (see below).
+    Monitor status via [Transactions](/api-reference/endpoint/transactions) or webhooks, and subscribe to [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events) for the payment's UETR (see below).
   </Step>
 </Steps>
 
@@ -187,21 +139,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 
 ## Tracing a payout: the UETR
 
-Every payment on the SWIFT network carries a **UETR** (Unique End-to-end Transaction
-Reference) — a UUID that identifies the payment across every bank that touches it. It's
-the reference a beneficiary's bank recognises, so it's what you quote when a recipient
-asks where their money is, or when you need a payment traced or recalled.
+Every payment on the SWIFT network carries a **UETR** (Unique End-to-end Transaction Reference) — a UUID that identifies the payment across every bank that touches it. It's the reference a beneficiary's bank recognises, so it's what you quote when a recipient asks where their money is, or when you need a payment traced or recalled.
 
-The UETR is **not available when you send**. It is assigned by the correspondent network
-and comes back to us afterwards — usually within minutes, sometimes hours later during
-the destination market's banking day, and occasionally not at all on corridors that
-don't return one. So the withdraw response can't carry it.
+The UETR is **not available when you send**. It is assigned by the correspondent network and comes back to us afterwards — usually within minutes, sometimes hours later during the destination market's banking day, and occasionally not at all on corridors that don't return one. So the withdraw response can't carry it.
 
-We push it to you instead, on the
-[`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
-webhook — and once a payout has one, it is also returned on that payout by
-[Get Transaction](/api-reference/endpoint/wallet/get-transaction) and the transaction
-listings, so you can look it up whenever you need it:
+We push it to you instead, on the [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events) webhook — and once a payout has one, it is also returned on that payout by [Get Transaction](/api-reference/endpoint/wallet/get-transaction) and the transaction listings, so you can look it up whenever you need it:
 
 ```json
 {
@@ -223,18 +165,12 @@ listings, so you can look it up whenever you need it:
 
 Three things worth knowing:
 
-- **The webhook is how you learn it without asking.** Subscribe if you show payment
-  references to your users or handle their tracing requests; otherwise read `uetr` off the
-  payout whenever you need it. Both carry the same value.
-- **It may arrive after the payout has completed.** It reports a reference becoming
-  available, not a change to the payment — don't advance your own payment state on it.
-- **Not every payout gets one.** Local-rail and stablecoin payouts have no UETR, and no
-  event is sent when a corridor never returns one. Never gate your flow on it.
+- **The webhook is how you learn it without asking.** Subscribe if you show payment references to your users or handle their tracing requests; otherwise read `uetr` off the payout whenever you need it. Both carry the same value.
+- **It may arrive after the payout has completed.** It reports a reference becoming available, not a change to the payment — don't advance your own payment state on it.
+- **Not every payout gets one.** Local-rail and stablecoin payouts have no UETR, and no event is sent when a corridor never returns one. Never gate your flow on it.
 
-See [Payloads](/api-reference/webhooks/payloads#sample-payout-uetr-assigned) for the full
-field reference.
+See [Payloads](/api-reference/webhooks/payloads#sample-payout-uetr-assigned) for the full field reference.
 
 <Card title="Need a corridor checked?" icon="headset" href="mailto:support@rolla.xyz">
-  Contact our team to confirm coverage or required fields for a specific
-  destination.
+  Contact our team to confirm coverage or required fields for a specific destination.
 </Card>

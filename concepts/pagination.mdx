@@ -1,0 +1,49 @@
+---
+title: "Pagination"
+description: "How list endpoints page their results"
+---
+
+Paginated endpoints use offset pagination with two query parameters:
+
+| Parameter | Default | Max | |
+|---|---|---|---|
+| `page` | `1` | — | 1-indexed page number |
+| `pageSize` | `20` | `100` | Rows per page |
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/transactions?page=2&pageSize=50" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+The response's `data` carries the rows plus paging metadata:
+
+```json
+{
+  "status": 200,
+  "success": true,
+  "message": "Transactions retrieved successfully",
+  "data": {
+    "transactions": [ ... ],
+    "totalCount": 132,
+    "page": 2,
+    "pageSize": 50,
+    "totalPages": 3,
+    "hasMore": true
+  }
+}
+```
+
+Iterate until `hasMore` is `false` (or `page` reaches `totalPages`).
+
+## CSV exports
+
+Endpoints that return CSV — such as [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) with `format=csv` — carry the paging metadata in response **headers** instead, since the body is the file:
+
+| Header | Meaning |
+|---|---|
+| `X-Total-Count` | Total rows across all pages |
+| `X-Total-Pages` | Total pages at the requested `pageSize` |
+
+## Unpaginated lists
+
+A few small collections return the full array in one response with no paging parameters — [Get Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts), [List Beneficiaries](/api-reference/endpoint/beneficiaries/list), and [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) among them. Each endpoint's reference page states which behaviour it uses.

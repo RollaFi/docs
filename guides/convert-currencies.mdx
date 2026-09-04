@@ -1,0 +1,64 @@
+---
+title: "Convert Currencies"
+description: "Quote a live rate, lock it with a rate token, and swap between your wallets"
+---
+
+Rolla holds your balances in per-currency wallets. Converting between them is a two-step flow: **quote** a rate, then **swap** with the quoted token.
+
+## 1. Quote
+
+[Get Exchange Rates](/api-reference/endpoint/wallet/rates) returns the live rate for every supported corridor, each with a `rateToken`:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/wallet/rates" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+```json
+{
+  "status": 200,
+  "success": true,
+  "message": "Exchange rates retrieved successfully",
+  "data": {
+    "rates": [
+      {
+        "fromCurrency": "USD",
+        "toCurrency": "NGN",
+        "rate": 1405.3992,
+        "rateToken": "eyJhbGci..."
+      }
+    ]
+  }
+}
+```
+
+Use the rate to show your user what they'll receive; hold on to the `rateToken` for the corridor you're converting.
+
+## 2. Swap
+
+Pass the token to [Swap Currency](/api-reference/endpoint/wallet/swap) to execute at the quoted rate:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/swap" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fromCurrency": "USD",
+    "toCurrency": "NGN",
+    "fromAmount": 1000,
+    "rateToken": "eyJhbGci...",
+    "description": "Treasury conversion"
+  }'
+```
+
+`fromAmount` is in [minor units](/concepts/amounts-and-currencies) of `fromCurrency` — `1000` cents = $10.00. The response returns a completed `swap` transaction with the executed `exchange_rate`, `source_amount`, and `destination_amount`.
+
+<Warning>
+  If you omit `rateToken`, the swap executes at the current market rate — which may have moved since you quoted. Always pass the token when you've shown a rate to a user.
+</Warning>
+
+## Converting as part of a payout
+
+You don't need to swap first to pay out in another currency — [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) handles cross-currency payouts (`fx_withdrawal`) directly when the beneficiary's currency differs from the wallet you're paying from. Swaps are for rebalancing your own wallets; FX payouts are for converting on the way out.
+
+Swaps appear in your history as `transaction_type: "swap"` — see [Transactions](/concepts/transactions).

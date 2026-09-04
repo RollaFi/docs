@@ -11,19 +11,63 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Get Started",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Welcome",
             "pages": [
-              "index",
+              "index"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/authentication",
+              "concepts/amounts-and-currencies",
+              "concepts/transactions",
+              "concepts/pagination",
+              "concepts/idempotency",
+              "concepts/errors"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Business",
+        "groups": [
+          {
+            "group": "Manage Your Own Money",
+            "pages": [
+              "business/overview",
               "quickstart"
             ]
           },
           {
-            "group": "Cross-Border Payouts",
+            "group": "Guides",
             "pages": [
-              "swift-payouts"
+              "guides/accept-deposits",
+              "guides/send-payouts",
+              "swift-payouts",
+              "guides/convert-currencies"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Platform",
+        "groups": [
+          {
+            "group": "Banking For Your Customers",
+            "pages": [
+              "platform/overview",
+              "platform/quickstart"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "platform/onboard-customers",
+              "platform/operate-accounts"
             ]
           }
         ]
@@ -32,51 +76,35 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "Overview",
+            "group": "Getting Started",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Banks",
-            "pages": [
-              "api-reference/endpoint/banks"
-            ]
-          },
-          {
-            "group": "Account Lookup",
-            "pages": [
-              "api-reference/endpoint/lookup"
-            ]
-          },
-          {
-            "group": "Transactions",
-            "pages": [
-              "api-reference/endpoint/transactions",
-              "api-reference/endpoint/accounts/list-transactions"
-            ]
-          },
-          {
-            "group": "Wallet",
+            "group": "Wallets",
             "pages": [
               "api-reference/endpoint/wallet/wallets",
-              "api-reference/endpoint/wallet/rates",
-              "api-reference/endpoint/wallet/supported-currencies",
+              "api-reference/endpoint/wallet/supported-currencies"
+            ]
+          },
+          {
+            "group": "Deposits & Virtual Accounts",
+            "pages": [
               "api-reference/endpoint/wallet/virtual-accounts",
               "api-reference/endpoint/wallet/virtual-accounts-generate",
               "api-reference/endpoint/wallet/virtual-accounts-generate-static",
               "api-reference/endpoint/wallet/virtual-accounts-generate-customer",
               "api-reference/endpoint/wallet/virtual-accounts-customers",
               "api-reference/endpoint/wallet/simulate-deposit",
-              "api-reference/endpoint/wallet/simulate-usd-deposit",
-              "api-reference/endpoint/wallet/transfer",
-              "api-reference/endpoint/wallet/swap",
-              "api-reference/endpoint/wallet/withdraw",
-              "api-reference/endpoint/wallet/fee",
-              "api-reference/endpoint/wallet/transactions",
-              "api-reference/endpoint/wallet/export-transactions",
-              "api-reference/endpoint/wallet/get-transaction",
-              "api-reference/endpoint/wallet/statement"
+              "api-reference/endpoint/wallet/simulate-usd-deposit"
+            ]
+          },
+          {
+            "group": "Banks & Account Lookup",
+            "pages": [
+              "api-reference/endpoint/banks",
+              "api-reference/endpoint/lookup"
             ]
           },
           {
@@ -88,54 +116,34 @@
               "api-reference/endpoint/beneficiaries/get",
               "api-reference/endpoint/beneficiaries/update",
               "api-reference/endpoint/beneficiaries/delete",
-              "api-reference/endpoint/beneficiaries/nigerian-banks",
-              "api-reference/endpoint/beneficiaries/lookup"
+              "api-reference/endpoint/beneficiaries/lookup",
+              "api-reference/endpoint/beneficiaries/nigerian-banks"
             ]
           },
           {
-            "group": "Teams",
+            "group": "Payouts & Transfers",
             "pages": [
-              "api-reference/endpoint/teams/roles",
-              "api-reference/endpoint/teams/invite",
-              "api-reference/endpoint/teams/members",
-              "api-reference/endpoint/teams/remove-member",
-              "api-reference/endpoint/teams/update-status",
-              "api-reference/endpoint/teams/assign-role"
+              "api-reference/endpoint/wallet/fee",
+              "api-reference/endpoint/wallet/withdraw",
+              "api-reference/endpoint/wallet/transfer"
             ]
           },
           {
-            "group": "Account Onboarding",
+            "group": "FX & Swaps",
             "pages": [
-              "api-reference/endpoint/accounts/overview",
-              "api-reference/endpoint/accounts/create",
-              "api-reference/endpoint/accounts/list",
-              "api-reference/endpoint/accounts/get",
-              "api-reference/endpoint/accounts/requirements",
-              "api-reference/endpoint/accounts/update-business",
-              "api-reference/endpoint/accounts/update-individual",
-              "api-reference/endpoint/accounts/upload-document",
-              "api-reference/endpoint/accounts/get-documents",
-              "api-reference/endpoint/accounts/delete-document",
-              "api-reference/endpoint/accounts/add-related-person",
-              "api-reference/endpoint/accounts/list-related-persons",
-              "api-reference/endpoint/accounts/update-related-person",
-              "api-reference/endpoint/accounts/delete-related-person",
-              "api-reference/endpoint/accounts/kyc-link",
-              "api-reference/endpoint/accounts/individual-kyc-link",
-              "api-reference/endpoint/accounts/kyc-reliance",
-              "api-reference/endpoint/accounts/related-person-kyc-reliance",
-              "api-reference/endpoint/accounts/verification",
-              "api-reference/endpoint/accounts/verification-status",
-              "api-reference/endpoint/accounts/verification-documents",
-              "api-reference/endpoint/accounts/related-person-verification-documents",
-              "api-reference/endpoint/accounts/download-verification-document",
-              "api-reference/endpoint/accounts/submit",
-              "api-reference/endpoint/accounts/approve-account",
-              "api-reference/endpoint/accounts/bank-account-requirements",
-              "api-reference/endpoint/accounts/issue-bank-account",
-              "api-reference/endpoint/accounts/list-bank-accounts",
-              "api-reference/endpoint/accounts/simulate-deposit",
-              "api-reference/endpoint/accounts/funding-instructions"
+              "api-reference/endpoint/wallet/rates",
+              "api-reference/endpoint/wallet/swap"
+            ]
+          },
+          {
+            "group": "Transactions & Statements",
+            "pages": [
+              "api-reference/endpoint/transactions",
+              "api-reference/endpoint/wallet/transactions",
+              "api-reference/endpoint/wallet/get-transaction",
+              "api-reference/endpoint/wallet/export-transactions",
+              "api-reference/endpoint/wallet/statement",
+              "api-reference/endpoint/accounts/list-transactions"
             ]
           },
           {
@@ -146,6 +154,82 @@
               "api-reference/webhooks/payloads",
               "api-reference/webhooks/signatures",
               "api-reference/webhooks/delivery"
+            ]
+          },
+          {
+            "group": "Account Onboarding (Platform)",
+            "pages": [
+              "api-reference/endpoint/accounts/overview",
+              {
+                "group": "Applications",
+                "pages": [
+                  "api-reference/endpoint/accounts/create",
+                  "api-reference/endpoint/accounts/list",
+                  "api-reference/endpoint/accounts/get",
+                  "api-reference/endpoint/accounts/requirements",
+                  "api-reference/endpoint/accounts/update-business",
+                  "api-reference/endpoint/accounts/update-individual",
+                  "api-reference/endpoint/accounts/submit"
+                ]
+              },
+              {
+                "group": "Documents",
+                "pages": [
+                  "api-reference/endpoint/accounts/upload-document",
+                  "api-reference/endpoint/accounts/get-documents",
+                  "api-reference/endpoint/accounts/delete-document"
+                ]
+              },
+              {
+                "group": "Related Persons",
+                "pages": [
+                  "api-reference/endpoint/accounts/add-related-person",
+                  "api-reference/endpoint/accounts/list-related-persons",
+                  "api-reference/endpoint/accounts/update-related-person",
+                  "api-reference/endpoint/accounts/delete-related-person"
+                ]
+              },
+              {
+                "group": "Verification & KYC",
+                "pages": [
+                  "api-reference/endpoint/accounts/verification",
+                  "api-reference/endpoint/accounts/verification-status",
+                  "api-reference/endpoint/accounts/individual-kyc-link",
+                  "api-reference/endpoint/accounts/kyc-link",
+                  "api-reference/endpoint/accounts/kyc-reliance",
+                  "api-reference/endpoint/accounts/related-person-kyc-reliance",
+                  "api-reference/endpoint/accounts/verification-documents",
+                  "api-reference/endpoint/accounts/related-person-verification-documents",
+                  "api-reference/endpoint/accounts/download-verification-document"
+                ]
+              },
+              {
+                "group": "Bank Accounts",
+                "pages": [
+                  "api-reference/endpoint/accounts/bank-account-requirements",
+                  "api-reference/endpoint/accounts/issue-bank-account",
+                  "api-reference/endpoint/accounts/list-bank-accounts",
+                  "api-reference/endpoint/accounts/funding-instructions"
+                ]
+              },
+              {
+                "group": "Sandbox",
+                "pages": [
+                  "api-reference/endpoint/accounts/approve-account",
+                  "api-reference/endpoint/accounts/simulate-deposit"
+                ]
+              }
+            ]
+          },
+          {
+            "group": "Teams",
+            "pages": [
+              "api-reference/endpoint/teams/roles",
+              "api-reference/endpoint/teams/invite",
+              "api-reference/endpoint/teams/members",
+              "api-reference/endpoint/teams/assign-role",
+              "api-reference/endpoint/teams/update-status",
+              "api-reference/endpoint/teams/remove-member"
             ]
           }
         ]

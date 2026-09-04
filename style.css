@@ -1,0 +1,28 @@
+/* Cards that share a row always share that row's height. */
+.card-group {
+  align-items: stretch !important;
+}
+
+/* Whether the grid item is the card itself or a wrapper around it,
+   stretch it to the row and lay it out as a column. */
+.card-group > * {
+  align-self: stretch !important;
+  height: auto !important;
+  display: flex;
+  flex-direction: column;
+}
+
+/* When the grid item wraps the card (e.g. a link), the card fills the wrapper. */
+.card-group > :not(.card) > .card {
+  flex: 1 1 auto;
+}
+
+/* The card body grows, so every card paints to the full row height. */
+.card-group .card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-group .card > [data-component-part="card-content-container"] {
+  flex: 1 1 auto;
+}

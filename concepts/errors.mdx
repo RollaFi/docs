@@ -1,0 +1,82 @@
+---
+title: "Errors"
+description: "Response envelopes, HTTP status codes, and error codes"
+---
+
+## Response envelopes
+
+Successful responses carry `success: true` and the payload under `data`:
+
+```json
+{
+  "status": 200,
+  "message": "Wallets retrieved successfully",
+  "success": true,
+  "data": { ... }
+}
+```
+
+Error responses carry the HTTP code in `status` and a human-readable `message` — note there is **no** `success` field on errors:
+
+```json
+{
+  "status": 403,
+  "message": "API access has been disabled for this account"
+}
+```
+
+<Tip>
+  Branch on the HTTP status code (or `success === true`), not on the presence of `status` — it is present on both success and error responses, as a number.
+</Tip>
+
+## HTTP status codes
+
+| Code | Meaning |
+|---|---|
+| `200` | Success |
+| `201` | Resource created (e.g. a new virtual account) |
+| `202` | Accepted — the request is queued for review (e.g. USD bank account issuance) |
+| `400` | Bad request — validation failed, insufficient balance, or a domain rule was violated |
+| `401` | Missing or invalid API key, or the account no longer exists |
+| `403` | Key valid but not allowed: IP not allowlisted, API access disabled, restricted account, or a feature your account isn't enabled for |
+| `404` | Resource not found |
+| `409` | Conflict — e.g. duplicate email on account creation |
+| `500` | Something went wrong on Rolla's side — safe to retry with backoff |
+
+## Validation errors
+
+Requests that fail validation return `400` with an `errors` array describing each offending field:
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "path": ["amount"],
+      "message": "amount must be a whole number of smallest currency units (e.g. cents)"
+    }
+  ]
+}
+```
+
+## Error codes
+
+Some errors additionally carry a machine-readable `code` at the top level of the body:
+
+| `code` | HTTP | Meaning |
+|---|---|---|
+| `ACCOUNT_DOES_NOT_EXIST` | `401` | The account behind the API key no longer exists |
+| `ACCOUNT_RESTRICTED` | `403` | The account is deactivated or restricted (also sets `accountBlocked: true`) |
+| `ACCOUNT_EMAIL_EXISTS` | `409` | An account with that email already exists ([Create Account](/api-reference/endpoint/accounts/create)) |
+| `NOT_A_PARTNER` | `403` | Endpoint requires a white-label tenant key |
+| `APPLICATION_NOT_APPROVED` | `400` | The account's application must be approved first |
+| `MISSING_ACCOUNT_DETAILS` | `400` | Bank account issuance needs more data — the body lists the missing fields |
+| `REQUEST_DECLINED` | `409` | A previous issuance request for this account was declined |
+| `USD_ACCOUNT_NOT_FOUND` | `404` | No USD deposit account exists for this account |
+
+Errors without a `code` are identified by their HTTP status and `message`.
+
+## Handling failures in money movement
+
+A payout that fails **after** being created doesn't come back as an HTTP error — the transaction moves to `failed` or `rejected` and the funds return to your wallet. Listen for [`transaction.failed` webhooks](/api-reference/webhooks/events) rather than relying on the initial response alone, and see [Idempotency & Retries](/concepts/idempotency) for safely retrying ambiguous requests.

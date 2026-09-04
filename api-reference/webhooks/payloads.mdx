@@ -86,7 +86,9 @@ To display a value, divide by 100 (e.g. `amount / 100`) for any currency.
 </Warning>
 
 <Note>
-  **Webhook amounts differ from the REST transaction endpoints.** Webhook payloads report amounts as **major × 100** (e.g. `1000` = $10.00). The REST transaction responses — `GET /wallet/transactions`, `GET /wallet/transaction/{id}`, and the `withdraw` / `transfer` / `swap` responses — report transaction amounts in **major units** (e.g. `10` = $10.00). So the same transaction shows `1000` in its webhook and `10` over REST. Match a webhook to a REST record by **`transaction_id`** (or `reference`), not by comparing raw amounts, and apply the right scale for each source.
+  **Webhook amounts match the REST transaction endpoints.** Both report amounts as **major × 100** (e.g. `1000` = $10.00), so the same transaction shows `1000` in its webhook and `1000` over REST. Match a webhook to a REST record by **`transaction_id`** (or `reference`) rather than by comparing amounts — a reference is stable where an amount is not unique.
+
+  Before **9 September 2026** the REST transaction responses reported major units (`10` = $10.00) while webhooks reported `1000`. If your integration converted between the two, remove that conversion.
 </Note>
 
 <Tip>
