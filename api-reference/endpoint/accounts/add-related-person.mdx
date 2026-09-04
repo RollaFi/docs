@@ -5,19 +5,47 @@ openapi: 'POST /accounts/{accountId}/related-persons'
 
 Adds a beneficial owner or director to a business account's application. Every related person must complete identity verification — via a [KYC link](/api-reference/endpoint/accounts/kyc-link) — before the application can be submitted.
 
-## Required before submission
+## Mandatory and optional fields
 
-A business must declare **at least one** beneficial owner or director. For each person:
+A business must declare **at least one** beneficial owner or director.
 
-| Group | Required |
-|-------|----------|
-| Details | `firstName`, `lastName`, `email`, `phone`, `dateOfBirth`, `sourceOfWealthExplanation` |
-| `currentAddress` | `street`, `city`, `state`, `postalCode`, `country` |
-| Identifier | `taxId` — the person's government identifier. Nigerian residents supply `nin` (11 digits) instead |
-| Documents | `proof_of_address`, `source_of_wealth_doc` — upload with their `relatedPersonId` |
-| Verification | a completed [KYC link](/api-reference/endpoint/accounts/kyc-link) |
+Unlike the other update endpoints, this one **rejects an incomplete person**. The fields
+marked *Required* below must be present in the request itself. The rest are accepted now and
+checked before the application can be submitted.
 
-Owners must be at least 18. [Get Requirements](/api-reference/endpoint/accounts/requirements) reports anything outstanding per person under `relatedPersons[].missingFields` and `relatedPersons[].missingDocuments`.
+| Field | | Notes |
+|---|---|---|
+| `firstName` | **Required in request** | |
+| `lastName` | **Required in request** | |
+| `email` | **Required in request** | Where their KYC link is sent |
+| `phone` | **Required in request** | International format |
+| `dateOfBirth` | **Required in request** | `YYYY-MM-DD`. Must be 18 or older |
+| `currentAddress` | **Required in request** | All five fields — see below |
+| `sourceOfWealthExplanation` | Required to submit | Accepted empty here, blocks submission if left so |
+| Identifier | Required to submit | `taxId`, or `nin` for Nigerian residents — see below |
+| `ownershipPercentage` | Optional | 0–100. Write `60` for 60%, never `0.6` |
+| `roles` | Optional | `Beneficial Owner` (the default) or `Director` |
+| `bvn` | Optional | Nigerian identifier, 11 digits |
+
+### `currentAddress`
+
+Required in the request, and all five fields must be present together.
+
+| Field | | Notes |
+|---|---|---|
+| `street` | **Required** | |
+| `city` | **Required** | |
+| `state` | **Required** | State, province or region |
+| `postalCode` | **Required** | |
+| `country` | **Required** | ISO-2. Also decides which identifier format applies |
+
+### Documents and verification
+
+Both documents are mandatory before submission, uploaded with the person's `relatedPersonId`:
+`proof_of_address` and `source_of_wealth_doc`. Each person must also complete a
+[KYC link](/api-reference/endpoint/accounts/kyc-link).
+
+[Get Requirements](/api-reference/endpoint/accounts/requirements) reports anything outstanding per person under `relatedPersons[].missingFields` and `relatedPersons[].missingDocuments`.
 
 ## Government identifier
 
@@ -102,6 +130,6 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 | `dateOfBirth` | string | Yes | Date of birth (`YYYY-MM-DD`) |
 | `ownershipPercentage` | number | No | Ownership stake, 0–100 |
 | `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`) |
-| `sourceOfWealthExplanation` | string | No | Free-text source of wealth |
+| `sourceOfWealthExplanation` | string | Not on this call — required before submission | Free-text source of wealth |
 | `taxId` | string | Not on this call — required before submission | The person's government identifier, in [the format their country of residence issues](#government-identifier). Nigerian residents send `nin` instead. Can be patched later via [Update Related Person](/api-reference/endpoint/accounts/update-related-person) |
 | `bvn` / `nin` | string | No | Nigerian identifiers. `nin` (11 digits) is what Nigerian residents send in place of `taxId` |

@@ -12,6 +12,21 @@ Updates a related person on a business account's application. Provided fields ar
   for the per-country formats.
 </Info>
 
+## Mandatory and optional fields
+
+Every field is optional in this request — provided fields are merged, omitted fields keep
+their stored values. The same fields are mandatory **before submission** as on
+[Add Related Person](/api-reference/endpoint/accounts/add-related-person#mandatory-and-optional-fields):
+`firstName`, `lastName`, `email`, `phone`, `dateOfBirth`, `sourceOfWealthExplanation`, a
+government identifier, and all five `currentAddress` fields.
+
+`ownershipPercentage` and `roles` stay optional throughout.
+
+<Warning>
+  `currentAddress` is all-or-nothing. Send it and all five fields must be present —
+  there is no patching a single line of an address.
+</Warning>
+
 ## Example Request
 
 ```bash

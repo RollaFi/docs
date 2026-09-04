@@ -5,21 +5,69 @@ openapi: 'PUT /accounts/{accountId}/individual'
 
 Updates the KYC application of an individual account. Fields inside `individualInfo` are merged into the stored application, so you can collect personal details, address and employment information across multiple calls.
 
-## Required fields to submit
+## Mandatory and optional fields
 
-These must be present before the application can move from `draft` to `submitted`. Everything else on `individualInfo` is optional. Check what's still outstanding at any time with [Get Requirements](/api-reference/endpoint/accounts/requirements) — its `readyToSubmit` flag and `missingFields` array list exactly what's missing.
+<Note>
+  **No field inside `individualInfo` is mandatory in this request.** It is merged into the
+  stored application, so you can collect personal details, address and employment across
+  separate calls — the body must carry the `individualInfo` key, but it may hold as little
+  as one field. Mandatory below means **required before the application can be
+  submitted**.
+</Note>
 
-| Group | Required fields |
-|-------|-----------------|
-| `individualInfo` | `firstName`, `lastName`, `phone`, `dateOfBirth`, `citizenship`, plus the identifier for their country (see below) |
-| `individualInfo.address` | `street`, `city`, `state`, `postalCode`, `country` |
-| `individualInfo.employment` | `status`, `sourceOfWealth`, `annualIncome` |
-| Documents | `proof_of_address` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
+### `individualInfo`
 
-Enum values:
-- `employment.status` — `employed`, `self-employed`, `retired`, `unemployed`, `student`
-- `employment.sourceOfWealth` — `salary`, `business_income`, `investments`, `inheritance`, `savings`, `other`
-- `employment.annualIncome` — `<25k`, `25k-50k`, `50k-100k`, `100k-250k`, `250k-500k`, `500k+`
+| Field | | Notes |
+|---|---|---|
+| `firstName` | **Mandatory** | |
+| `lastName` | **Mandatory** | |
+| `phone` | **Mandatory** | International format |
+| `dateOfBirth` | **Mandatory** | `YYYY-MM-DD` |
+| `citizenship` | **Mandatory** | ISO-2 country code |
+| Country identifier | **Mandatory** | One or two fields depending on country — see below |
+| `countryOfResidence` | Optional | ISO-2. Decides which identifier applies; falls back to `citizenship` |
+| `email` | Optional | The account already carries its own email, set when you created it |
+| `idDocument` | Optional | `type`, `number`, `issueDate`, `expirationDate`. Metadata only — it does not satisfy identity verification |
+
+### `individualInfo` — government identifier
+
+Which field is mandatory depends on country of residence, falling back to citizenship.
+
+| Country | Field | Format |
+|---|---|---|
+| Nigeria | `nin` **and** `bvn` | 11 digits each |
+| United States | `ssn` | 9 digits |
+| Canada | `sin` | 9 digits |
+| Anywhere else | `nationalId` | As issued |
+
+### `individualInfo.address`
+
+| Field | | Notes |
+|---|---|---|
+| `street` | **Mandatory** | |
+| `city` | **Mandatory** | |
+| `state` | **Mandatory** | State, province or region |
+| `postalCode` | **Mandatory** | |
+| `country` | **Mandatory** | ISO-2 country code |
+
+### `individualInfo.employment`
+
+| Field | | Notes |
+|---|---|---|
+| `status` | **Mandatory** | `employed`, `self-employed`, `retired`, `unemployed`, `student` |
+| `sourceOfWealth` | **Mandatory** | `salary`, `business_income`, `investments`, `inheritance`, `savings`, `other` |
+| `annualIncome` | **Mandatory** | `<25k`, `25k-50k`, `50k-100k`, `100k-250k`, `250k-500k`, `500k+` |
+| `employerName` | Optional | |
+| `sourceOfWealthDescription` | Optional | Free text |
+
+### Documents
+
+`proof_of_address` is mandatory before submission — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document).
+
+<Tip>
+  [Get Requirements](/api-reference/endpoint/accounts/requirements) names exactly what is
+  still outstanding in `missingFields` and `missingDocuments`.
+</Tip>
 
 <Warning>
   Identity verification **blocks submission**. The applicant must complete their [KYC link](/api-reference/endpoint/accounts/individual-kyc-link) — or you must supply an already-verified identity via [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance) — before [Submit Application](/api-reference/endpoint/accounts/submit) will succeed. Until then it returns `409 KYC_INCOMPLETE` and `readyToSubmit` stays `false`.

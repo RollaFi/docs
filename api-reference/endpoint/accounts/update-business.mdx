@@ -5,16 +5,70 @@ openapi: 'PUT /accounts/{accountId}/business'
 
 Updates the application of a business account. Each section you send (`business_info`, `business_address`, `contact_info`, `banking_info`) is merged into the stored application, so you can save progress incrementally — one section per call or everything at once.
 
-## Required fields to submit
+## Mandatory and optional fields
 
-These must be present before the application can move from `draft` to `submitted`. Everything else is optional. Check what's still outstanding at any time with [Get Requirements](/api-reference/endpoint/accounts/requirements) — its `readyToSubmit` flag and `missingFields` array list exactly what's missing.
+<Note>
+  **No individual field is mandatory in this request.** Every section is merged into the
+  stored application, so a call carrying one field is as valid as a call carrying all of
+  them — that is what lets you save progress as your customer fills your form. The only
+  rule is that at least one section must be present.
 
-| Section | Required fields |
-|---------|-----------------|
-| `business_info` | `legalName`, `businessType`, `incorporationDate`, `incorporationCountry`, `registrationNumber`, `taxId`, `description`, `monthlyVolume`, `annualRevenue`, `primaryFundingSource` |
-| `business_address` | `street`, `city`, `state`, `postalCode`, `country` |
-| `contact_info` | `email`, `phone` |
-| Documents | `certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `director_register`, `shareholder_register`, `bank_statement` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
+  Mandatory below means **required before the application can be submitted**. Nothing here
+  is enforced until you call [Submit Application](/api-reference/endpoint/accounts/submit).
+</Note>
+
+### `business_info`
+
+| Field | | Notes |
+|---|---|---|
+| `legalName` | **Mandatory** | The registered legal name |
+| `businessType` | **Mandatory** | e.g. `Limited Liability Company` |
+| `incorporationDate` | **Mandatory** | `YYYY-MM-DD` |
+| `incorporationCountry` | **Mandatory** | ISO-2 country code |
+| `registrationNumber` | **Mandatory** | Company registration number |
+| `taxId` | **Mandatory** | Tax identification or business-licence number |
+| `description` | **Mandatory** | 10–1000 characters |
+| `monthlyVolume` | **Mandatory** | Digits only, greater than 0 |
+| `annualRevenue` | **Mandatory** | Digits only, greater than 0 |
+| `primaryFundingSource` | **Mandatory** | e.g. `Business Revenue` |
+| `website` | **Mandatory** | Valid URL, including the scheme |
+| `tradingName` | Optional | The name the business trades under, when it differs from the legal name. We use the legal name when it is absent |
+
+### `business_address`
+
+| Field | | Notes |
+|---|---|---|
+| `street` | **Mandatory** | Max 200 characters |
+| `city` | **Mandatory** | |
+| `state` | **Mandatory** | State, province or region |
+| `postalCode` | **Mandatory** | 3–10 characters |
+| `country` | **Mandatory** | ISO-2 country code |
+
+### `contact_info`
+
+| Field | | Notes |
+|---|---|---|
+| `email` | **Mandatory** | |
+| `phone` | **Mandatory** | International format, e.g. `+13025550123` |
+
+### `banking_info`
+
+Optional in full. Send it only if you hold the customer's existing bank details; it is not
+part of the submit gate.
+
+`bankName`, `accountNumber`, `routingNumber`, `accountType` (`checking` or `savings`), `currency`.
+
+### Documents
+
+All six are mandatory before submission, uploaded via [Upload Document](/api-reference/endpoint/accounts/upload-document):
+`certificate_of_incorporation`, `articles_of_association`, `proof_of_address`,
+`director_register`, `shareholder_register`, `bank_statement`.
+
+<Tip>
+  [Get Requirements](/api-reference/endpoint/accounts/requirements) is the live answer to
+  "what is still outstanding" — its `missingFields` and `missingDocuments` arrays name exactly
+  what is blocking submission, so you never have to reconcile this table by hand.
+</Tip>
 
 <Info>
   Every **beneficial owner / director** must complete identity verification (Sumsub **GREEN**) before the application can be submitted. Add them via [Add Related Person](/api-reference/endpoint/accounts/add-related-person) and send each their KYC link.
@@ -41,7 +95,8 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
       "description": "Freight and logistics services across West Africa",
       "monthlyVolume": "100000",
       "annualRevenue": "1200000",
-      "primaryFundingSource": "Business Revenue"
+      "primaryFundingSource": "Business Revenue",
+      "website": "https://betalogistics.com"
     },
     "business_address": {
       "street": "77 Commerce Ave",
