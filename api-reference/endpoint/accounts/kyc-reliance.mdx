@@ -3,7 +3,7 @@ title: 'Submit KYC Reliance'
 openapi: 'POST /accounts/{accountId}/kyc-reliance'
 ---
 
-Submits identity documents you have **already verified yourself** for an **individual account**, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's passport and the selfie or liveness capture you collected during your own onboarding, and we register them against the account's verification.
+Submits an identity document you have **already verified yourself** for an **individual account**, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's ID document and the selfie or liveness capture you collected during your own onboarding, and we register them against the account's verification.
 
 This is the alternative to [Generate Individual KYC Link](/api-reference/endpoint/accounts/individual-kyc-link). Use it when your customers have already completed identity verification on your side and re-verifying them would be redundant.
 
@@ -17,29 +17,49 @@ This is the alternative to [Generate Individual KYC Link](/api-reference/endpoin
 
 ## Request
 
-Send as `multipart/form-data`. Both files are required.
+Send as `multipart/form-data`.
 
 | Part | Type | Required | Description |
 |------|------|----------|-------------|
-| `passport` | file | Yes | The account holder's passport image or PDF |
+| `document` | file | Yes | Image or PDF of the front of the account holder's ID document. `passport` is still accepted as an alias |
+| `documentType` | string | No | One of `PASSPORT`, `INTERNATIONAL_PASSPORT`, `ID_CARD`, `DRIVER_LICENSE`, `RESIDENCE_PERMIT`. Defaults to `PASSPORT` |
+| `documentBack` | file | Conditional | Image of the reverse side. **Required** when `documentType` is `ID_CARD`, `DRIVER_LICENSE`, or `RESIDENCE_PERMIT` — these are two-sided documents. `back` is accepted as an alias |
 | `selfie` | file | Yes | The selfie or liveness capture from your own verification. Image or video |
-| `country` | string | Yes | 2-letter ISO country code that issued the passport, e.g. `CN` |
-| `documentNumber` | string | No | Passport number |
+| `country` | string | Yes | 2-letter ISO country code that issued the document, e.g. `CN` |
+| `documentNumber` | string | No | The document's number |
 | `issueDate` | string | No | `YYYY-MM-DD` |
 | `expirationDate` | string | No | `YYYY-MM-DD` |
 
+<Info>
+  Integrated before `documentType` existed? Keep sending `passport` + `selfie` exactly as before — you'll get passport handling by default, no changes required.
+</Info>
+
 ## Example Request
 
-```bash
+<CodeGroup>
+
+```bash Passport (default)
 curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/kyc-reliance" \
   -H "X-API-Key: your_api_key_here" \
-  -F "passport=@/path/to/passport.jpg" \
+  -F "document=@/path/to/passport.jpg" \
   -F "selfie=@/path/to/selfie.jpg" \
   -F "country=CN" \
   -F "documentNumber=E12345678" \
   -F "issueDate=2020-03-14" \
   -F "expirationDate=2030-03-13"
 ```
+
+```bash Two-sided ID card
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a468-3e94563101d2/kyc-reliance" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "documentType=ID_CARD" \
+  -F "document=@/path/to/id-front.jpg" \
+  -F "documentBack=@/path/to/id-back.jpg" \
+  -F "selfie=@/path/to/selfie.jpg" \
+  -F "country=CN"
+```
+
+</CodeGroup>
 
 ## Example Response
 
@@ -68,16 +88,17 @@ The response is the account's verification status, the same shape returned by [G
 </Warning>
 
 <Tip>
-  The passport uploaded here is reused when a USD account is issued, so a bank-account request will not ask for it again. See [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+  The document uploaded here is reused when a USD account is issued, so a bank-account request will not ask for it again. See [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
 </Tip>
 
 ## Errors
 
 | Status | Meaning |
 |--------|---------|
-| `400` | A file is missing, `country` is absent or not a 2-letter code, the account is a business, or the identity provider rejected the upload |
+| `400` | A required file is missing (including `documentBack` for a two-sided `documentType`), `country` is absent or not a 2-letter code, the account is a business, or the identity provider rejected the upload |
 | `403` | KYC reliance is not enabled for your business |
 | `404` | Account not found, or not owned by your API key's business |
+| `409` | This person is already verified; reliance cannot be resubmitted for them |
 
 When the identity provider rejects an upload, the reason is passed through rather than hidden behind a generic failure:
 

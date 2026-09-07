@@ -123,6 +123,6 @@ The `amount` you send uses the smallest unit of `currency` (USD = cents below). 
 | `destinationCurrency` | string | Yes | Recipient's currency code |
 | `recipient` | string | Conditional | Recipient's email or Rolla tag. Required if `beneficiaryId` not provided |
 | `beneficiaryId` | string (UUID) | Conditional | Saved beneficiary ID with `withdrawal_method: rolla_transfer`. Required if `recipient` not provided |
-| `description` | string | No | Transfer description (max 500 chars) |
+| `description` | string | Yes | Transfer description (1–500 chars) |
 | `saveBeneficiary` | boolean | No | Auto-save the recipient as a beneficiary for future transfers |
 | `rateToken` | string | Conditional | Required for cross-currency transfers — obtain from `GET /wallet/rates` |

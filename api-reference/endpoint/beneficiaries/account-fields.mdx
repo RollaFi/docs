@@ -11,7 +11,7 @@ to migrate existing beneficiaries before enforcement begins.
 
 | Field | Enum values | Required when |
 |-------|-------------|---------------|
-| `account_owner_type` | `individual`, `business` | Every **bank-account** beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `ach`, `domestic_wire`, `international_wire`). **Not applicable** to `crypto_usdt`, `crypto_usdc`, or `rolla_transfer`. |
+| `account_owner_type` | `individual`, `business` | Bank-account beneficiaries in currencies other than NGN — `ach`, `domestic_wire`, `international_wire`. **Not applicable** to `crypto_usdt`, `crypto_usdc`, `rolla_transfer`, `mobile_money`, or NGN beneficiaries (NGN payouts settle locally and carry no individual-vs-business routing meaning). |
 | `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
 
 Both fields are accepted on [`POST /beneficiaries`](/api-reference/endpoint/beneficiaries/create)
@@ -59,7 +59,7 @@ During the grace period, an incomplete request returns a `2xx` with a warning ap
   "data": { "...": "..." },
   "deprecation_warning": {
     "code": "BENEFICIARY_FIELDS_REQUIRED_SOON",
-    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries.",
+    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries except NGN; account_category (checking|savings) is required for USD beneficiaries.",
     "missing_fields": ["account_owner_type"],
     "enforcement_date": "2026-09-01T00:00:00.000Z"
   }
@@ -72,7 +72,7 @@ After enforcement, the same request instead returns:
 {
   "status": 400,
   "success": false,
-  "message": "Missing required field(s): account_owner_type. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries."
+  "message": "Missing required field(s): account_owner_type. account_owner_type (individual|business) is required for bank-account beneficiaries except NGN; account_category (checking|savings) is required for USD beneficiaries."
 }
 ```
 
@@ -102,11 +102,18 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
    enforcement.
 
 <Tip>
-  Crypto (`crypto_usdt`, `crypto_usdc`) and `rolla_transfer` beneficiaries do **not** need either
-  field — they are exempt from routing classification.
+  Crypto (`crypto_usdt`, `crypto_usdc`), `rolla_transfer`, `mobile_money`, and **NGN** beneficiaries
+  do **not** need `account_owner_type` — they're exempt from routing classification. `account_category`
+  still applies whenever `currency` is `USD`, regardless of rail.
 </Tip>
 
 ## Changelog
+
+<Update label="NGN exempted from account_owner_type">
+  NGN bank-account beneficiaries no longer need `account_owner_type` — NGN payouts settle
+  locally and carry no individual-vs-business routing meaning. `account_category` is
+  unaffected; it still applies whenever `currency` is `USD`.
+</Update>
 
 <Update label="Beneficiary account classification">
   Added `account_owner_type` (`individual` | `business`) and `account_category`

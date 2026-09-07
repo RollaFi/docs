@@ -469,7 +469,8 @@
                 "required": [
                   "amount",
                   "currency",
-                  "destinationCurrency"
+                  "destinationCurrency",
+                  "description"
                 ],
                 "properties": {
                   "amount": {
@@ -501,7 +502,8 @@
                     "type": "string",
                     "description": "Transfer description",
                     "maxLength": 500,
-                    "example": "Invoice payment"
+                    "example": "Invoice payment",
+                    "minLength": 1
                   },
                   "saveBeneficiary": {
                     "type": "boolean",
@@ -6994,7 +6996,7 @@
       "post": {
         "operationId": "uploadKycReliance",
         "summary": "Submit KYC Reliance",
-        "description": "Submits identity documents the partner has already verified for an INDIVIDUAL account, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's passport and the selfie or liveness capture collected during your own onboarding as multipart/form-data. Enabled per partner: returns 403 when KYC reliance is not enabled for your business. Individual accounts only; calling it on a business account returns 400. The review is not instant — poll Get Verification Status until it completes.",
+        "description": "Submits an identity document the partner has already verified for an INDIVIDUAL account, instead of sending the account holder through Rolla's hosted liveness check. Upload the holder's ID document (front, and reverse for two-sided document types) and the selfie or liveness capture collected during your own onboarding as multipart/form-data. Enabled per partner: returns 403 when KYC reliance is not enabled for your business. Individual accounts only; calling it on a business account returns 400. The review is not instant — poll Get Verification Status until it completes.",
         "parameters": [
           {
             "name": "accountId",
@@ -7014,15 +7016,32 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "passport",
+                  "document",
                   "selfie",
                   "country"
                 ],
                 "properties": {
-                  "passport": {
+                  "document": {
                     "type": "string",
                     "format": "binary",
-                    "description": "The account holder's passport image or PDF"
+                    "description": "Front of the account holder's ID document. `passport` is still accepted as an alias."
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "PASSPORT",
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "PASSPORT",
+                    "description": "Type of identity document being submitted."
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required when documentType is ID_CARD, DRIVER_LICENSE, or RESIDENCE_PERMIT. `back` is accepted as an alias."
                   },
                   "selfie": {
                     "type": "string",
@@ -7034,12 +7053,13 @@
                     "minLength": 2,
                     "maxLength": 2,
                     "example": "CN",
-                    "description": "2-letter ISO code of the country that issued the passport"
+                    "description": "2-letter ISO code of the country that issued the document"
                   },
                   "documentNumber": {
                     "type": "string",
                     "maxLength": 64,
-                    "example": "E12345678"
+                    "example": "E12345678",
+                    "description": "The document's number"
                   },
                   "issueDate": {
                     "type": "string",
@@ -7097,7 +7117,7 @@
             }
           },
           "400": {
-            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "description": "Missing a required file (including documentBack for a two-sided documentType), invalid country, business account, or the identity provider rejected the upload",
             "content": {
               "application/json": {
                 "schema": {
@@ -7132,6 +7152,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This person is already verified; reliance cannot be resubmitted for them (matches the message the API returns verbatim).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "success": false,
+                  "message": "This person is already verified; KYC reliance cannot be resubmitted for them."
                 }
               }
             }
@@ -7173,15 +7207,32 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "passport",
+                  "document",
                   "selfie",
                   "country"
                 ],
                 "properties": {
-                  "passport": {
+                  "document": {
                     "type": "string",
                     "format": "binary",
-                    "description": "The account holder's passport image or PDF"
+                    "description": "Front of the account holder's ID document. `passport` is still accepted as an alias."
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "PASSPORT",
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "PASSPORT",
+                    "description": "Type of identity document being submitted."
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required when documentType is ID_CARD, DRIVER_LICENSE, or RESIDENCE_PERMIT. `back` is accepted as an alias."
                   },
                   "selfie": {
                     "type": "string",
@@ -7193,12 +7244,13 @@
                     "minLength": 2,
                     "maxLength": 2,
                     "example": "CN",
-                    "description": "2-letter ISO code of the country that issued the passport"
+                    "description": "2-letter ISO code of the country that issued the document"
                   },
                   "documentNumber": {
                     "type": "string",
                     "maxLength": 64,
-                    "example": "E12345678"
+                    "example": "E12345678",
+                    "description": "The document's number"
                   },
                   "issueDate": {
                     "type": "string",
@@ -7269,7 +7321,7 @@
             }
           },
           "400": {
-            "description": "Missing file, invalid country, business account, or the identity provider rejected the upload",
+            "description": "Missing a required file (including documentBack for a two-sided documentType), invalid country, individual account, or the identity provider rejected the upload",
             "content": {
               "application/json": {
                 "schema": {
@@ -7304,6 +7356,20 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "This person is already verified; reliance cannot be resubmitted for them (matches the message the API returns verbatim).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "success": false,
+                  "message": "This person is already verified; KYC reliance cannot be resubmitted for them."
                 }
               }
             }
@@ -7345,6 +7411,16 @@
                     "accountId": "eec3cbed-79d8-4370-87a0-b6be9e287337",
                     "applicationStatus": "approved"
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The account no longer satisfies every onboarding requirement — re-check Get Requirements before retrying. Unlike Submit Application, this response carries only a message, not a machine-readable code.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -8477,7 +8553,8 @@
         "type": "object",
         "required": [
           "amount",
-          "currency"
+          "currency",
+          "description"
         ],
         "description": "Either `beneficiaryId` or `inlineBeneficiary` must be provided.",
         "properties": {
@@ -8496,7 +8573,8 @@
           "description": {
             "type": "string",
             "description": "Narration for the transaction",
-            "maxLength": 500
+            "maxLength": 500,
+            "minLength": 1
           },
           "externalReference": {
             "type": "string",

@@ -15,6 +15,10 @@ It runs the **same approval path as the Rolla admin dashboard**, so wallets are 
 
 The account must already be **`submitted`** — which is only possible once every onboarding requirement is complete (see [Submit Application](/api-reference/endpoint/accounts/submit)). If it isn't, the call returns `409` with code `ACCOUNT_NOT_SUBMITTED`.
 
+<Warning>
+  Approval re-checks every onboarding requirement at the moment you call this endpoint, not just that the account is `submitted`. If something that was complete at submission time has since become incomplete — a related person's KYC review lapsed, for example — the call fails with `400` rather than approving an account that can't actually be issued accounts or paid out to. See [Get Requirements](/api-reference/endpoint/accounts/requirements) to check for `missingFields` or an outstanding `identityVerification` before retrying.
+</Warning>
+
 ## Example Request
 
 ```bash

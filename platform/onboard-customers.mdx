@@ -48,7 +48,7 @@ You choose how identity verification happens, per account and per related person
 |---|---|---|
 | **Hosted KYC link** | [Generate a link](/api-reference/endpoint/accounts/individual-kyc-link) ([per related person](/api-reference/endpoint/accounts/kyc-link) for businesses) and send it to the person — they complete ID upload and liveness on a Rolla-hosted page | You don't run your own KYC |
 | **Verification SDK token** | [Create a verification token](/api-reference/endpoint/accounts/verification) and embed the verification flow in your own app; [poll the status](/api-reference/endpoint/accounts/verification-status) | You want the flow inside your product |
-| **KYC reliance** | [Submit the passport and liveness capture you already collected](/api-reference/endpoint/accounts/kyc-reliance) ([per related person](/api-reference/endpoint/accounts/related-person-kyc-reliance)) | You're a licensed entity running your own KYC — so customers aren't verified twice |
+| **KYC reliance** | [Submit the identity document and liveness capture you already collected](/api-reference/endpoint/accounts/kyc-reliance) ([per related person](/api-reference/endpoint/accounts/related-person-kyc-reliance)) | You're a licensed entity running your own KYC — so customers aren't verified twice |
 
 <Note>
   KYC reliance is gated per partner — ask Rolla to enable it for your tenancy.

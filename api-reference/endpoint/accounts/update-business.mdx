@@ -11,7 +11,7 @@ These must be present before the application can move from `draft` to `submitted
 
 | Section | Required fields |
 |---------|-----------------|
-| `business_info` | `legalName`, `businessType`, `incorporationDate`, `incorporationCountry`, `registrationNumber`, `taxId`, `description`, `monthlyVolume`, `annualRevenue`, `primaryFundingSource` |
+| `business_info` | `legalName`, `businessType`, `incorporationDate`, `incorporationCountry`, `registrationNumber`, `taxId`, `description`, `monthlyVolume`, `annualRevenue`, `primaryFundingSource`, `website` |
 | `business_address` | `street`, `city`, `state`, `postalCode`, `country` |
 | `contact_info` | `email`, `phone` |
 | Documents | `certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `director_register`, `shareholder_register`, `bank_statement` — upload via [Upload Document](/api-reference/endpoint/accounts/upload-document) |
@@ -23,6 +23,10 @@ These must be present before the application can move from `draft` to `submitted
 <Tip>
   **`taxId`** — for a business, use the company's **tax identification / business-license (registration) number**.
 </Tip>
+
+<Info>
+  **`website`** is required because the USD issuing provider rejects an entity without one — a business account can't be submitted, let alone [issued a USD account](/api-reference/endpoint/accounts/issue-bank-account), without it.
+</Info>
 
 ## Example Request
 
@@ -41,7 +45,8 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
       "description": "Freight and logistics services across West Africa",
       "monthlyVolume": "100000",
       "annualRevenue": "1200000",
-      "primaryFundingSource": "Business Revenue"
+      "primaryFundingSource": "Business Revenue",
+      "website": "https://betalogistics.com"
     },
     "business_address": {
       "street": "77 Commerce Ave",
