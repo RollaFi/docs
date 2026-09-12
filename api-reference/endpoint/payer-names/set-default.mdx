@@ -14,7 +14,7 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4
   -d '{ "isDefault": true }'
 ```
 
-`isDefault` defaults to `true`, so an empty body sets the default. Send `false` to clear it, after which payouts that omit `payerNameId` go out under Rolla's standard payer details again.
+`isDefault` defaults to `true`, so an empty body sets the default. Send `false` to clear it, after which payouts that omit `payerNameId` go out under your own business name again.
 
 ## Example Response
 
@@ -38,7 +38,7 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4
 
 - **One default per account.** Setting a new one moves the flag off the old one; there is no need to clear it first.
 - **It must have cleared review.** A name still in `pending_review` or `changes_requested` is rejected with a `400` — a default that cannot be used would silently apply to every payout.
-- **Archiving clears it.** [Archiving](/api-reference/endpoint/payer-names/archive) your default leaves you with none, and payouts revert to Rolla's standard payer details.
+- **Archiving clears it.** [Archiving](/api-reference/endpoint/payer-names/archive) your default leaves you with none, and payouts revert to your own business name.
 
 <Warning>
   A name that has cleared review can be made the default while its registration is still `processing`. Payouts sent in that window carry the name but wait until it is `active` before they can go out. If that matters to your flow, wait for the [`payer_name.active`](/api-reference/webhooks/events#payer-name-events) event before setting the default.
