@@ -243,10 +243,10 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 
 ## Choosing the payer name
 
-By default a payout reaches the beneficiary under Rolla's own payer details. If
-[Named Payouts](/guides/named-payouts) is enabled for your account, pass `payerNameId` to send
-it under one of your own registered payer names instead — your company, or the customer you are
-paying on behalf of.
+A payout reaches the beneficiary under your own business name by default. If
+[Named Payouts](/guides/named-payouts) is enabled for your account, pass `payerNameId` to send it
+under one of your registered affiliated payer names instead — a related entity of yours, or the
+end-customer you are paying on behalf of.
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
@@ -261,7 +261,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   }'
 ```
 
-Omit `payerNameId` and the payout uses your [default payer name](/api-reference/endpoint/payer-names/set-default) if you have set one, and Rolla's standard payer details if you have not.
+Omit `payerNameId` and the payout uses your [default payer name](/api-reference/endpoint/payer-names/set-default) if you have set one, and your own business name if you have not.
 
 The id must be a payer name on your own account, and it must not be rejected or archived —
 either is refused with a `400` and no payout is created. A name that has not finished
@@ -271,8 +271,8 @@ moves, so send time-sensitive payments only under a name reported as `active`. T
 when a name is ready.
 
 <Info>
-  Payer names must be registered and reviewed before they can be used — you cannot pass a free-text
-  payer name on a payout. Register them with [Create Payer Name](/api-reference/endpoint/payer-names/create).
+  Affiliated payer names must be registered and reviewed before they can be used — you cannot pass a
+  free-text payer name on a payout. Register them with [Create Payer Name](/api-reference/endpoint/payer-names/create).
 </Info>
 
 ---

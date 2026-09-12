@@ -1,14 +1,16 @@
 ---
 title: "Named Payouts"
-description: "Register your own payer names so beneficiaries see your name — or your customer's — on the payments you send"
+description: "Register affiliated payer names so beneficiaries see a related entity or your end-customer on the payments you send"
 ---
 
-By default, a payout you send arrives at the beneficiary's bank under Rolla's own payer details. **Named Payouts** let you register your own payer names and choose which one a beneficiary sees on each payment.
+A payout you send arrives at the beneficiary's bank under **your own business name** — the name on your Rolla account. That is the default and it needs no setup.
+
+**Named Payouts** add the other names you may legitimately pay under: **affiliated payer names** for your related entities or your end-customers. Register them, then choose which one a beneficiary sees on each payment.
 
 Two situations it solves:
 
-- **Your own name on your own payments.** A supplier reconciling an invoice sees your company, not a payment processor they have never heard of.
-- **Your customer's name on payments you send for them.** If you move money on behalf of businesses using your product, each payment can go out under the name of the customer it belongs to.
+- **A related entity of yours.** A subsidiary, a trading name, or another company in your group pays its own suppliers from your Rolla balance, and the supplier should see that entity rather than the parent.
+- **Your end-customer's name on payments you send for them.** If you move money on behalf of businesses using your product, each payment can go out under the name of the customer it belongs to.
 
 A payer name is not free text on a transaction. It is a registered identity: you submit who the payer is and evidence for it, Rolla reviews it, and it is then registered with our payout partners before any money can move under it. That is what makes it acceptable to the receiving bank — and why the flow has a review step in it.
 
@@ -168,8 +170,8 @@ Which name a payout goes out under is settled in this order, first match wins:
   <Step title="Your default payer name">
     Applied whenever `payerNameId` is omitted. Set one with [Set Default Payer Name](/api-reference/endpoint/payer-names/set-default) to apply a name across an integration without touching your payout code.
   </Step>
-  <Step title="Rolla's standard payer details">
-    What happens today, and what still happens if you have no default.
+  <Step title="Your own business name">
+    The default with no setup, and what you still get if you register no names or set no default.
   </Step>
 </Steps>
 
@@ -183,7 +185,7 @@ A `payerNameId` that is rejected, archived, or belongs to another account is ref
 
 ### Where the name is applied
 
-Named Payouts apply on the payout rails that can carry a registered payer. Where a rail cannot, the payout still goes out and is still tagged with your chosen name for your own records, but the beneficiary sees Rolla's standard payer details. Ask your account manager which of your corridors are covered before you promise the behaviour to your own customers.
+Named Payouts apply on the payout rails that can carry a registered payer. Where a rail cannot, the payout still goes out and is still tagged with your chosen name for your own records, but the beneficiary sees your own business name as usual. Ask your account manager which of your corridors are covered before you promise the behaviour to your own customers.
 
 ## Testing in sandbox
 

@@ -763,7 +763,7 @@
                   "payerNameId": {
                     "type": "string",
                     "format": "uuid",
-                    "description": "Which of your registered payer names the beneficiary should see on this payout. Omit to use your default payer name, if you have set one. Requires Named Payouts to be enabled."
+                    "description": "Which of your registered affiliated payer names the beneficiary should see on this payout. Omit to use your default payer name if you have set one, and your own business name if you have not. Requires Named Payouts to be enabled."
                   }
                 }
               }
@@ -8896,7 +8896,7 @@
       "patch": {
         "operationId": "setDefaultPayerName",
         "summary": "Set Default Payer Name",
-        "description": "Makes this payer name the one applied to payouts that do not name a payer name, or clears that. You can have at most one default; setting a new one moves the flag. Only a payer name that has cleared review can be made the default.",
+        "description": "Makes this payer name the one applied to payouts that do not name a payer name, or clears that so those payouts carry your own business name. You can have at most one default; setting a new one moves the flag. Only a payer name that has cleared review can be made the default.",
         "parameters": [
           {
             "name": "payerNameId",
@@ -9504,7 +9504,7 @@
           "payerNameId": {
             "type": "string",
             "format": "uuid",
-            "description": "Which of your registered payer names the beneficiary should see on this payout. Omit to use your default payer name, if you have set one. Requires Named Payouts to be enabled."
+            "description": "Which of your registered affiliated payer names the beneficiary should see on this payout. Omit to use your default payer name if you have set one, and your own business name if you have not. Requires Named Payouts to be enabled."
           }
         }
       },
