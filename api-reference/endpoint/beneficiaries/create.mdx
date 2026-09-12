@@ -261,5 +261,13 @@ Both `beneficiary_address` and `bank_address` are objects with the following fie
 | `country` | Yes | 2-letter country code (e.g. `US`, `GB`) |
 
 <Warning>
+  Both addresses are newly **enforced** on `ach`, `domestic_wire` and `international_wire`. They have always been listed as required here, but the server previously accepted a partial address — or none at all — and the payout then failed at the bank. Every missing field is now named in a single `400`, so they can be fixed together.
+
+  `country` must be a two-letter ISO 3166-1 code. `USA`, `United States` and anything else are rejected; lowercase is accepted and stored uppercase. The country is also what the fee for a payout is matched on, so a beneficiary saved without one is priced at the currency default rather than at your rate for that destination.
+
+  If you have saved beneficiaries with incomplete addresses, backfill them via [`PATCH /beneficiaries/{beneficiaryId}`](/api-reference/endpoint/beneficiaries/update) — a payout to one is refused until you do.
+</Warning>
+
+<Warning>
   For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account number and retrieve the correct account name before saving.
 </Warning>
