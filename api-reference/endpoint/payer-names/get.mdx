@@ -1,0 +1,54 @@
+---
+title: 'Get Payer Name'
+openapi: 'GET /payer-names/{payerNameId}'
+---
+
+Retrieves one payer name, including its documents and the reviewer's note if a decision has been made.
+
+## Example Request
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response (changes requested)
+
+```json
+{
+  "status": 200,
+  "message": "Payer name retrieved",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "type": "business",
+    "name": "Acme Trading Ltd",
+    "registrationNumber": "RC1234567",
+    "country": "NG",
+    "address": { "line1": "14 Marina Road", "city": "Lagos", "state": "Lagos", "postalCode": "101001" },
+    "status": "changes_requested",
+    "isDefault": false,
+    "decisionNote": "The registration number does not match the certificate you attached. Correct it and resubmit.",
+    "documents": [
+      {
+        "id": "2b3c4d5e-6f70-4812-9a3b-4c5d6e7f8091",
+        "fileName": "certificate-of-incorporation.pdf",
+        "description": "Certificate of incorporation",
+        "fileType": "application/pdf",
+        "fileSize": 284122,
+        "downloadUrl": "https://files.rolla.xyz/payer_name_docs/...",
+        "createdAt": "2026-09-01T09:14:22.000Z"
+      }
+    ],
+    "metadata": { "vendor_id": "V-4471" },
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-02T11:02:41.000Z"
+  }
+}
+```
+
+`decisionNote` is the reviewer's own words, and it is the whole point of a `changes_requested` or `rejected` outcome — show it to whoever has to act on it. It is cleared when you resubmit.
+
+<Note>
+  A payer name id that belongs to another account answers `404`, the same as one that does not exist.
+</Note>
