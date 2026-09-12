@@ -1,0 +1,233 @@
+---
+title: "Named Payouts"
+description: "Register your own payer names so beneficiaries see your name — or your customer's — on the payments you send"
+---
+
+By default, a payout you send arrives at the beneficiary's bank under Rolla's own payer details. **Named Payouts** let you register your own payer names and choose which one a beneficiary sees on each payment.
+
+Two situations it solves:
+
+- **Your own name on your own payments.** A supplier reconciling an invoice sees your company, not a payment processor they have never heard of.
+- **Your customer's name on payments you send for them.** If you move money on behalf of businesses using your product, each payment can go out under the name of the customer it belongs to.
+
+A payer name is not free text on a transaction. It is a registered identity: you submit who the payer is and evidence for it, Rolla reviews it, and it is then registered with our payout partners before any money can move under it. That is what makes it acceptable to the receiving bank — and why the flow has a review step in it.
+
+<Info>
+  **Named Payouts are off until Rolla turns them on for your account.** Until then, every endpoint in this guide answers `403` with `code: PAYER_NAMES_DISABLED`. Talk to your account manager or [support@rolla.xyz](mailto:support@rolla.xyz) to have it enabled.
+</Info>
+
+## Checking whether it is on
+
+One call, no side effects:
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/payer-names" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+A `403` means the feature is not enabled for you. A `200` also tells you whether your account must attach supporting documents to a submission:
+
+```json
+{
+  "data": {
+    "payer_names": [],
+    "pagination": { "page": 1, "pageSize": 20, "total": 0, "totalPages": 0 },
+    "requirements": { "documentsRequired": true }
+  }
+}
+```
+
+Read `requirements.documentsRequired` before you build your submission flow. Most accounts must send at least one document; Rolla can relax that per account.
+
+<Tip>
+  Payer names are also managed in the dashboard, under **Named Payouts**. A name registered there is the same record you read over the API, in the same review queue — teams commonly register names by hand and only use the API to attach them to payouts.
+</Tip>
+
+## Register a payer name
+
+Submit the payer's legal identity and the evidence for it. Business payers need their registration details; individual payers need their name split into first and last.
+
+<CodeGroup>
+
+```bash Business (with a document)
+curl -X POST "https://api.rolla.xyz/api/v1/external/payer-names" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "entity_type=business" \
+  -F "display_name=Acme Trading Ltd" \
+  -F "registration_number=RC1234567" \
+  -F "registration_date=2019-04-02" \
+  -F "country=NG" \
+  -F "address_line=14 Marina Road" \
+  -F "city=Lagos" \
+  -F "state_province=Lagos" \
+  -F "postal_code=101001" \
+  -F "documents=@certificate-of-incorporation.pdf" \
+  -F "documentDescriptions=Certificate of incorporation"
+```
+
+```bash Individual (JSON)
+curl -X POST "https://api.rolla.xyz/api/v1/external/payer-names" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "entity_type": "individual",
+    "display_name": "Ada Obi",
+    "first_name": "Ada",
+    "last_name": "Obi",
+    "registration_number": "A01234567",
+    "country": "NG",
+    "address_line": "14 Marina Road",
+    "city": "Lagos",
+    "state_province": "Lagos",
+    "metadata": { "customer_id": "cus_8812" }
+  }'
+```
+
+</CodeGroup>
+
+`display_name` is the name the beneficiary sees. Everything else is what the review and the registration are built on. Full field reference on [Create Payer Name](/api-reference/endpoint/payer-names/create).
+
+Three things that catch people out:
+
+- **Request bodies are snake_case, responses are camelCase.** You send `display_name` and read back `name`; you send `entity_type` and read back `type`.
+- **`metadata` cannot be sent on a multipart request.** Multipart fields all arrive as text, so submit with documents first and set metadata afterwards with a JSON [update](/api-reference/endpoint/payer-names/update).
+- **Documents are for Rolla's reviewers.** PDF, JPEG, PNG or Word, up to 10MB each. They are stored privately and never forwarded to a payout partner.
+
+## The lifecycle
+
+A payer name is reviewed by Rolla, then registered with the payout partners that will carry it. Both halves are collapsed into the single `status` on the record.
+
+<Steps>
+  <Step title="pending_review">
+    Submitted and waiting on a Rolla reviewer. You can still edit it, and attach more documents.
+  </Step>
+  <Step title="changes_requested (if something is wrong)">
+    The reviewer needs a correction. `decisionNote` says what, in their own words. [Update the name](/api-reference/endpoint/payer-names/update) to answer, which resubmits it.
+  </Step>
+  <Step title="processing">
+    Approved by Rolla and being registered with our payout partners. Nothing is required from you. This step is not instant — it can run into hours, occasionally longer, because a partner does its own review.
+  </Step>
+  <Step title="active">
+    Registered and usable. Payouts can now go out under this name.
+  </Step>
+</Steps>
+
+Two outcomes end the story instead: **`rejected`**, where Rolla declined the name and `decisionNote` says why, and **`action_required`**, where every payout partner refused or errored on the registration. Neither resolves itself — `action_required` in particular will never become `active` on its own, so treat it as a prompt to talk to us rather than something to wait out.
+
+### Status reference
+
+| `status` | Meaning | Usable on a payout? | What to do |
+|----------|---------|---------------------|------------|
+| `pending_review` | Waiting on a Rolla reviewer | Accepted, but the payout waits | Nothing |
+| `changes_requested` | A correction is needed; see `decisionNote` | Accepted, but the payout waits | Update and resubmit |
+| `processing` | Approved, being registered with our partners | Accepted, but the payout waits | Nothing |
+| `active` | Registered and ready | **Yes** | Use it |
+| `action_required` | Every partner refused the registration | No | Contact support |
+| `rejected` | Rolla declined it; see `decisionNote` | No — rejected with a `400` | Submit a different name |
+| `archived` | You retired it | No — rejected with a `400` | Submit a new name to use it again |
+
+<Note>
+  The `status` **filter** on [List Payer Names](/api-reference/endpoint/payer-names/list) takes review statuses rather than these, so `approved` there covers `processing`, `active` and `action_required`. Filter on `approved`, then keep the ones returned as `active`.
+</Note>
+
+### Being told, rather than polling
+
+Subscribe to the [payer name webhook events](/api-reference/webhooks/events#payer-name-events) and you never have to poll:
+
+| Event | Fires when |
+|-------|------------|
+| `payer_name.approved` | Rolla approved the name; registration is starting |
+| `payer_name.changes_requested` | A correction is needed — `data.reason` carries the note |
+| `payer_name.rejected` | Rolla declined the name — `data.reason` carries why |
+| `payer_name.active` | Registered and usable. **This is the one that matters operationally** |
+| `payer_name.action_required` | Every partner refused; nothing more will happen without us |
+
+## Pay under a name
+
+Pass `payerNameId` to [Withdraw Funds](/api-reference/endpoint/wallet/withdraw):
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 250000,
+    "currency": "USD",
+    "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "description": "Invoice 2291",
+    "payerNameId": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f"
+  }'
+```
+
+Which name a payout goes out under is settled in this order, first match wins:
+
+<Steps>
+  <Step title="The payerNameId on the payout">
+    Your explicit choice for this payment.
+  </Step>
+  <Step title="Your default payer name">
+    Applied whenever `payerNameId` is omitted. Set one with [Set Default Payer Name](/api-reference/endpoint/payer-names/set-default) to apply a name across an integration without touching your payout code.
+  </Step>
+  <Step title="Rolla's standard payer details">
+    What happens today, and what still happens if you have no default.
+  </Step>
+</Steps>
+
+The payer name is recorded on the transaction, so a payout always reports the name it was sent under even if you archive that name later.
+
+<Warning>
+  **A payout attached to a name that is not yet `active` is accepted, and then waits.** This is deliberate: you usually register a name because of a payment you are about to make, and refusing the payout would make you come back and redo it. But the money does not move until the name is usable, so for anything time-sensitive, wait for `payer_name.active` before sending.
+</Warning>
+
+A `payerNameId` that is rejected, archived, or belongs to another account is refused outright with a `400` — the payout is not created.
+
+### Where the name is applied
+
+Named Payouts apply on the payout rails that can carry a registered payer. Where a rail cannot, the payout still goes out and is still tagged with your chosen name for your own records, but the beneficiary sees Rolla's standard payer details. Ask your account manager which of your corridors are covered before you promise the behaviour to your own customers.
+
+## Testing in sandbox
+
+A sandbox submission is **approved and activated immediately**, with no reviewer and no partner registration. [Create a payer name](/api-reference/endpoint/payer-names/create) with a sandbox key and it comes back as `active`, ready to attach to a payout — so you can build the whole flow, including the payout leg, in one sitting.
+
+What sandbox cannot show you is the waiting: `pending_review`, `changes_requested` and `processing` do not occur there. Drive those paths from your own tests rather than expecting sandbox to produce them, and make sure your integration handles a name that is not usable yet.
+
+## Rules worth knowing before you build
+
+| Rule | Detail |
+|------|--------|
+| **One live copy of a name** | You cannot have two payer names with the same `display_name` in review or approved at once — matched case-insensitively. Rejected and archived names do not block reuse |
+| **One default** | Setting a new default moves the flag off the old one. Only a name that has cleared review can be the default |
+| **Editing resets review** | Any update, including a metadata-only one, returns the name to `pending_review` and clears the reviewer's note. Batch your corrections |
+| **Approved names are frozen** | Once approved, a name cannot be edited. Archive it and submit a new one |
+| **Archiving is soft and final** | The record and payout history stay; the name stops being usable and cannot be un-archived |
+| **Documents are attachable only during review** | Once a decision is made, [Attach Documents](/api-reference/endpoint/payer-names/attach-documents) answers `409` |
+| **Document links expire** | `downloadUrl` is valid for 1 hour. Get a fresh one from [Get Document URL](/api-reference/endpoint/payer-names/document-url) |
+
+## Errors
+
+| Status | Code / message | Cause |
+|--------|----------------|-------|
+| `403` | `PAYER_NAMES_DISABLED` | Named Payouts are not enabled for your account |
+| `400` | `Validation failed` | A field is missing or malformed; `errors` names each one |
+| `400` | At least one supporting document is required | Your account has `documentsRequired: true` and you sent none |
+| `400` | That payer name was rejected / has been archived | You attached an unusable name to a payout |
+| `404` | Payer name not found | No such name on your account |
+| `409` | You already have a payer name "…" in progress or approved | Duplicate `display_name` |
+| `409` | This payer name can no longer be edited | It has been approved, rejected or archived |
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Create Payer Name" icon="user-plus" href="/api-reference/endpoint/payer-names/create">
+    Field reference, document rules, and the multipart form.
+  </Card>
+  <Card title="Withdraw Funds" icon="paper-plane" href="/api-reference/endpoint/wallet/withdraw">
+    Attach `payerNameId` to a payout.
+  </Card>
+  <Card title="Payer name events" icon="bell" href="/api-reference/webhooks/events#payer-name-events">
+    Be told when a name becomes usable.
+  </Card>
+  <Card title="Send Payouts" icon="arrow-right" href="/guides/send-payouts">
+    The payout flow this plugs into.
+  </Card>
+</CardGroup>

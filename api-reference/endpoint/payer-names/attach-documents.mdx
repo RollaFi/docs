@@ -1,0 +1,81 @@
+---
+title: 'Attach Documents'
+openapi: 'POST /payer-names/{payerNameId}/documents'
+---
+
+Adds supporting documents to a payer name that is still in review — the usual answer to a reviewer asking for better evidence.
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f/documents" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "documents=@certificate-of-incorporation.pdf" \
+  -F "documents=@director-id.jpg" \
+  -F "documentDescriptions=Certificate of incorporation" \
+  -F "documentDescriptions=Director ID"
+```
+
+Repeat `documents` once per file. `documentDescriptions` labels them positionally: the first description belongs to the first file. A file with no description is stored unlabelled.
+
+## Example Response
+
+The full payer name, with the new documents included.
+
+```json
+{
+  "status": 201,
+  "message": "Documents attached",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "name": "Acme Trading Ltd",
+    "status": "pending_review",
+    "documents": [
+      {
+        "id": "2b3c4d5e-6f70-4812-9a3b-4c5d6e7f8091",
+        "fileName": "certificate-of-incorporation.pdf",
+        "description": "Certificate of incorporation",
+        "fileType": "application/pdf",
+        "fileSize": 284122,
+        "downloadUrl": "https://files.rolla.xyz/payer_name_docs/...",
+        "createdAt": "2026-09-03T10:20:00.000Z"
+      },
+      {
+        "id": "3c4d5e6f-7081-4923-ab4c-5d6e7f809112",
+        "fileName": "director-id.jpg",
+        "description": "Director ID",
+        "fileType": "image/jpeg",
+        "fileSize": 91233,
+        "downloadUrl": "https://files.rolla.xyz/payer_name_docs/...",
+        "createdAt": "2026-09-03T10:20:00.000Z"
+      }
+    ],
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-03T10:20:00.000Z"
+  }
+}
+```
+
+## Accepted files
+
+| Constraint | Value |
+|------------|-------|
+| Formats | PDF, JPEG, PNG, Word (`.doc`, `.docx`) |
+| Maximum size | 10MB per file |
+| Count | No limit; attach as many as the review needs |
+
+Anything else is rejected with a `400`, and no file in the call is stored.
+
+<Info>
+  Unlike an [update](/api-reference/endpoint/payer-names/update), attaching documents does **not** reset the review status or clear the reviewer's note. The name stays where it is, with more evidence on it.
+</Info>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | No file was sent, or a file is too large or of an unsupported type |
+| `403` | Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`) |
+| `404` | No such payer name on this account |
+| `409` | The payer name is no longer in review, so documents can no longer be added |

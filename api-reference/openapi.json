@@ -759,6 +759,11 @@
                       "type": "string",
                       "format": "binary"
                     }
+                  },
+                  "payerNameId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Which of your registered payer names the beneficiary should see on this payout. Omit to use your default payer name, if you have set one. Requires Named Payouts to be enabled."
                   }
                 }
               }
@@ -8098,6 +8103,900 @@
           }
         }
       }
+    },
+    "/payer-names": {
+      "get": {
+        "operationId": "listPayerNames",
+        "summary": "List Payer Names",
+        "description": "Retrieves a paginated list of the payer names registered by your account, plus whether a submission from this account must carry a supporting document.",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by review status. These are review statuses, not the customer-facing `status` returned on each record — filter on `approved` to find names that have cleared review.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_review",
+                "changes_requested",
+                "approved",
+                "rejected",
+                "archived"
+              ]
+            }
+          },
+          {
+            "name": "entityType",
+            "in": "query",
+            "description": "Filter by payer type.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "individual",
+                "business"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number (default: 1)",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Results per page (default: 20, max: 200)",
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payer names retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payer names retrieved"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "payer_names": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/PayerName"
+                          }
+                        },
+                        "pagination": {
+                          "$ref": "#/components/schemas/Pagination"
+                        },
+                        "requirements": {
+                          "type": "object",
+                          "properties": {
+                            "documentsRequired": {
+                              "type": "boolean",
+                              "description": "Whether a submission from this account must include at least one supporting document.",
+                              "example": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createPayerName",
+        "summary": "Create Payer Name",
+        "description": "Submits a payer name for review. Send JSON, or `multipart/form-data` when supporting documents ride along with the submission. In sandbox the name is approved and activated immediately.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayerNameRequest"
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "description": "Use this when attaching documents with the submission. Every field arrives as text, so `metadata` cannot be sent this way — set it afterwards with a JSON update.",
+                "required": [
+                  "entity_type",
+                  "display_name",
+                  "country",
+                  "address_line",
+                  "city",
+                  "state_province"
+                ],
+                "properties": {
+                  "entity_type": {
+                    "type": "string",
+                    "enum": [
+                      "individual",
+                      "business"
+                    ],
+                    "description": "Whether the payer is a company or a person.",
+                    "example": "business"
+                  },
+                  "display_name": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "description": "The name the beneficiary sees. Must be unique among your payer names that are in review or approved.",
+                    "example": "Acme Trading Ltd"
+                  },
+                  "first_name": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true,
+                    "description": "Individuals only. Send the name split rather than letting us guess it."
+                  },
+                  "last_name": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true,
+                    "description": "Individuals only."
+                  },
+                  "registration_number": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "nullable": true,
+                    "description": "Company registration number, or a government ID number for an individual.",
+                    "example": "RC1234567"
+                  },
+                  "registration_date": {
+                    "type": "string",
+                    "nullable": true,
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "YYYY-MM-DD.",
+                    "example": "2019-04-02"
+                  },
+                  "country": {
+                    "type": "string",
+                    "description": "The payer's country. ISO 3166-1 alpha-2, or a country name we can resolve to one.",
+                    "example": "NG"
+                  },
+                  "address_line": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "14 Marina Road"
+                  },
+                  "city": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "example": "Lagos"
+                  },
+                  "state_province": {
+                    "type": "string",
+                    "maxLength": 120,
+                    "example": "Lagos"
+                  },
+                  "postal_code": {
+                    "type": "string",
+                    "maxLength": 32,
+                    "nullable": true,
+                    "example": "101001"
+                  },
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Supporting files. PDF, JPEG, PNG or Word, up to 10MB each. Repeat the field to attach more than one."
+                  },
+                  "documentDescriptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Labels for the files, positionally: the first value labels the first file. Repeat the field once per file."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payer name submitted for review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payer name submitted for review"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict — you already have a payer name with this name in review or approved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payer-names/{payerNameId}": {
+      "get": {
+        "operationId": "getPayerName",
+        "summary": "Get Payer Name",
+        "description": "Retrieves a single payer name, including its documents and the reviewer note if there is one.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payer name retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payer name retrieved"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payer name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updatePayerName",
+        "summary": "Update Payer Name",
+        "description": "Corrects a payer name that is still in review or has had changes requested, and resubmits it. Any edit clears the reviewer note and returns the name to `pending_review`. A name that is approved, rejected or archived cannot be edited — submit a new one instead.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayerNameUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payer name updated and resubmitted for review",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payer name updated and resubmitted for review"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payer name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict — the payer name cannot be changed in its current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "archivePayerName",
+        "summary": "Archive Payer Name",
+        "description": "Retires a payer name. Payouts reference payer names, so this archives rather than deletes: the record stays readable, stops being usable on new payouts, and is cleared as your default if it was one.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payer name archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Payer name archived"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payer name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payer-names/{payerNameId}/documents": {
+      "post": {
+        "operationId": "attachPayerNameDocuments",
+        "summary": "Attach Documents",
+        "description": "Adds supporting documents to a payer name that is still in review. Documents cannot be added once a decision has been made.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "documents"
+                ],
+                "properties": {
+                  "documents": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Supporting files. PDF, JPEG, PNG or Word, up to 10MB each. Repeat the field to attach more than one."
+                  },
+                  "documentDescriptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Labels for the files, positionally: the first value labels the first file. Repeat the field once per file."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Documents attached",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Documents attached"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payer name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict — the payer name cannot be changed in its current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payer-names/{payerNameId}/documents/{documentId}/url": {
+      "get": {
+        "operationId": "getPayerNameDocumentUrl",
+        "summary": "Get Document URL",
+        "description": "Issues a fresh signed download URL for one document, valid for 1 hour.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "description": "The document id, as returned in `documents[].id`.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Document URL generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Document URL generated"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "download_url": {
+                          "type": "string",
+                          "description": "Signed URL, valid for 1 hour."
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Document not found, or no longer available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payer-names/{payerNameId}/default": {
+      "patch": {
+        "operationId": "setDefaultPayerName",
+        "summary": "Set Default Payer Name",
+        "description": "Makes this payer name the one applied to payouts that do not name a payer name, or clears that. You can have at most one default; setting a new one moves the flag. Only a payer name that has cleared review can be made the default.",
+        "parameters": [
+          {
+            "name": "payerNameId",
+            "in": "path",
+            "required": true,
+            "description": "The payer name id.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isDefault": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Send `false` to clear the default."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default payer name updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Default payer name updated"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/PayerName"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — only an approved payer name can be set as the default",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden — Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Payer name not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -8601,6 +9500,11 @@
             "type": "boolean",
             "description": "If true, fees are taken from your wallet balance so the beneficiary receives the exact amount",
             "default": false
+          },
+          "payerNameId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Which of your registered payer names the beneficiary should see on this payout. Omit to use your default payer name, if you have set one. Requires Named Payouts to be enabled."
           }
         }
       },
@@ -10304,6 +11208,320 @@
             }
           }
         }
+      },
+      "PayerNameDocument": {
+        "type": "object",
+        "description": "A supporting document attached to a payer name. Used by Rolla review only; never forwarded to a payout rail.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fileName": {
+            "type": "string",
+            "example": "certificate-of-incorporation.pdf"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Certificate of incorporation"
+          },
+          "fileType": {
+            "type": "string",
+            "example": "application/pdf"
+          },
+          "fileSize": {
+            "type": "integer",
+            "description": "Size in bytes.",
+            "example": 284122
+          },
+          "downloadUrl": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signed URL, valid for 1 hour from the time the response was generated."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PayerName": {
+        "type": "object",
+        "description": "A payer name: the name a beneficiary sees on a payout you send. Responses are camelCase; request bodies are snake_case.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "business"
+            ],
+            "example": "business"
+          },
+          "name": {
+            "type": "string",
+            "description": "The name shown to the beneficiary.",
+            "example": "Acme Trading Ltd"
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "registrationNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "RC1234567"
+          },
+          "registrationDate": {
+            "type": "string",
+            "nullable": true,
+            "format": "date",
+            "example": "2019-04-02"
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code.",
+            "example": "NG"
+          },
+          "address": {
+            "type": "object",
+            "properties": {
+              "line1": {
+                "type": "string",
+                "example": "14 Marina Road"
+              },
+              "city": {
+                "type": "string",
+                "example": "Lagos"
+              },
+              "state": {
+                "type": "string",
+                "example": "Lagos"
+              },
+              "postalCode": {
+                "type": "string",
+                "nullable": true,
+                "example": "101001"
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_review",
+              "changes_requested",
+              "processing",
+              "active",
+              "action_required",
+              "rejected",
+              "archived"
+            ],
+            "description": "Where the payer name has got to. Only `active` can be used on a payout that sends immediately.",
+            "example": "active"
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "Applied to payouts that do not name a payer name.",
+            "example": false
+          },
+          "decisionNote": {
+            "type": "string",
+            "nullable": true,
+            "description": "The reviewer's note, verbatim. Set on `changes_requested` and `rejected`."
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PayerNameDocument"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Your own key/value data, echoed back verbatim."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PayerNameRequest": {
+        "type": "object",
+        "required": [
+          "entity_type",
+          "display_name",
+          "country",
+          "address_line",
+          "city",
+          "state_province"
+        ],
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "business"
+            ],
+            "description": "Whether the payer is a company or a person.",
+            "example": "business"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "The name the beneficiary sees. Must be unique among your payer names that are in review or approved.",
+            "example": "Acme Trading Ltd"
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Individuals only. Send the name split rather than letting us guess it."
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Individuals only."
+          },
+          "registration_number": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Company registration number, or a government ID number for an individual.",
+            "example": "RC1234567"
+          },
+          "registration_date": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "YYYY-MM-DD.",
+            "example": "2019-04-02"
+          },
+          "country": {
+            "type": "string",
+            "description": "The payer's country. ISO 3166-1 alpha-2, or a country name we can resolve to one.",
+            "example": "NG"
+          },
+          "address_line": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "14 Marina Road"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Lagos"
+          },
+          "state_province": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Lagos"
+          },
+          "postal_code": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true,
+            "example": "101001"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Flat key/value data of your own, echoed back on responses and webhooks. Values may be strings (max 500 chars), numbers or booleans. JSON requests only."
+          }
+        },
+        "description": "A payer name submission. Field names are snake_case."
+      },
+      "PayerNameUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "entity_type": {
+            "type": "string",
+            "enum": [
+              "individual",
+              "business"
+            ],
+            "description": "Whether the payer is a company or a person.",
+            "example": "business"
+          },
+          "display_name": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "The name the beneficiary sees. Must be unique among your payer names that are in review or approved.",
+            "example": "Acme Trading Ltd"
+          },
+          "first_name": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Individuals only. Send the name split rather than letting us guess it."
+          },
+          "last_name": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Individuals only."
+          },
+          "registration_number": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true,
+            "description": "Company registration number, or a government ID number for an individual.",
+            "example": "RC1234567"
+          },
+          "registration_date": {
+            "type": "string",
+            "nullable": true,
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "YYYY-MM-DD.",
+            "example": "2019-04-02"
+          },
+          "country": {
+            "type": "string",
+            "description": "The payer's country. ISO 3166-1 alpha-2, or a country name we can resolve to one.",
+            "example": "NG"
+          },
+          "address_line": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "14 Marina Road"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Lagos"
+          },
+          "state_province": {
+            "type": "string",
+            "maxLength": 120,
+            "example": "Lagos"
+          },
+          "postal_code": {
+            "type": "string",
+            "maxLength": 32,
+            "nullable": true,
+            "example": "101001"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Flat key/value data of your own, echoed back on responses and webhooks. Values may be strings (max 500 chars), numbers or booleans. JSON requests only."
+          }
+        },
+        "description": "Fields to change on a payer name still in review. Every field is optional; omitted fields keep their current value."
       }
     },
     "securitySchemes": {

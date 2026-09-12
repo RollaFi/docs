@@ -1,0 +1,117 @@
+---
+title: 'Create Payer Name'
+openapi: 'POST /payer-names'
+---
+
+Submits a payer name — the name your beneficiary sees on a payout — for review. The submission lands in the same review queue as one made in the dashboard.
+
+<Info>
+  Request bodies here are **snake_case** (`display_name`, `entity_type`); responses are **camelCase** (`name`, `type`). Payouts use a third spelling, `payerNameId`, in line with the rest of [Withdraw Funds](/api-reference/endpoint/wallet/withdraw).
+</Info>
+
+## Example Request (business, JSON)
+
+Use JSON when your account does not require supporting documents, or when you will attach them in a second call.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/payer-names" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "entity_type": "business",
+    "display_name": "Acme Trading Ltd",
+    "registration_number": "RC1234567",
+    "registration_date": "2019-04-02",
+    "country": "NG",
+    "address_line": "14 Marina Road",
+    "city": "Lagos",
+    "state_province": "Lagos",
+    "postal_code": "101001",
+    "metadata": { "vendor_id": "V-4471" }
+  }'
+```
+
+## Example Request (individual, with documents)
+
+Send `multipart/form-data` to submit the name and its documents in one round trip. Repeat the `documents` field once per file; `documentDescriptions` labels them positionally.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/payer-names" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "entity_type=individual" \
+  -F "display_name=Ada Obi" \
+  -F "first_name=Ada" \
+  -F "last_name=Obi" \
+  -F "country=NG" \
+  -F "address_line=14 Marina Road" \
+  -F "city=Lagos" \
+  -F "state_province=Lagos" \
+  -F "documents=@passport.pdf" \
+  -F "documentDescriptions=International passport"
+```
+
+<Warning>
+  Multipart fields all arrive as text, so `metadata` cannot be sent this way — it is rejected with a `400`. Submit with documents first, then set metadata with [Update Payer Name](/api-reference/endpoint/payer-names/update).
+</Warning>
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "message": "Payer name submitted for review",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "type": "business",
+    "name": "Acme Trading Ltd",
+    "country": "NG",
+    "address": { "line1": "14 Marina Road", "city": "Lagos", "state": "Lagos", "postalCode": "101001" },
+    "status": "pending_review",
+    "isDefault": false,
+    "decisionNote": null,
+    "documents": [],
+    "metadata": { "vendor_id": "V-4471" },
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-01T09:14:22.000Z"
+  }
+}
+```
+
+## Fields
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `entity_type` | string | Yes | `individual` or `business` |
+| `display_name` | string | Yes | What the beneficiary sees. Max 255 characters |
+| `first_name` / `last_name` | string | No | Individuals only. Send the name already split — we do not guess where to split it |
+| `registration_number` | string | No | Company registration number, or a government ID number for an individual |
+| `registration_date` | string | No | `YYYY-MM-DD` |
+| `country` | string | Yes | ISO 3166-1 alpha-2, or a country name we can resolve to one. Anything that does not resolve to two letters is rejected |
+| `address_line` | string | Yes | Max 500 characters |
+| `city` | string | Yes | |
+| `state_province` | string | Yes | |
+| `postal_code` | string | No | |
+| `metadata` | object | No | Flat key/value data of your own, echoed back on responses and webhooks. Values may be strings (max 500 characters), numbers or booleans. JSON requests only |
+| `documents` | file(s) | Conditional | Required when `requirements.documentsRequired` is `true` for your account. PDF, JPEG, PNG or Word, up to 10MB each |
+| `documentDescriptions` | string(s) | No | Labels the files positionally |
+
+<Note>
+  Documents are read by Rolla's reviewers only. They are stored privately, are never forwarded to a payout rail, and are served through signed links that expire after an hour.
+</Note>
+
+## After you submit
+
+The name comes back as `pending_review` and is not usable yet. Review resolves it to `approved` (from which it moves on to registration), `changes_requested`, or `rejected` — subscribe to the [payer name webhook events](/api-reference/webhooks/events#payer-name-events) rather than polling. The full lifecycle is in the [Named Payouts guide](/guides/named-payouts#the-lifecycle).
+
+<Tip>
+  **In sandbox, a submission is approved and activated immediately** and comes back as `active`, so you can exercise attaching it to a payout without waiting on a reviewer.
+</Tip>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | A field is missing or malformed, or your account requires a document and none was attached |
+| `403` | Named Payouts are not enabled for this account (`code: PAYER_NAMES_DISABLED`) |
+| `409` | You already have a payer name with this name in review or approved. Names are compared case-insensitively; a rejected or archived name does not block reuse |

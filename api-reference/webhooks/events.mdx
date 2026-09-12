@@ -122,6 +122,47 @@ These cover the onboarding lifecycle of the accounts you manage via the API (the
 | `account.virtual_account.declined` | A deposit account request was declined. `data.bank_account_request.reason` carries why. |
 | `account.verification.completed` | An identity check finished. Sent for the account holder on an individual account, and once per beneficial owner on a business. `data.ready_to_submit` says whether the account can now be submitted. |
 
+### Payer name events
+
+These cover [Named Payouts](/guides/named-payouts) — the payer names you register so a beneficiary sees your name, or your customer's, on a payout instead of Rolla's.
+
+| Event | When it's sent |
+|-------|----------------|
+| `payer_name.approved` | Rolla approved the name. It is now being registered with our payout partners — not usable yet. |
+| `payer_name.changes_requested` | The name needs a correction before it can be approved. `data.reason` carries the reviewer's note. |
+| `payer_name.rejected` | Rolla declined the name. `data.reason` carries why. |
+| `payer_name.active` | The name is registered and payouts can now go out under it. |
+| `payer_name.action_required` | Every payout partner refused or errored on the registration. Nothing more happens without us — contact support. |
+
+<Warning>
+  `payer_name.approved` does **not** mean the name can be used. Registration with our payout
+  partners happens after approval and can take hours. `payer_name.active` is the event to gate
+  your payouts on.
+</Warning>
+
+There is no `processing` event: `payer_name.approved` already says the name is being worked on, so the next thing you hear is an outcome. A name that is later archived emits nothing — you archived it, so you already know.
+
+## Payer name lifecycle
+
+<Steps>
+  <Step title="payer_name.changes_requested (optional detour)">
+    Something needs correcting. [Update the name](/api-reference/endpoint/payer-names/update) to answer the note and resubmit; it can happen more than once.
+  </Step>
+  <Step title="payer_name.approved">
+    Rolla approved the name and registration with our payout partners has started. Nothing is required from you.
+  </Step>
+  <Step title="payer_name.active">
+    The name is registered. Pass its `payer_name_id` as `payerNameId` on a payout, or make it your default.
+  </Step>
+  <Step title="payer_name.rejected / payer_name.action_required (dead ends)">
+    Rolla declined the name, or every partner refused it. Neither resolves on its own: submit a different name, or contact support.
+  </Step>
+</Steps>
+
+<Info>
+  A payout may be created against a name that is not `active` yet — it is accepted and simply waits. For anything time-sensitive, hold the payout until `payer_name.active` arrives.
+</Info>
+
 ## Account lifecycle
 
 An account onboarded through the API typically moves through:

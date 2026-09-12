@@ -1,0 +1,45 @@
+---
+title: 'Set Default Payer Name'
+openapi: 'PATCH /payer-names/{payerNameId}/default'
+---
+
+Chooses the payer name applied to payouts that do not name one. A payout that omits `payerNameId` goes out under your default, so this is how you apply a name across an existing integration without changing your payout code.
+
+## Example Request
+
+```bash
+curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f/default" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "isDefault": true }'
+```
+
+`isDefault` defaults to `true`, so an empty body sets the default. Send `false` to clear it, after which payouts that omit `payerNameId` go out under Rolla's standard payer details again.
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Default payer name updated",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "name": "Acme Trading Ltd",
+    "status": "active",
+    "isDefault": true,
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-04T12:00:00.000Z"
+  }
+}
+```
+
+## Rules
+
+- **One default per account.** Setting a new one moves the flag off the old one; there is no need to clear it first.
+- **It must have cleared review.** A name still in `pending_review` or `changes_requested` is rejected with a `400` — a default that cannot be used would silently apply to every payout.
+- **Archiving clears it.** [Archiving](/api-reference/endpoint/payer-names/archive) your default leaves you with none, and payouts revert to Rolla's standard payer details.
+
+<Warning>
+  A name that has cleared review can be made the default while its registration is still `processing`. Payouts sent in that window carry the name but wait until it is `active` before they can go out. If that matters to your flow, wait for the [`payer_name.active`](/api-reference/webhooks/events#payer-name-events) event before setting the default.
+</Warning>

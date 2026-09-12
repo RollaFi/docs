@@ -128,6 +128,25 @@ The response gives you the transaction `id` immediately, but a payout is only do
 
 Or fetch on demand with [Get Transaction](/api-reference/endpoint/wallet/get-transaction) by `id` or your `externalReference`.
 
+## Show your own name on the payment
+
+By default the beneficiary sees Rolla's payer details on a payout. With
+[Named Payouts](/guides/named-payouts) enabled, you register your own payer names — your company,
+or the customer you are paying for — and pick one per payout with `payerNameId`:
+
+```json
+{
+  "amount": 250000,
+  "currency": "USD",
+  "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "payerNameId": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f"
+}
+```
+
+Set a default payer name instead and every payout that omits `payerNameId` uses it, with no
+change to your payout code. Names are reviewed and registered before they can be used, so read
+the [Named Payouts guide](/guides/named-payouts) before you build against it.
+
 ## Other destinations
 
 - **Mobile money** — select corridors (e.g. XAF, XOF, GHS) via `withdrawal_method: "mobile_money"` with `mobile_money_provider` and `phone_number`.

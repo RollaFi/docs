@@ -1,0 +1,46 @@
+---
+title: 'Archive Payer Name'
+openapi: 'DELETE /payer-names/{payerNameId}'
+---
+
+Retires a payer name you no longer want to pay under.
+
+Payouts reference the payer name they were sent with, so this **archives rather than deletes**. The record stays readable, keeps appearing in [List Payer Names](/api-reference/endpoint/payer-names/list) when you filter on `archived`, and historical payouts continue to show the name they went out under.
+
+## Example Request
+
+```bash
+curl -X DELETE "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Payer name archived",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "name": "Acme Trading Ltd",
+    "status": "archived",
+    "isDefault": false,
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-10T15:30:00.000Z"
+  }
+}
+```
+
+## What archiving does
+
+- The name **stops being usable on new payouts**. Passing its id to [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) is rejected with a `400`.
+- If it was your **default**, you no longer have one, and payouts that omit `payerNameId` revert to Rolla's standard payer details.
+- Its registration with our payout partners is withdrawn in the background. The call succeeds immediately either way.
+- The name is **freed for reuse**: you can submit the same `display_name` again as a new payer name.
+
+<Info>
+  Archiving is not reversible and cannot be undone through the API. To pay under that name again, submit it as a new payer name and let it go through review.
+</Info>
+
+Archiving a name that is already archived is a no-op and still answers `200`.

@@ -48,6 +48,7 @@
               "guides/accept-deposits",
               "guides/send-payouts",
               "swift-payouts",
+              "guides/named-payouts",
               "guides/convert-currencies"
             ]
           }
@@ -126,6 +127,19 @@
               "api-reference/endpoint/wallet/fee",
               "api-reference/endpoint/wallet/withdraw",
               "api-reference/endpoint/wallet/transfer"
+            ]
+          },
+          {
+            "group": "Payer Names (Named Payouts)",
+            "pages": [
+              "api-reference/endpoint/payer-names/list",
+              "api-reference/endpoint/payer-names/create",
+              "api-reference/endpoint/payer-names/get",
+              "api-reference/endpoint/payer-names/update",
+              "api-reference/endpoint/payer-names/attach-documents",
+              "api-reference/endpoint/payer-names/document-url",
+              "api-reference/endpoint/payer-names/set-default",
+              "api-reference/endpoint/payer-names/archive"
             ]
           },
           {

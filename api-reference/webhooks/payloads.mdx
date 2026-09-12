@@ -663,3 +663,73 @@ Sent when an identity check finishes, so you learn the result instead of polling
 </Info>
 
 On a business, one event is sent per beneficial owner, with `related_person_id` naming who cleared. `ready_to_submit` stays `false` until the last of them is done.
+
+## Payer name event payloads
+
+Payer name events (`payer_name.approved`, `payer_name.changes_requested`, `payer_name.rejected`, `payer_name.active`, `payer_name.action_required`) describe a **payer name** — the name a beneficiary sees on payouts you send under [Named Payouts](/guides/named-payouts). `data` carries the payer name; `transaction_id` is not present.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `data.payer_name_id` | string | The payer name the event is about. This is the id you pass as `payerNameId` on a payout. |
+| `data.name` | string | The name the beneficiary sees. |
+| `data.type` | string | `business` or `individual`. |
+| `data.country` | string | ISO 3166-1 alpha-2 country code of the payer. |
+| `data.status` | string | Where the payer name has got to: `pending_review`, `changes_requested`, `processing`, `active`, `action_required`, `rejected` or `archived`. |
+| `data.is_default` | boolean | Whether this name is applied to payouts that do not name one. |
+| `data.reason` | string \| null | The reviewer's note, verbatim. Set on `payer_name.changes_requested` and `payer_name.rejected`, `null` otherwise. Safe to show your customer. |
+| `data.metadata` | object | Any metadata you supplied when registering the name, passed through unchanged. Omitted if you supplied none. |
+| `data.created_at` | string | When the payer name was submitted (ISO 8601). |
+| `data.updated_at` | string | When it last changed (ISO 8601). |
+
+### Sample: Payer name active
+
+The event that matters operationally — the name is registered and payouts can now go out under it.
+
+```json
+{
+  "event": "payer_name.active",
+  "event_id": "7c8d9e0f-1a2b-5c3d-8e4f-5a6b7c8d9e0f",
+  "created_at": "2026-09-02T11:02:41.000Z",
+  "data": {
+    "payer_name_id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "name": "Acme Trading Ltd",
+    "type": "business",
+    "country": "NG",
+    "status": "active",
+    "is_default": true,
+    "reason": null,
+    "created_at": "2026-09-01T09:14:22.000Z",
+    "updated_at": "2026-09-02T11:02:41.000Z",
+    "metadata": { "vendor_id": "V-4471" }
+  }
+}
+```
+
+### Sample: Changes requested
+
+`reason` is the reviewer's own wording and is the entire point of this event — without it you know only that something is wrong.
+
+```json
+{
+  "event": "payer_name.changes_requested",
+  "event_id": "1a2b3c4d-5e6f-5071-8293-a4b5c6d7e8f9",
+  "created_at": "2026-09-01T16:45:12.000Z",
+  "data": {
+    "payer_name_id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "name": "Acme Trading Ltd",
+    "type": "business",
+    "country": "NG",
+    "status": "changes_requested",
+    "is_default": false,
+    "reason": "The registration number does not match the certificate you attached. Correct it and resubmit.",
+    "created_at": "2026-09-01T09:14:22.000Z",
+    "updated_at": "2026-09-01T16:45:12.000Z"
+  }
+}
+```
+
+Answer it with [Update Payer Name](/api-reference/endpoint/payer-names/update), which resubmits the name for review.
+
+<Note>
+  Which payout partner is registering a name never appears in these payloads, the same way deposit events report the provider as `rolla`. `status` is the single view of how far the name has got, across our review and every partner's.
+</Note>

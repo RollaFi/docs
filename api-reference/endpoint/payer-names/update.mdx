@@ -1,0 +1,63 @@
+---
+title: 'Update Payer Name'
+openapi: 'PATCH /payer-names/{payerNameId}'
+---
+
+Corrects a payer name and resubmits it for review. This is how you answer a `changes_requested` decision.
+
+Every field is optional; anything you omit keeps its current value. `PUT` behaves identically.
+
+## Example Request
+
+```bash
+curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "registration_number": "RC7654321",
+    "metadata": { "vendor_id": "V-4471", "ticket": "SUP-2291" }
+  }'
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Payer name updated and resubmitted for review",
+  "success": true,
+  "data": {
+    "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "type": "business",
+    "name": "Acme Trading Ltd",
+    "registrationNumber": "RC7654321",
+    "status": "pending_review",
+    "isDefault": false,
+    "decisionNote": null,
+    "documents": [],
+    "metadata": { "vendor_id": "V-4471", "ticket": "SUP-2291" },
+    "createdAt": "2026-09-01T09:14:22.000Z",
+    "updatedAt": "2026-09-03T08:41:10.000Z"
+  }
+}
+```
+
+## What an update does
+
+<Warning>
+  **Any** edit returns the payer name to `pending_review` and clears `decisionNote` — including an edit that only touches `metadata`. There is no way to change a field without going back through review, so batch your corrections into one call.
+</Warning>
+
+Only a name in `pending_review` or `changes_requested` can be edited. Anything else answers `409`:
+
+| Current status | Result |
+|----------------|--------|
+| `pending_review`, `changes_requested` | Updated and resubmitted |
+| `processing`, `active`, `action_required` (all approved) | `409` — [archive it](/api-reference/endpoint/payer-names/archive) and submit a new one |
+| `rejected`, `archived` | `409` — submit a new one |
+
+Changing `display_name` to a name you already have in review or approved answers `409` too.
+
+## Sandbox
+
+As with [Create Payer Name](/api-reference/endpoint/payer-names/create), a sandbox update is approved and activated immediately and comes back as `active`.

@@ -1,0 +1,95 @@
+---
+title: 'List Payer Names'
+openapi: 'GET /payer-names'
+---
+
+Returns the payer names registered by your account, newest first, along with whether a submission from this account must carry a supporting document.
+
+<Info>
+  Named Payouts are off until Rolla enables them for your account. Every endpoint in this group answers `403` with `code: PAYER_NAMES_DISABLED` until then. See the [Named Payouts guide](/guides/named-payouts).
+</Info>
+
+## Example Request
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/payer-names?status=approved&pageSize=20" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Payer names retrieved",
+  "success": true,
+  "data": {
+    "payer_names": [
+      {
+        "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+        "type": "business",
+        "name": "Acme Trading Ltd",
+        "firstName": null,
+        "lastName": null,
+        "registrationNumber": "RC1234567",
+        "registrationDate": "2019-04-02",
+        "country": "NG",
+        "address": {
+          "line1": "14 Marina Road",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "101001"
+        },
+        "status": "active",
+        "isDefault": true,
+        "decisionNote": null,
+        "documents": [
+          {
+            "id": "2b3c4d5e-6f70-4812-9a3b-4c5d6e7f8091",
+            "fileName": "certificate-of-incorporation.pdf",
+            "description": "Certificate of incorporation",
+            "fileType": "application/pdf",
+            "fileSize": 284122,
+            "downloadUrl": "https://files.rolla.xyz/payer_name_docs/...",
+            "createdAt": "2026-09-01T09:14:22.000Z"
+          }
+        ],
+        "metadata": { "vendor_id": "V-4471" },
+        "createdAt": "2026-09-01T09:14:22.000Z",
+        "updatedAt": "2026-09-02T11:02:41.000Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 1,
+      "totalPages": 1
+    },
+    "requirements": {
+      "documentsRequired": true
+    }
+  }
+}
+```
+
+## Filtering by status
+
+The `status` **filter** takes review statuses. The `status` **returned on each record** is the customer-facing status, which additionally reports how far registration has got. The two vocabularies overlap but are not the same list:
+
+| Filter value | Matching returned statuses |
+|--------------|----------------------------|
+| `pending_review` | `pending_review` |
+| `changes_requested` | `changes_requested` |
+| `approved` | `processing`, `active`, `action_required` |
+| `rejected` | `rejected` |
+| `archived` | `archived` |
+
+So to find the names you can pay under today, filter on `approved` and keep the ones returned as `active`. The [Named Payouts guide](/guides/named-payouts#status-reference) explains each status.
+
+## `requirements.documentsRequired`
+
+Whether your account must attach at least one supporting document to a submission. When it is `true`, a [Create Payer Name](/api-reference/endpoint/payer-names/create) call with no file is rejected with a `400`. Read it before you build your submission form rather than discovering it from a failed POST.
+
+<Note>
+  `downloadUrl` on each document is a signed link that expires 1 hour after the response was generated. For a fresh link, call [Get Document URL](/api-reference/endpoint/payer-names/document-url).
+</Note>

@@ -1,0 +1,34 @@
+---
+title: 'Get Document URL'
+openapi: 'GET /payer-names/{payerNameId}/documents/{documentId}/url'
+---
+
+Issues a fresh signed download link for one document attached to a payer name.
+
+Documents are stored privately. The `downloadUrl` returned inside a payer name expires **1 hour** after that response was generated, so a link you cached earlier will stop working — call this endpoint when you need a live one.
+
+## Example Request
+
+```bash
+curl "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f/documents/2b3c4d5e-6f70-4812-9a3b-4c5d6e7f8091/url" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Document URL generated",
+  "success": true,
+  "data": {
+    "download_url": "https://files.rolla.xyz/payer_name_docs/...?token=..."
+  }
+}
+```
+
+The link is valid for 1 hour and grants access to whoever holds it — treat it like a credential and do not put it somewhere public.
+
+<Note>
+  `documentId` must be a document on that payer name, and the payer name must belong to your account. Anything else answers `404`.
+</Note>
