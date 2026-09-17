@@ -510,6 +510,23 @@
                   "rateToken": {
                     "type": "string",
                     "description": "Required for cross-currency transfers. Obtain from GET /wallet/rates."
+                  },
+                  "metadata": {
+                    "type": "object",
+                    "description": "Your own key/value data, stored on the transfer and returned on the transaction and its webhooks. Always returned on the sending side; returned on the receiving side only when both accounts belong to the same owner. At most 20 keys (up to 64 characters each); values are a string (up to 500 characters), number, boolean or null — no nested objects or arrays.",
+                    "maxProperties": 20,
+                    "additionalProperties": {
+                      "type": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "example": {
+                      "original_payer": "Contoso Retail UK Ltd",
+                      "order_id": "ORD-88213"
+                    }
                   }
                 }
               }
@@ -6859,9 +6876,20 @@
                   },
                   "sender_name": {
                     "type": "string",
-                    "description": "Name to record as the sender/counterparty on the transaction.",
+                    "description": "Name to record as the sender/counterparty on the transaction. Returned as `payer.name`. Defaults to `\"Sandbox Sender\"` when omitted.",
                     "maxLength": 120,
                     "example": "John Sender"
+                  },
+                  "payment_rail": {
+                    "type": "string",
+                    "enum": [
+                      "ach",
+                      "fedwire",
+                      "swift"
+                    ],
+                    "default": "ach",
+                    "description": "Sandbox only. Rail the simulated deposit arrives on. Reported on the deposit's `payment_rail` as `ach`, `wire_domestic` (for `fedwire`) or `wire_international` (for `swift`), and charged that rail's pay-in fee.",
+                    "example": "fedwire"
                   }
                 }
               }
@@ -6882,6 +6910,7 @@
                     "amount": "100",
                     "currency": "USD",
                     "reference": "RL_SIM_A7CAF7AC3673",
+                    "paymentRail": "fedwire",
                     "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
                     "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
                   }
@@ -9145,8 +9174,30 @@
               "wire_domestic",
               "wire_international"
             ],
-            "description": "Which rail an incoming **deposit** arrived on. `ach` is US domestic ACH, `wire_domestic` a US domestic wire, and `wire_international` an international (SWIFT) wire. Present on USD bank deposits once the provider reports the transfer method; **omitted** when the method is not reported, and never present on payouts or crypto deposits. Not the same field as the webhook payload’s `rail`, which is `fiat` or `stablecoin`.",
+            "description": "Which rail an incoming **deposit** arrived on. `ach` is US domestic ACH, `wire_domestic` a US domestic wire, and `wire_international` an international (SWIFT) wire. Present on USD bank deposits once the provider reports the transfer method, and on sandbox simulated deposits; **omitted** when the method is not reported, and never present on payouts or crypto deposits. Not the same field as the webhook payload’s `rail`, which is `fiat` or `stablecoin`.",
             "example": "wire_international"
+          },
+          "payer": {
+            "type": "object",
+            "description": "Who sent a **deposit**: the provider's sender details for bank deposits, or the sending account (with `bank_name` `\"Rolla\"`) for the receiving side of a Rolla transfer. Only reported fields are included; **omitted** when nothing is known and on payouts.",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "account_number": {
+                "type": "string"
+              },
+              "bank_name": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
+              }
+            },
+            "example": {
+              "name": "Northwind Trading Ltd",
+              "bank_name": "Rolla"
+            }
           },
           "fee_amount": {
             "type": "number",
@@ -9196,6 +9247,21 @@
             "type": "string",
             "format": "date-time",
             "description": "Last update timestamp"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Metadata you supplied when creating the transaction (a payout or Rolla transfer), returned exactly as sent. **Omitted** when none was supplied.",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "example": {
+              "invoice_id": "INV-2026-042"
+            }
           }
         }
       },
@@ -11156,8 +11222,19 @@
           "sender_name": {
             "type": "string",
             "maxLength": 120,
-            "description": "Name recorded as the sender on the resulting transaction.",
+            "description": "Name recorded as the sender on the resulting transaction. Returned as `payer.name`. Defaults to `\"Sandbox Sender\"` when omitted.",
             "example": "Amazon EU S.a.r.l."
+          },
+          "payment_rail": {
+            "type": "string",
+            "enum": [
+              "ach",
+              "fedwire",
+              "swift"
+            ],
+            "default": "ach",
+            "description": "Sandbox only. Rail the simulated deposit arrives on. Reported on the deposit's `payment_rail` as `ach`, `wire_domestic` (for `fedwire`) or `wire_international` (for `swift`), and charged that rail's pay-in fee.",
+            "example": "swift"
           }
         }
       },
@@ -11191,6 +11268,16 @@
                 "type": "string",
                 "description": "Reference on the simulated transfer.",
                 "example": "RL_SIM_C029D665B02F"
+              },
+              "paymentRail": {
+                "type": "string",
+                "enum": [
+                  "ach",
+                  "fedwire",
+                  "swift"
+                ],
+                "description": "The rail the simulated deposit will arrive on.",
+                "example": "swift"
               },
               "bankAccountReference": {
                 "type": "string",

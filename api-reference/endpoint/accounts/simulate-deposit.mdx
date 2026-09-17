@@ -22,7 +22,8 @@ The account must already have an **issued, active USD account**. Issue one via [
 | `amount` | string | Yes | Deposit amount in major units of USD (e.g. `"100"` or `"100.50"`). Must be greater than 0. |
 | `bank_account_reference` | string | No | Which of the client's deposit accounts to credit, as passed to Issue Bank Account. Omit to credit the **primary** account. |
 | `reference` | string | No | Your own reference carried on the simulated transfer itself. Generated when omitted. |
-| `sender_name` | string | No | Name recorded as the sender on the resulting transaction. |
+| `sender_name` | string | No | Name recorded as the sender on the resulting transaction, returned as `payer.name`. Defaults to `"Sandbox Sender"` when omitted. |
+| `payment_rail` | string | No | Rail the deposit should arrive on: `ach` (default), `fedwire` or `swift`. See [Choosing the rail](#choosing-the-rail). |
 
 <Note>
   The two references do different jobs. `bank_account_reference` chooses **which account receives the money**; `reference` is a label on **the transfer**.
@@ -39,7 +40,8 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79
   -d '{
     "amount": "250.00",
     "bank_account_reference": "store-amazon-uk",
-    "sender_name": "Amazon EU S.a.r.l."
+    "sender_name": "Amazon EU S.a.r.l.",
+    "payment_rail": "swift"
   }'
 ```
 
@@ -55,6 +57,7 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79
     "amount": "250.00",
     "currency": "USD",
     "reference": "RL_SIM_C029D665B02F",
+    "paymentRail": "swift",
     "bankAccountReference": "store-amazon-uk",
     "transferId": "5b3c2fa0-d4db-49d5-9484-0af9aec2b155",
     "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
@@ -62,13 +65,33 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79
 }
 ```
 
-`bankAccountReference` echoes which account was credited — `null` when the primary was.
+`bankAccountReference` echoes which account was credited — `null` when the primary was. `paymentRail` echoes the rail the deposit will arrive on.
+
+## Choosing the rail
+
+Pass `payment_rail` to test how you reconcile each channel. The resulting deposit reports it as [`payment_rail`](/api-reference/webhooks/payloads#which-rail-a-deposit-arrived-on) on the webhook and the transactions API, and is charged that rail's pay-in fee, exactly as a real deposit would be:
+
+| `payment_rail` sent | `payment_rail` on the deposit |
+|---------------------|-------------------------------|
+| `ach` (default) | `ach` |
+| `fedwire` | `wire_domestic` |
+| `swift` | `wire_international` |
+
+Any other value returns `400`.
+
+<Note>
+  The deposit's pay-in fee is taken from the amount before it is credited, so simulate an amount **larger than the fee** for the rail you choose. A deposit that the fee would swallow is not credited.
+</Note>
 
 ## What happens
 
 1. The request is routed to the USD provider's sandbox, which submits a simulated incoming transfer against the deposit account you named. The response `status` is `submitted` — the balance is **not** credited yet.
 2. The provider then delivers a deposit webhook through the **same crediting path a real deposit uses**, and the wallet is credited.
-3. The transaction completes, emitting a `transaction.pending` event followed by `transaction.completed`. See [Webhook Payloads](/api-reference/webhooks/payloads).
+3. The transaction completes, emitting a `transaction.pending` event followed by `transaction.completed`, each carrying `payer.name` (your `sender_name`, or `"Sandbox Sender"`) and `payment_rail`. See [Webhook Payloads](/api-reference/webhooks/payloads).
+
+<Note>
+  If Rolla cannot record the simulation's sender and rail, the request fails with an error and no transfer is submitted, so it is safe to retry. A `submitted` response always produces a deposit carrying them.
+</Note>
 
 <Note>
   Because the credit arrives via the provider webhook, it is **not instant**. After a `submitted` response, poll [List Wallets](/api-reference/endpoint/wallet/wallets) or [Transactions](/api-reference/endpoint/wallet/transactions) until the balance lands.

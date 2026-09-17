@@ -23,7 +23,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
     "destinationCurrency": "USD",
     "recipient": "partner@example.com",
     "description": "Invoice payment",
-    "saveBeneficiary": true
+    "saveBeneficiary": true,
+    "metadata": { "invoice_id": "INV-2026-042" }
   }'
 ```
 
@@ -81,18 +82,20 @@ The `amount` you send uses the smallest unit of `currency` (USD = cents below). 
       "destination_amount": 100,
       "source_currency": "USD",
       "destination_currency": "USD",
+      "metadata": { "invoice_id": "INV-2026-042" },
       "created_at": "2024-01-15T10:30:00.000Z"
     },
     "recipient_transaction": {
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
       "transaction_type": "deposit",
       "status": "completed",
-      "description": "Invoice payment",
+      "description": "Transfer from Acme Holdings",
       "fee_amount": 0,
       "source_amount": 100,
       "destination_amount": 100,
       "source_currency": "USD",
       "destination_currency": "USD",
+      "payer": { "name": "Acme Holdings", "bank_name": "Rolla" },
       "created_at": "2024-01-15T10:30:00.000Z"
     },
     "pending_claim": null
@@ -104,6 +107,10 @@ The `amount` you send uses the smallest unit of `currency` (USD = cents below). 
 
 <Info>
   **Free transfers** — Rolla-to-Rolla transfers have zero fees.
+</Info>
+
+<Info>
+  **Payer on the receiving side** — `recipient_transaction`, and every webhook for it, carries `payer` with the sending account's `name` and `bank_name: "Rolla"`, so the recipient can see who the funds came from. The sender's email is never included.
 </Info>
 
 <Info>
@@ -126,3 +133,33 @@ The `amount` you send uses the smallest unit of `currency` (USD = cents below). 
 | `description` | string | No | Transfer description (max 500 chars) |
 | `saveBeneficiary` | boolean | No | Auto-save the recipient as a beneficiary for future transfers |
 | `rateToken` | string | Conditional | Required for cross-currency transfers — obtain from `GET /wallet/rates` |
+| `metadata` | object | No | Your own key/value data, returned on the transaction and its webhooks. See [Attaching your own metadata](#attaching-your-own-metadata) |
+
+## Attaching your own metadata
+
+Pass a `metadata` object to carry your own identifiers on the transfer — an order id, an invoice number, or, when you forward funds received from a customer, who originally paid. Rolla stores it verbatim, never interprets it, and returns it unchanged on the transaction and every webhook for it.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/transfer" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "X-Account-Id: 8f14e45f-ceea-467a-9575-2d0c3b1f7c21" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 5000,
+    "currency": "USD",
+    "destinationCurrency": "USD",
+    "recipient": "@acmeholdings",
+    "metadata": {
+      "original_payer": "Contoso Retail UK Ltd",
+      "order_id": "ORD-88213"
+    }
+  }'
+```
+
+**Which side carries it.** `metadata` is always returned on the **sending** side (`sender_transaction`). It is also returned on the **receiving** side (`recipient_transaction`) when both accounts belong to the **same owner** — for example a merchant account forwarding funds to your institutional account. A transfer to another company's account never shows them your metadata.
+
+**Limits** are the same as for [payouts](/api-reference/endpoint/wallet/withdraw#attaching-your-own-metadata): at most **20** keys, keys up to **64** characters, values that are a `string` (up to **500** characters), `number`, `boolean` or `null` — no nested objects or arrays. Exceeding any of them returns `400` and the transfer is not made.
+
+<Warning>
+  Metadata is returned to anyone who can read the transaction and is sent to your webhook endpoints. Don't put secrets or personal data in it that you wouldn't want echoed back.
+</Warning>
