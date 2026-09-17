@@ -27,7 +27,8 @@ To simulate a deposit for a specific sub-account under your tenancy, send its id
 |-------|------|----------|-------------|
 | `amount` | string | Yes | Deposit amount in major units of USD (e.g. `"100"` or `"100.50"`). Must be greater than 0. |
 | `reference` | string | No | Your own reference for the simulated transfer. If omitted, a reference is generated for you. |
-| `sender_name` | string | No | Name to record as the sender/counterparty on the transaction. |
+| `sender_name` | string | No | Name to record as the sender/counterparty on the transaction, returned as `payer.name`. Defaults to `"Sandbox Sender"` when omitted. |
+| `payment_rail` | string | No | Rail the deposit should arrive on: `ach` (default), `fedwire` or `swift`. Reported on the deposit as `ach`, `wire_domestic` or `wire_international` — see [Choosing the rail](/api-reference/endpoint/accounts/simulate-deposit#choosing-the-rail). |
 
 ## Example Request
 
@@ -37,7 +38,8 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-
   -H "Content-Type: application/json" \
   -d '{
     "amount": "100",
-    "sender_name": "John Sender"
+    "sender_name": "John Sender",
+    "payment_rail": "fedwire"
   }'
 ```
 
@@ -53,6 +55,7 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-
     "amount": "100",
     "currency": "USD",
     "reference": "RL_SIM_A7CAF7AC3673",
+    "paymentRail": "fedwire",
     "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
     "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
   }
@@ -63,7 +66,11 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-
 
 1. The request is routed to your account's USD provider sandbox, which submits a simulated incoming transfer against your USD account. The response `status` is `submitted` — the balance is **not** credited yet.
 2. The provider then delivers a deposit webhook through the **same crediting path a real USD deposit uses**, and your USD wallet is credited.
-3. The transaction is completed, emitting the deposit webhook to your configured endpoint: a `transaction.pending` event, followed by `transaction.completed`. See [Webhook Payloads](/api-reference/webhooks/payloads).
+3. The transaction is completed, emitting the deposit webhook to your configured endpoint: a `transaction.pending` event, followed by `transaction.completed`. Both carry `payer.name` (your `sender_name`, or `"Sandbox Sender"`) and `payment_rail` for the rail you chose. See [Webhook Payloads](/api-reference/webhooks/payloads).
+
+<Note>
+  The rail's pay-in fee is taken from the deposit before it is credited, so simulate an amount larger than that fee. If Rolla cannot record the simulation's sender and rail, the request fails and no transfer is submitted, so it is safe to retry.
+</Note>
 
 <Note>
   Because the credit is delivered by the provider webhook, it is **not instant**. After a `submitted` response, poll [List Wallets](/api-reference/endpoint/wallet/wallets) or [Transactions](/api-reference/endpoint/wallet/transactions) until the USD balance lands.

@@ -60,7 +60,7 @@ Once a deposit lands, you'll get a webhook like this:
 `amount` is in cents, so `500000` = $5,000.00.
 
 <Tip>
-  Testing without a real wire? [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) credits your USD wallet instantly and fires the same webhook.
+  Testing without a real wire? [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) credits your USD wallet through the same webhook path. Pass `sender_name` and `payment_rail` (`ach`, `fedwire` or `swift`) to test payer and per-rail reconciliation.
 </Tip>
 
 ## Accept a local currency deposit (e.g. NGN)
