@@ -40,7 +40,7 @@ completed ───────────────────────�
 
 Three more statuses exist but are not part of the ordinary payout or deposit path, and none of them emits a webhook: `draft` (created but awaiting an approval that hasn't been given), and `negotiating` / `cancelled`, which belong to broker rate negotiation.
 
-Not every transaction passes through every state — fast rails can jump from `pending` straight to `completed`. Treat the status you receive as the source of truth and don't assume ordering. Each status change emits a [webhook event](/api-reference/webhooks/events) of the same name.
+Not every transaction passes through every state — fast rails can jump from `pending` straight to `completed`. Treat the status you receive as the source of truth and don't assume ordering. Each change between the statuses in the table above emits a [webhook event](/api-reference/webhooks/events) of the same name; the three statuses called out below it are the exception and emit nothing.
 
 ## References
 

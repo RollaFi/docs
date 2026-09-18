@@ -139,8 +139,12 @@ Drawn from this whitelisted set — but only the fields **relevant to the payout
 `id` · `account_name` · `account_number` · `bank_name` · `bank_code` · `bank_address` · `currency` · `withdrawal_method` · `routing_number` · `swift_code` · `iban` · `bic` · `sort_code` · `intermediary_bank_name` · `intermediary_bank_routing_number` · `account_owner_type` · `account_category` · `wallet_address` · `wallet_chain` · `email` · `contact_person` · `label` · `beneficiary_address`
 
 <Note>
-  `wallet_chain` is the full network name (`Solana`). Inside `bank_address` / `beneficiary_address`, `country` is the full country name (e.g. `Côte d'Ivoire`, not `CI`). **A present `id` means the payout went to a saved beneficiary** (it's the beneficiary's UUID). One-time (inline) beneficiaries have **no `id` field at all** — use its absence to detect them. `withdrawal_method` is the one field that is never dropped: it is returned as `null` when no rail was set (an NGN local transfer), because "not set" and "not applicable" mean different things for a payout.
+  `wallet_chain` is the full network name (`Solana`). Address fields are passed through exactly as stored on the beneficiary, so inside `bank_address` / `beneficiary_address`, `country` is normally the 2-letter ISO code you supplied (`CI`); records created before that code was enforced may still hold a full country name. **A present `id` means the payout went to a saved beneficiary** (it's the beneficiary's UUID). One-time (inline) beneficiaries have **no `id` field at all** — use its absence to detect them. `withdrawal_method` is the one field that is never dropped: it is returned as `null` when no rail was set (an NGN local transfer), because "not set" and "not applicable" mean different things for a payout.
 </Note>
+
+<Warning>
+  This object is a snapshot for reading, not a request body. If you feed it back into [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) or [Update Beneficiary](/api-reference/endpoint/beneficiaries/update), convert any `country` that is not already a 2-letter ISO code, and drop `id`. Those endpoints reject a full country name with a `400`.
+</Warning>
 
 ### The `virtual_account` object (deposits)
 
