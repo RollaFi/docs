@@ -36,18 +36,43 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Document uploaded successfully",
+  "success": true,
   "data": {
     "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
     "kyb_application_id": "fbb45236-881a-4c58-8954-22759499eab4",
     "document_type": "certificate_of_incorporation",
     "file_name": "certificate.pdf",
+    "file_path": "fbb45236-881a-4c58-8954-22759499eab4/certificate_of_incorporation/certificate_1789655131420.pdf",
     "file_size": 248301,
-    "mime_type": "application/pdf"
+    "mime_type": "application/pdf",
+    "is_required": false,
+    "uploaded_at": "2026-09-17T14:25:31.420Z"
   }
 }
 ```
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Document identifier |
+| `kyb_application_id` | string | The account's application the document belongs to |
+| `document_type` | string | The type the file was uploaded as |
+| `file_name` | string | Original file name as uploaded |
+| `file_path` | string | Internal storage path, not a download URL. A document attached to a related person carries `related-persons/<relatedPersonId>` in its path |
+| `file_size` | integer | File size in bytes |
+| `mime_type` | string | Content type of the uploaded file |
+| `is_required` | boolean | Always `false` for documents uploaded through this API |
+| `uploaded_at` | string | When the file was stored |
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `400` | No `file` part was sent, or `documentType` is missing or not one of the types above |
+| `404` | Account not found, or `relatedPersonId` is not a person on this account's application |
 
 <Tip>
   Proof of address documents must have been issued within the last 3 months (bank statement, utility bill or lease agreement).

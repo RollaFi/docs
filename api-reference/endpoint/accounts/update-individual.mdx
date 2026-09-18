@@ -115,19 +115,56 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Application updated successfully",
+  "success": true,
   "data": {
     "application": {
       "id": "f436daf8-146b-4949-bf28-9b36440085a4",
-      "status": "draft",
+      "invite_id": "b6075be0-f1d0-451f-a468-3e94563101d2",
       "entity_type": "individual",
+      "status": "draft",
+      "current_step": 1,
+      "is_complete": false,
+      "business_info": null,
+      "business_address": null,
+      "contact_info": null,
+      "banking_info": null,
+      "related_persons": null,
       "individual_info": {
         "firstName": "Jane",
         "lastName": "Doe",
         "phone": "+2348012345678",
-        "citizenship": "NG"
-      }
+        "dateOfBirth": "1990-05-14",
+        "citizenship": "NG",
+        "nin": "12345678901",
+        "bvn": "22212345678",
+        "taxId": "22212345678",
+        "idDocument": {
+          "type": "passport",
+          "number": "P123456789",
+          "issueDate": "2020-01-01",
+          "expirationDate": "2030-01-01"
+        },
+        "address": {
+          "street": "12 Marina Rd",
+          "line2": "Suite 4",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "101241",
+          "country": "NG"
+        },
+        "employment": {
+          "status": "self-employed",
+          "employerName": "Acme Trading Ltd",
+          "sourceOfWealth": "business_income",
+          "annualIncome": "50k-100k"
+        }
+      },
+      "change_request_note": null,
+      "flagged_fields": [],
+      "created_at": "2026-06-12T23:30:43.040Z",
+      "updated_at": "2026-06-13T09:02:44.918Z"
     },
     "documents": []
   }
@@ -148,7 +185,7 @@ One of these is **required** before the application can be submitted. Which one 
 Digits are validated on write — a `nin` of the wrong length is rejected with `400`. Send `null` for the identifiers that don't apply.
 
 <Info>
-  **Countries are normalized to [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).** `citizenship`, `countryOfResidence` and `address.country` accept a code (`NG`), a country name (`Nigeria`) or a demonym (`Nigerian`), and are stored as the code. A value that can't be resolved is rejected with `400`.
+  **Countries are normalized to [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).** `citizenship` and `countryOfResidence` accept a code (`NG`), a country name (`Nigeria`) or a demonym (`Nigerian`), and are stored as the code. A value that can't be resolved is rejected with `400`. `address.country` is stored exactly as you send it, so send the ISO-2 code there.
 </Info>
 
 ## Fields used for USD account issuance

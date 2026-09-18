@@ -20,12 +20,13 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referral-stats" \
 
 ```json
 {
+  "status": 200,
+  "message": "Referral stats fetched successfully",
   "success": true,
-  "message": "Referral stats retrieved successfully",
   "data": {
     "totalCommissions": {
-      "USD": 1500.50,
-      "NGN": 250000
+      "USD": 150050,
+      "NGN": 25000000
     },
     "totalReferrals": 15
   }
@@ -33,5 +34,5 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referral-stats" \
 ```
 
 <Info>
-  The `totalCommissions` object contains your lifetime earnings broken down by currency. The `totalReferrals` is the total number of businesses you have referred.
+  The `totalCommissions` object contains your lifetime earnings broken down by currency, each an integer in that currency's smallest unit: `150050` is USD 1,500.50 and `25000000` is NGN 250,000.00. It is an empty object for a broker that has not earned yet. The `totalReferrals` is the total number of businesses you have referred.
 </Info>

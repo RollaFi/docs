@@ -58,8 +58,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "KYC reliance submitted successfully",
+  "success": true,
   "data": {
     "relatedPersonId": "1c0742e5-5a58-4705-a473-ddd1ae213787",
     "firstName": "Chidi",
@@ -107,7 +108,7 @@ When the identity provider rejects an upload, the reason is passed through rathe
 
 ```json
 {
-  "success": false,
+  "status": 400,
   "message": "Identity provider rejected the upload: document is unreadable (code 1002)"
 }
 ```

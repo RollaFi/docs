@@ -3,7 +3,7 @@ title: 'Create Referral Link'
 openapi: 'POST /broker/referral-link'
 ---
 
-Generate a new referral link for your business.
+Generate a new referral link for your business. Previously issued codes stay active, so links you have already shared keep working.
 
 <Warning>
   **Broker activation is required.** Broker accounts are activated by the Rolla admin team — you cannot activate a broker account yourself through the API. Once your business has been activated as a broker by Rolla, all broker endpoints become available. Until then, all requests will return a `403 Forbidden` error. Contact [support@rolla.xyz](mailto:support@rolla.xyz) to request broker activation.
@@ -20,11 +20,12 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/broker/referral-link" \
 
 ```json
 {
+  "status": 201,
+  "message": "New referral link generated",
   "success": true,
-  "message": "Referral link created successfully",
   "data": {
-    "code": "REF-ABCD1234",
-    "inviteUrl": "https://app.rolla.xyz/register?code=REF-ABCD1234"
+    "code": "REF-P9XBTR64",
+    "inviteUrl": "https://app.rolla.xyz/register?code=REF-P9XBTR64"
   }
 }
 ```

@@ -3,7 +3,13 @@ title: 'Update Application'
 openapi: 'PUT /kyb'
 ---
 
-Update an existing KYB application with new information. Use this to complete a draft application step by step or make corrections before submission.
+Update your account's KYB application. Use this to complete a draft step by step, to answer a change request, and finally to submit the application for review.
+
+The target is always the API key's own application (or, for a tenant key sending `X-Account-Id`, that account's application), so there is no id in the path or body.
+
+<Warning>
+  Each section you send **replaces** the stored one; the server does not merge object keys. Send the complete `business_info`, `business_address`, `contact_info`, `banking_info` or `related_persons` value every time you include it, and leave a section out entirely to keep it untouched.
+</Warning>
 
 ## Example Request
 
@@ -27,7 +33,8 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/kyb" \
           "state": "Lagos",
           "postalCode": "100001",
           "country": "NG"
-        }
+        },
+        "nin": "12345678901"
       }
     ],
     "banking_info": {
@@ -37,31 +44,155 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/kyb" \
       "accountType": "checking",
       "currency": "NGN"
     },
-    "current_step": 4,
+    "current_step": 5,
     "is_complete": true,
     "status": "submitted"
   }'
 ```
 
+## Fields
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `business_info` | object | No | Legal name, business type, incorporation details, tax ID and the commercial profile |
+| `business_address` | object | No | `street`, `city`, `state`, `postalCode`, `country` (ISO 3166-1 alpha-2) |
+| `contact_info` | object | No | `email` and `phone` for the business |
+| `related_persons` | array | No | Directors and beneficial owners. A person sent without an `id` is assigned one; keep the `id` to edit an existing person, and drop them from the array to remove them |
+| `banking_info` | object | No | `bankName`, `accountNumber`, `routingNumber`, `accountType` (`checking` or `savings`), `currency` |
+| `current_step` | integer | No | Which onboarding step the application is on. Minimum `1` |
+| `is_complete` | boolean | No | Set with `status: "submitted"` to submit |
+| `status` | string | No | `draft` or `submitted`. Writing back the status the application already has is allowed; any other value is a reviewer-only decision and is rejected with `403` |
+
+### Related person
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `id` | string | No | Omit for a new person; send it to update one |
+| `firstName` / `lastName` | string | Yes | |
+| `roles` | array | No | Any of `Beneficial Owner`, `Director`. Defaults to `["Beneficial Owner"]` |
+| `email` | string | Yes | |
+| `phone` | string | Yes | |
+| `dateOfBirth` | string | Yes | `YYYY-MM-DD` |
+| `ownershipPercentage` | number | No | A percentage, not a fraction: `60` for 60% |
+| `currentAddress` | object | Yes | `street`, `city`, `state`, `postalCode`, `country` |
+| `sourceOfWealthExplanation` | string | No | |
+| `taxId` | string | No | The government identifier their country of residence issues. Required before a USD account can be issued |
+| `nin` / `bvn` | string | No | Nigerian residents only, 11 digits each. `nin` is accepted in place of `taxId` |
+
 ## Example Response
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Application updated successfully",
+  "success": true,
   "data": {
     "application": {
-      "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
-      "status": "submitted",
-      "current_step": 4,
+      "id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+      "invite_id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
+      "current_step": 5,
       "is_complete": true,
-      "created_at": "2024-01-10T08:00:00.000Z",
-      "updated_at": "2024-01-15T14:00:00.000Z"
-    }
+      "status": "submitted",
+      "business_info": {
+        "legalName": "Acme Corp Ltd",
+        "tradingName": "Acme",
+        "businessType": "Limited Company",
+        "incorporationDate": "2020-01-15",
+        "incorporationCountry": "NG",
+        "registrationNumber": "RC-1234567",
+        "taxId": "12345678-0001"
+      },
+      "business_address": {
+        "street": "123 Main Street",
+        "city": "Lagos",
+        "state": "Lagos",
+        "postalCode": "100001",
+        "country": "NG"
+      },
+      "contact_info": {
+        "email": "contact@acmecorp.com",
+        "phone": "+2341234567890"
+      },
+      "related_persons": [
+        {
+          "id": "b7e1f4c2-3a58-4d90-8c21-9e4f6a0b5d73",
+          "firstName": "John",
+          "lastName": "Doe",
+          "roles": ["Director", "Beneficial Owner"],
+          "email": "john@acmecorp.com",
+          "phone": "+2341234567890",
+          "dateOfBirth": "1990-01-15",
+          "ownershipPercentage": 60,
+          "currentAddress": {
+            "street": "456 Oak Avenue",
+            "city": "Lagos",
+            "state": "Lagos",
+            "postalCode": "100001",
+            "country": "NG"
+          },
+          "nin": "12345678901"
+        }
+      ],
+      "banking_info": {
+        "bankName": "Access Bank",
+        "accountNumber": "0123456789",
+        "routingNumber": "000014",
+        "accountType": "checking",
+        "currency": "NGN"
+      },
+      "entity_type": "business",
+      "individual_info": null,
+      "flagged_fields": [],
+      "change_request_note": null,
+      "change_requested_at": null,
+      "rejection_reason": null,
+      "created_at": "2026-08-20T09:12:44.000Z",
+      "updated_at": "2026-09-18T11:05:02.000Z"
+    },
+    "documents": [
+      {
+        "id": "8d41c6b2-90e5-4f37-b1a9-2c6de4f80a13",
+        "kyb_application_id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+        "document_type": "certificate_of_incorporation",
+        "file_name": "certificate-of-incorporation.pdf",
+        "file_path": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10/certificate_of_incorporation/certificate-of-incorporation_1789041164000.pdf",
+        "file_size": 284122,
+        "mime_type": "application/pdf",
+        "is_required": false,
+        "uploaded_at": "2026-09-14T11:02:10.000Z"
+      }
+    ]
   }
 }
 ```
 
+## Submitting
+
+Set `status` to `submitted` and `is_complete` to `true` when the application is ready for review. For a business account the server first checks that at least one beneficial owner or director is declared and that every one of them has finished identity verification. When they have, the invite moves to `completed` and the `account.submitted` webhook fires.
+
 <Info>
-  Set `status` to `submitted` and `is_complete` to `true` when the application is ready for review. Ensure all required sections (business info, address, contact info, related persons, and banking info) are complete before submitting.
+  Complete the business info, address, contact info, related persons and banking info sections, and upload the required documents, before submitting. A submission that is missing owner verification is refused and the application stays editable.
 </Info>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `401` | API key missing, invalid or inactive |
+| `403` | `This application status can only be set by a reviewer` — `status` was set to `approved`, `rejected` or `changes_requested` |
+| `409` | Submission refused: a declared owner has not completed identity verification (`code: KYC_INCOMPLETE`) |
+| `500` | The update failed, or a business tried to submit with no beneficial owner or director declared |
+
+```json
+{
+  "status": 409,
+  "message": "All Beneficial Owners must complete KYC before submission",
+  "code": "KYC_INCOMPLETE",
+  "unverified": [
+    {
+      "personId": "b7e1f4c2-3a58-4d90-8c21-9e4f6a0b5d73",
+      "name": "John Doe"
+    }
+  ]
+}
+```

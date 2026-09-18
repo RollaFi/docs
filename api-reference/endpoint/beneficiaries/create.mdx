@@ -7,7 +7,7 @@ Create a new saved beneficiary for your business. The required fields depend on 
 
 <Warning>
   **New required fields (`account_owner_type`, `account_category`).** Every bank-account
-  beneficiary must now declare `account_owner_type` (`individual` or `business`), and
+  beneficiary except NGN must now declare `account_owner_type` (`individual` or `business`), and
   every USD beneficiary must also declare `account_category` (`checking` or `savings`).
   During a 60-day grace period, requests that omit these fields still succeed but return a
   `deprecation_warning` in the response; after the enforcement date they are rejected with a
@@ -30,7 +30,6 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
     "account_number": "0123456789",
     "bank_name": "Access Bank",
     "bank_code": "000014",
-    "account_owner_type": "business",
     "email": "john@example.com"
   }'
 ```
@@ -178,32 +177,51 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
 ```
 
 <Info>
-  `recipient_business_id` is the Rolla-assigned UUID of the destination business. Each currency requires a separate beneficiary record — you cannot reuse the same `recipient_business_id` + `currency` combination.
+  `recipient_business_id` is the Rolla-assigned UUID of the destination business. A Rolla transfer beneficiary is not scoped by currency: one record per recipient serves every currency you pay them in. Saving the same `recipient_business_id` again returns the existing record with `200` and the message `Beneficiary already saved` (a new `label`, if sent, is applied).
 </Info>
 
 ## Example Response
 
+A new beneficiary returns `201`. The beneficiary is returned directly under `data`; only populated fields are included, except `withdrawal_method`, which is always present and is `null` when no rail was set.
+
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Beneficiary created successfully",
+  "success": true,
   "data": {
     "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "currency": "NGN",
-    "label": "Office rent",
     "account_name": "JOHN DOE",
+    "currency": "NGN",
+    "email": "john@example.com",
+    "withdrawal_method": null,
+    "label": "Office rent",
     "account_number": "0123456789",
     "bank_name": "Access Bank",
-    "bank_code": "000014",
-    "withdrawal_method": null,
-    "account_owner_type": "business",
-    "email": "john@example.com",
-    "created_at": "2024-01-15T10:30:00.000Z",
-    "updated_at": "2024-01-15T10:30:00.000Z"
+    "bank_code": "000014"
   }
 }
 ```
+
+### Validation error
+
+Requests that fail schema validation return `400` with one entry per offending field:
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "code": "custom",
+      "message": "Routing number: routing_number is required for ACH and domestic wire beneficiaries",
+      "path": ["routing_number"]
+    }
+  ]
+}
+```
+
+Other rejections (unsupported currency, duplicate account number or wallet address, unsupported crypto network) also return `400` with a descriptive `message` and no `errors` array.
 
 ## Account Classification Fields
 
@@ -211,7 +229,7 @@ For compliant payout routing, bank-account beneficiaries carry two classificatio
 
 | Field | Values | Required when |
 |-------|--------|---------------|
-| `account_owner_type` | `individual`, `business` | Every bank-account beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `ach`, `domestic_wire`, `international_wire`). Not applicable to crypto or `rolla_transfer`. |
+| `account_owner_type` | `individual`, `business` | Every bank-account beneficiary except NGN — any fiat method that is not crypto, `mobile_money` or `rolla_transfer` (`ach`, `domestic_wire`, `international_wire`). Accepted but not required for NGN. Not applicable to crypto, `mobile_money` or `rolla_transfer`. |
 | `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
 
 <Note>
@@ -227,28 +245,31 @@ For compliant payout routing, bank-account beneficiaries carry two classificatio
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Beneficiary created successfully",
+  "success": true,
   "data": { "...": "..." },
   "deprecation_warning": {
     "code": "BENEFICIARY_FIELDS_REQUIRED_SOON",
-    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries.",
+    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries except NGN; account_category (checking|savings) is required for USD beneficiaries.",
     "missing_fields": ["account_owner_type"],
-    "enforcement_date": "2026-09-01T00:00:00.000Z"
+    "enforcement_date": "2026-12-01T00:00:00.000Z"
   }
 }
 ```
+
+`enforcement_date` is `null` until the date has been set.
 
 ## Required Fields by Withdrawal Method
 
 | Method | Required Fields |
 |--------|----------------|
-| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code`, `account_owner_type` |
+| NGN bank transfer (no `withdrawal_method`) | `currency`, `account_name`, `account_number`, `bank_name`, `bank_code` |
 | `ach` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `domestic_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `routing_number`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `international_wire` (USD) | `currency`, `account_name`, `account_number`, `bank_name`, `swift_code`, `beneficiary_address`, `bank_address`, `account_owner_type`, `account_category` |
 | `crypto_usdc` / `crypto_usdt` | `currency`, `account_name`, `wallet_address`, `wallet_chain` |
 | `rolla_transfer` | `currency`, `account_name`, `recipient_business_id` |
+| `mobile_money` | `currency`, `mobile_money_provider`, `phone_number` |
 
 Both `beneficiary_address` and `bank_address` are objects with the following fields:
 
@@ -258,7 +279,9 @@ Both `beneficiary_address` and `bank_address` are objects with the following fie
 | `city` | Yes | City |
 | `state` | Yes | State or province |
 | `postalCode` | Yes | Zip/postal code |
-| `country` | Yes | 2-letter country code (e.g. `US`, `GB`) |
+| `country` | Yes | 2-letter ISO 3166-1 country code (e.g. `US`, `GB`); a full country name is rejected |
+
+Missing or blank address parts on `ach`, `domestic_wire` and `international_wire` are rejected with a `400` validation error naming each part (for example `bank_address.city`).
 
 <Warning>
   For NGN beneficiaries, use the `/beneficiaries/beneficiary-lookup` endpoint first to validate the account number and retrieve the correct account name before saving.

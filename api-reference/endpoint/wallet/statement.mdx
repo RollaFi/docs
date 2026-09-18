@@ -3,16 +3,16 @@ title: 'Get Statement'
 openapi: 'GET /wallet/statement'
 ---
 
-Retrieve a wallet statement summary including opening/closing balances, totals, and a sanitized transaction list for a given period.
+Retrieve a wallet statement summary including opening/closing balances, totals, and the transactions behind them for a given period.
 
 ## Query Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `currency` | string | Yes | Wallet currency (e.g. `NGN`, `USD`) |
-| `startDate` | string | No | Start of period (`YYYY-MM-DD`). Defaults to 30 days ago. |
-| `endDate` | string | No | End of period (`YYYY-MM-DD`, inclusive). Defaults to today. |
-| `accountType` | string | No | `wallet` (default) or `loan` |
+| `currency` | string | Yes | Currency of the account to draw the statement for (e.g. `NGN`, `USD`) |
+| `startDate` | string | Yes | Inclusive start of the period (`YYYY-MM-DD`) |
+| `endDate` | string | Yes | Inclusive end of the period (`YYYY-MM-DD`) |
+| `accountType` | string | No | `wallet` or `loan`. Omitted, wallets and credit lines of that currency are reported together. |
 
 ## Example Request
 
@@ -25,8 +25,9 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/statement?currency=NGN
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Statement data retrieved successfully",
+  "success": true,
   "data": {
     "businessName": "Acme Corp Ltd",
     "currency": "NGN",
@@ -54,10 +55,26 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/statement?currency=NGN
 }
 ```
 
+Balances, totals and amounts are all in **minor units** — `500000` is ₦5,000.00. The
+transactions are listed oldest first, in the order the statement prints.
+
+<Note>
+  A statement row reports `transaction_type` as the movement affected **this** account, so a row
+  can read `received` or `sent` where the underlying transaction is a withdrawal, fee or deposit.
+  Read `id` if you need to tie a row back to the transaction itself.
+</Note>
+
+## Error Response
+
+A missing `currency`, or a currency you hold no account in, returns `400`:
+
+```json
+{
+  "status": 400,
+  "message": "Currency is required"
+}
+```
+
 <Tip>
   Use this endpoint to generate periodic account statements for your records or for compliance reporting.
 </Tip>
-
-<Info>
-  `accountType` accepts two values: `wallet` (default, for your main wallet) and `loan` (for loan accounts).
-</Info>

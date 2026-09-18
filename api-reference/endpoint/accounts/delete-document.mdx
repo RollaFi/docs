@@ -3,7 +3,14 @@ title: 'Delete Document'
 openapi: 'DELETE /accounts/{accountId}/documents'
 ---
 
-Deletes an uploaded document by type. Include `relatedPersonId` to target a document attached to a specific related person.
+Deletes an uploaded document by type. The type travels in a JSON request body, not in the path, so send a `Content-Type: application/json` body on the `DELETE`. Include `relatedPersonId` to target a document attached to a specific related person; without it only documents held against the business itself are considered.
+
+## Body Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `documentType` | string | Yes | One of the [document types](/api-reference/endpoint/accounts/upload-document#document-types) |
+| `relatedPersonId` | string | No | Delete the document attached to this related person instead |
 
 ## Example Request
 
@@ -20,13 +27,18 @@ curl -X DELETE "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-437
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Document deleted successfully",
-  "data": {
-    "success": true
-  }
+  "success": true
 }
 ```
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `400` | `documentType` is missing or not one of the supported types |
+| `404` | Account not found, or no document of that type is stored for this target (`Document not found`) |
 
 <Warning>
   Deleting a document from an application that was already completed moves it back to `draft`, and it must be re-submitted.

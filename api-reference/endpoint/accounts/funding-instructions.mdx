@@ -1,6 +1,7 @@
 ---
 title: 'Get Funding Instructions'
 description: 'Fetch deposit instructions for an account across its currencies'
+openapi: 'GET /accounts/{accountId}/funding-instructions'
 ---
 
 Returns the deposit (funding) instructions for an account — how to fund each of its currencies. Each entry is either fiat **bank transfer** details (NGN, USD, ...) or a **crypto** deposit address. Any USD account still being provisioned by the provider is surfaced under `pending`.
@@ -22,17 +23,17 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Funding instructions retrieved successfully",
+  "success": true,
   "data": {
     "fundingInstructions": [
       {
         "currency": "NGN",
         "method": "bank_transfer",
         "status": "active",
-        "provider": "rolla",
         "bankName": "Guaranty Trust Bank",
-        "accountNumber": "1234567890",
+        "accountNumber": "1238726395",
         "accountName": "Beta Logistics LLC",
         "routingNumber": null,
         "swiftCode": null,
@@ -45,7 +46,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "currency": "USD",
         "method": "bank_transfer",
         "status": "active",
-        "provider": "rolla",
         "bankName": "Lead Bank",
         "accountNumber": "8823410077",
         "accountName": "Beta Logistics LLC",
@@ -60,7 +60,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
         "currency": "USDC",
         "method": "crypto",
         "status": "active",
-        "provider": "rolla",
         "walletAddress": "0xAbC1234dEf5678901234567890aBcDeF12345678",
         "network": "base",
         "instructions": "Send USDC on the base network to the wallet address below. Deposits are credited to the account automatically after network confirmation."
@@ -69,7 +68,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
     "pending": [
       {
         "currency": "USD",
-        "provider": "rolla",
         "state": "client_submitted",
         "message": "A USD deposit account is being provisioned. Funding details become available once the provider approves."
       }
@@ -82,4 +80,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `currency` | string | No | Scope to a single currency (e.g. `NGN`, `USD`, `USDC`). Omit to return every funded currency. |
+| `currency` | string | No | Scope to a single currency (e.g. `NGN`, `USD`, `USDC`), 2 to 10 characters. Omit to return every funded currency. |
+
+`pending` is only populated when `currency` is omitted or `USD`; it is empty once the USD account is live.

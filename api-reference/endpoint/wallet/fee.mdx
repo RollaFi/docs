@@ -23,8 +23,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Transaction fee retrieved successfully",
+  "success": true,
   "data": {
     "fee": {
       "amount": 50,
@@ -38,9 +38,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `currency` | string | Yes | 3-letter code of the wallet being debited |
-| `transactionType` | string | Yes | `deposit`, `withdrawal`, or `swap` |
-| `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD) |
+| `currency` | string | Yes | Code of the wallet being debited (3 or 4 letters, e.g. `NGN`, `USDC`) |
+| `transactionType` | string | Yes | `deposit`, `withdrawal`, `swap`, `card_funding`, or `payin` |
+| `amount` | number | Yes | Whole number of the smallest unit (kobo for NGN, cents for USD) |
 | `recipientCurrency` | string | No | For FX payouts — the currency the beneficiary receives |
 | `withdrawal_method` | string | No | The payout rail to price — see below |
 | `destination_country` | string | No | 2-letter country code of the destination bank |
@@ -60,6 +60,7 @@ Fees are configured **per rail**, so an ACH and a wire to the same bank are usua
 | `local_transfer` | In-country transfer (e.g. NGN bank transfer) |
 | `crypto_usdt` / `crypto_usdc` | Stablecoin payout |
 | `mobile_money` | Mobile money payout |
+| `rolla_transfer` | Transfer to another Rolla account |
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
@@ -98,7 +99,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
   }'
 ```
 
-Anything you send explicitly wins over the beneficiary's own values, so you can quote a different rail for an existing beneficiary by supplying `withdrawal_method` alongside `beneficiaryId`.
+`destination_country` still wins over the beneficiary's own value when you send it. `withdrawal_method` does not: a withdrawal always prices off the beneficiary's saved rail, so sending a `withdrawal_method` that contradicts it returns a `400` explaining which rail the payout will actually be charged as. Omit it, or update the beneficiary's `withdrawal_method` first.
 
 <Note>
   The beneficiary must belong to your account. An unknown `beneficiaryId` returns a `400` rather than falling back to a default fee — a quote never silently prices a different rail than the withdrawal will use.

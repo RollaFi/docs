@@ -3,7 +3,7 @@ title: 'List Wallet Transactions'
 openapi: 'GET /wallet/transactions'
 ---
 
-Retrieve a paginated list of wallet transactions with optional filtering by currency, type, status, date range, and search term.
+Retrieve a paginated list of wallet transactions, newest first, with optional filtering by currency, type, status, date range, and search term.
 
 ## Example Request
 
@@ -16,22 +16,26 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions?currency=
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `currency` | string | Filter by 3-letter currency code (e.g. `NGN`, `USD`) |
-| `transactionType` | string | Filter by type: `deposit`, `withdrawal`, `swap` |
-| `status` | string | Filter by status: `pending`, `completed`, `failed`, `rejected`, `sent` |
-| `page` | integer | Page number (default: 1) |
+| `currency` | string | Filter by **source** currency code (e.g. `NGN`, `USD`), so a swap is listed under the currency it was sold from rather than under both |
+| `transactionType` | string | Filter by type: `deposit`, `withdrawal`, `swap`, `card_funding`, `payin`, `fee` |
+| `status` | string | Filter by status: `pending`, `completed`, `failed`, `rejected`, `sent`, `negotiating`, `cancelled` |
+| `page` | integer | Page number, starting at 1 (default: 1) |
 | `pageSize` | integer | Results per page (default: 20, max: 100) |
-| `startDate` | string | Start date filter (YYYY-MM-DD) |
-| `endDate` | string | End date filter (YYYY-MM-DD) |
-| `search` | string | Search term to filter transactions |
+| `startDate` | string | Inclusive start (`YYYY-MM-DD`) |
+| `endDate` | string | Inclusive end (`YYYY-MM-DD`) |
+| `search` | string | Case-insensitive substring match on `external_reference` |
+
+Transactions with status `failed` are left out unless you ask for them with `status=failed`.
+`status=completed` also returns pending transactions our operations team has already claimed,
+which are reported as completed; `status=pending` excludes them.
 
 ## Example Response
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Transaction history retrieved successfully",
+  "success": true,
   "data": {
     "transactions": [
       {
@@ -45,7 +49,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions?currency=
         "destination_amount": 499947,
         "source_currency": "NGN",
         "destination_currency": "NGN",
-        "exchange_rate": null,
         "created_at": "2024-01-15T10:30:00.000Z",
         "updated_at": "2024-01-15T10:30:45.000Z"
       },
@@ -54,13 +57,25 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions?currency=
         "transaction_type": "deposit",
         "status": "completed",
         "description": "Inbound transfer",
-        "external_reference": null,
+        "external_reference": "NG-DEP-9F2K1A",
         "fee_amount": 0,
         "source_amount": 1000000,
         "destination_amount": 1000000,
         "source_currency": "NGN",
         "destination_currency": "NGN",
-        "exchange_rate": null,
+        "virtual_account": {
+          "id": "2b0f3d84-8c1a-4c7e-9f0b-1a2b3c4d5e6f",
+          "currency": "NGN",
+          "method": "bank_transfer",
+          "bank_name": "GTBank",
+          "account_number": "0123456789",
+          "account_name": "Acme Ltd / Rolla"
+        },
+        "payer": {
+          "name": "John Doe",
+          "account_number": "1234567890",
+          "bank_name": "Access Bank"
+        },
         "created_at": "2024-01-14T09:00:00.000Z",
         "updated_at": "2024-01-14T09:01:00.000Z"
       }
@@ -72,6 +87,11 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions?currency=
   }
 }
 ```
+
+Amounts are in **minor units** — `500000` is ₦5,000.00. Fields that do not apply to a
+transaction are **omitted** rather than returned as `null`: `exchange_rate` appears on swaps
+only, `virtual_account`, `payer` and `payment_rail` on deposits only, and `uetr` only once a
+cross-border payout has been assigned one.
 
 <Tip>
   Use date range filters to export transaction data for specific periods. Combine with the `status` filter to find failed transactions that may need to be retried.

@@ -22,7 +22,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
   }'
 ```
 
-By default fees come out of the amount you send; pass `deductFeesFromBalance: true` on the withdrawal if the beneficiary must receive the exact amount.
+By default fees come out of your wallet balance and the beneficiary receives the exact amount you asked for; pass `deductFeesFromBalance: false` on the withdrawal if the fee should come out of the amount you send instead.
 
 ## 2. Resolve the beneficiary and send
 
@@ -40,11 +40,13 @@ This is the one step that differs by currency and rail — pick your path:
         "currency": "USD",
         "withdrawal_method": "international_wire",
         "account_name": "ACME GMBH",
-        "iban": "DE89370400440532013000",
+        "account_number": "DE89370400440532013000",
         "swift_code": "COBADEFFXXX",
         "bank_name": "Commerzbank AG",
-        "bank_address": { "street": "Kaiserplatz", "city": "Frankfurt", "country": "DE" },
-        "beneficiary_address": { "street": "Hauptstrasse 1", "city": "Berlin", "country": "DE" }
+        "account_owner_type": "business",
+        "account_category": "checking",
+        "bank_address": { "street": "Kaiserplatz 16", "city": "Frankfurt", "state": "Hessen", "postalCode": "60311", "country": "DE" },
+        "beneficiary_address": { "street": "Hauptstrasse 1", "city": "Berlin", "state": "Berlin", "postalCode": "10827", "country": "DE" }
       }'
     ```
 
@@ -112,7 +114,11 @@ This is the one step that differs by currency and rail — pick your path:
   Prefer not to save a beneficiary for a one-off payout? Both paths accept `inlineBeneficiary` directly on the withdrawal instead of a `beneficiaryId` — add `saveBeneficiary: true` to keep it for next time.
 </Tip>
 
-Either way, remember: `amount` is always in [minor units](/concepts/amounts-and-currencies) of `currency`, and you should always set an `externalReference` so you can [recover safely from timeouts](/concepts/idempotency).
+Either way, remember: `amount` is always in [minor units](/concepts/amounts-and-currencies) of `currency`, and on USD rails you should set an `externalReference` so you can [recover safely from timeouts](/concepts/idempotency).
+
+<Warning>
+  **NGN and mobile money ignore `externalReference`.** Those rails mint their own (`NG-XXXXXXXX` / `MM-XXXXXXXX`), so the value you send is not stored and looking it up later returns `404`. Put your own identifier in `metadata` instead and recover by listing recent transactions. See [Idempotency & Retries](/concepts/idempotency).
+</Warning>
 
 <Info>
   **Platforms:** add the `X-Account-Id` header to pay out from a customer's wallet instead of your own. See [Operate Customer Accounts](/platform/operate-accounts).
@@ -126,26 +132,32 @@ The response gives you the transaction `id` immediately, but a payout is only do
 - `transaction.failed` / `transaction.rejected` — the payout didn't go through and **funds are back in your wallet**
 - `transaction.uetr.assigned` — for SWIFT payouts, the network tracing reference ([more](/swift-payouts#tracing-a-payout-the-uetr))
 
-Or fetch on demand with [Get Transaction](/api-reference/endpoint/wallet/get-transaction) by `id` or your `externalReference`.
+Or fetch on demand with [Get Transaction](/api-reference/endpoint/wallet/get-transaction) by `id`, or by your `externalReference` on the rails that store it. On NGN and mobile money, look the payout up by the `id` you were returned, or match your `metadata` against [List Transactions](/api-reference/endpoint/wallet/transactions).
 
 ## Pay under an affiliated name
 
 A payout goes out under your own business name by default. With
 [Named Payouts](/guides/named-payouts) enabled, you can also register affiliated payer names — a
 related entity of yours, or the end-customer you are paying for — and pick one per payout with
-`payerNameId`:
+`payerNameId`.
 
-```json
-{
-  "amount": 250000,
-  "currency": "USD",
-  "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-  "payerNameId": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f"
-}
+This applies to **USD international wire payouts only** — the beneficiary's `withdrawal_method`
+must be `international_wire`. On any other rail the payout is refused with a `400`. Because
+international wire is sent as `multipart/form-data`, a named payout is always a multipart request:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "amount=250000" \
+  -F "currency=USD" \
+  -F "description=Invoice 2291" \
+  -F "beneficiaryId=c3d4e5f6-a7b8-9012-cdef-123456789012" \
+  -F "payerNameId=9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f" \
+  -F "documents=@/path/to/invoice.pdf"
 ```
 
-Set a default payer name instead and every payout that omits `payerNameId` uses it, with no
-change to your payout code; leave both unset and the payout carries your own business name.
+Set a default payer name instead and every international wire payout that omits `payerNameId` uses
+it, with no change to your payout code; leave both unset and the payout carries your own business name.
 Affiliated names are reviewed and registered before they can be used, so read the
 [Named Payouts guide](/guides/named-payouts) before you build against it.
 

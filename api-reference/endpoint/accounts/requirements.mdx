@@ -18,8 +18,9 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Requirements retrieved successfully",
+  "success": true,
   "data": {
     "entityType": "business",
     "status": "draft",
@@ -34,8 +35,30 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
       "proof_of_address",
       "director_register",
       "shareholder_register",
-      "bank_statement"
+      "bank_statement",
+      "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.proof_of_address",
+      "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.source_of_wealth_doc"
     ],
+    "submitBlocker": {
+      "code": "APPLICATION_INCOMPLETE",
+      "message": "Application is incomplete",
+      "details": {
+        "missingFields": [
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.taxId",
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.sourceOfWealthExplanation"
+        ],
+        "missingDocuments": [
+          "certificate_of_incorporation",
+          "articles_of_association",
+          "proof_of_address",
+          "director_register",
+          "shareholder_register",
+          "bank_statement",
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.proof_of_address",
+          "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.source_of_wealth_doc"
+        ]
+      }
+    },
     "relatedPersons": [
       {
         "id": "a3d4f21e-f499-488f-8508-43228dfea485",
@@ -59,16 +82,17 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Requirements retrieved successfully",
+  "success": true,
   "data": {
     "entityType": "individual",
     "status": "draft",
     "readyToSubmit": true,
     "missingFields": [],
     "missingDocuments": [],
-    "identityVerification": "verified",
-    "submitBlocker": null
+    "submitBlocker": null,
+    "identityVerification": "verified"
   }
 }
 ```
@@ -126,6 +150,8 @@ For a business, `details.unverified` lists who is outstanding:
 
 | Field | Type | Description |
 |-------|------|-------------|
+| `entityType` | string | `business` or `individual` — decides which of the two shapes below you get |
+| `status` | string | Current application status (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`) |
 | `readyToSubmit` | boolean | `true` only when **everything** is cleared: no missing fields, no missing documents, and identity verification complete — `identityVerification` for an individual, every entry in `relatedPersons` for a business |
 | `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName`. Entries prefixed `related_persons.<id>.` belong to that person |
 | `missingDocuments` | string[] | Required document types not yet uploaded, including each related person's own documents |

@@ -13,7 +13,9 @@ Every movement of money on Rolla — a deposit, payout, swap, or fee — is reco
 | `withdrawal` | Money out — a payout in the wallet's own currency |
 | `fx_withdrawal` | Money out with conversion — paid out in a different currency |
 | `swap` | Conversion between two of your own wallets |
+| `transfer` | A Rolla-to-Rolla movement between two Rolla accounts |
 | `fee` | A fee booked as its own transaction (appears as a filterable type on listings) |
+| `reversal` | A movement booked to unwind an earlier one |
 
 ## Lifecycle
 
@@ -34,21 +36,33 @@ completed ───────────────────────�
 | `failed` | Could not complete. Payout funds are returned to your wallet. |
 | `rejected` | Declined during approval or compliance review. Funds returned. |
 | `refunded` | A previously completed transaction was reversed. |
+| `exception` | Stuck in a state that needs manual intervention — neither in flight nor terminal. |
 
-Not every transaction passes through every state — fast rails can jump from `pending` straight to `completed`. Treat the status you receive as the source of truth and don't assume ordering. Each status change emits a [webhook event](/api-reference/webhooks/events) of the same name.
+Three more statuses exist but are not part of the ordinary payout or deposit path, and none of them emits a webhook: `draft` (created but awaiting an approval that hasn't been given), and `negotiating` / `cancelled`, which belong to broker rate negotiation.
+
+Not every transaction passes through every state — fast rails can jump from `pending` straight to `completed`. Treat the status you receive as the source of truth and don't assume ordering. Each change between the statuses in the table above emits a [webhook event](/api-reference/webhooks/events) of the same name; the three statuses called out below it are the exception and emit nothing.
 
 ## References
 
-A transaction carries up to four identifiers:
+A transaction carries up to three identifiers:
 
 | Field | Assigned by | Use it for |
 |---|---|---|
 | `id` | Rolla | API lookups — [Get Transaction](/api-reference/endpoint/wallet/get-transaction) |
-| `reference` | Rolla | Human-readable reference shown in the dashboard and webhooks |
-| `externalReference` | **You**, at creation | Reconciliation against your own system — Get Transaction accepts it too |
+| `external_reference` | **You** on most rails, Rolla on the rest | Reconciliation against your own system — Get Transaction accepts it in place of the `id` |
 | `uetr` | SWIFT network | Tracing cross-border USD payouts — see [the SWIFT guide](/swift-payouts#tracing-a-payout-the-uetr) |
 
+`external_reference` is the `externalReference` you sent at creation, with one exception worth planning around: **NGN and mobile money payouts always get a Rolla-generated reference instead** (`NG-XXXXXXXX` / `MM-XXXXXXXX`), because the provider imposes its own format. Webhook payloads call this same field `reference`.
+
 You can also attach up to 20 keys of your own `metadata` to a payout; it is echoed verbatim on every response and webhook for that transaction.
+
+## What's always on the object
+
+Twelve fields are present on every transaction, whatever its type: `id`, `transaction_type`, `status`, `description`, `external_reference`, `fee_amount`, `source_amount`, `destination_amount`, `source_currency`, `destination_currency`, `created_at` and `updated_at`.
+
+Everything else is conditional and is **omitted entirely rather than returned as `null`** when it doesn't apply — `exchange_rate` on swaps only, `virtual_account` / `payer` / `payment_rail` on deposits only, `beneficiary` on payouts that carried one, `uetr` / `tracking_codes` once a cross-border payout has been assigned them, and `metadata` when you supplied some. Branch on a field's presence, not on its value.
+
+All amounts are integers in [minor units](/concepts/amounts-and-currencies) — kobo for NGN, cents for USD.
 
 ## Finding your transactions
 

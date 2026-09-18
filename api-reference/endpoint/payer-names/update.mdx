@@ -5,7 +5,7 @@ openapi: 'PATCH /payer-names/{payerNameId}'
 
 Corrects a payer name and resubmits it for review. This is how you answer a `changes_requested` decision.
 
-Every field is optional; anything you omit keeps its current value. `PUT` behaves identically.
+Every field is optional; anything you omit keeps its current value. `PUT /payer-names/{payerNameId}` is accepted as an alias and behaves identically.
 
 ## Example Request
 
@@ -30,11 +30,26 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4
     "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
     "type": "business",
     "name": "Acme Trading Ltd",
+    "firstName": null,
+    "lastName": null,
     "registrationNumber": "RC7654321",
+    "registrationDate": "2019-04-02",
+    "country": "NG",
+    "address": { "line1": "14 Marina Road", "city": "Lagos", "state": "Lagos", "postalCode": "101001" },
     "status": "pending_review",
     "isDefault": false,
     "decisionNote": null,
-    "documents": [],
+    "documents": [
+      {
+        "id": "2b3c4d5e-6f70-4812-9a3b-4c5d6e7f8091",
+        "fileName": "certificate-of-incorporation.pdf",
+        "description": "Certificate of incorporation",
+        "fileType": "application/pdf",
+        "fileSize": 284122,
+        "downloadUrl": "https://files.rolla.xyz/payer_name_docs/...",
+        "createdAt": "2026-09-01T09:14:22.000Z"
+      }
+    ],
     "metadata": { "vendor_id": "V-4471", "ticket": "SUP-2291" },
     "createdAt": "2026-09-01T09:14:22.000Z",
     "updatedAt": "2026-09-03T08:41:10.000Z"

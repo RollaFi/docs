@@ -13,7 +13,14 @@ It is the USD counterpart of [Simulate a Deposit](/api-reference/endpoint/wallet
 
 ## Prerequisites
 
-The account must already have an **issued, active USD account**. Issue one first via [Issue a Bank Account](/api-reference/endpoint/accounts/issue-bank-account) with `currency: "USD"`. If no USD account is provisioned yet, the call returns `404` with code `USD_ACCOUNT_NOT_FOUND`.
+The account must already have an **issued, active USD account**. Issue one first via [Issue a Bank Account](/api-reference/endpoint/accounts/issue-bank-account) with `currency: "USD"`. If no USD account is provisioned yet, the call returns `404`:
+
+```json
+{
+  "status": 404,
+  "message": "No USD account is provisioned for this account yet. Issue a USD bank account first."
+}
+```
 
 To simulate a deposit for a specific sub-account under your tenancy, send its id in the `X-Account-Id` header. Without it the deposit is credited to **your own** business, which returns `404` if your business has no USD account of its own.
 
@@ -48,19 +55,22 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Simulated USD deposit submitted",
+  "success": true,
   "data": {
     "status": "submitted",
     "amount": "100",
     "currency": "USD",
     "reference": "RL_SIM_A7CAF7AC3673",
     "paymentRail": "fedwire",
+    "bankAccountReference": null,
     "transferId": "9d56e63c-2f2f-42b3-9ef7-1852677692cf",
     "message": "Simulated incoming USD transfer submitted. The balance will be credited to the wallet via the provider webhook."
   }
 }
 ```
+
+`reference` is the one you sent, or the generated `RL_SIM_...` when you omitted it. `bankAccountReference` names which deposit account was credited and is `null` for the primary account, which is the only one this endpoint targets. `bankAccountReference` and `transferId` are only present when the USD provider's sandbox reports them. A malformed body (for example a non-numeric `amount`) returns `400` with `"message": "Validation failed"` and an `errors` array; a rejection from the provider sandbox returns `400` with its message.
 
 ## What happens
 

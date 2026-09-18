@@ -3,7 +3,7 @@ title: 'List Wallets'
 openapi: 'GET /wallet/wallets'
 ---
 
-Retrieve all wallets for your business, including balances, currency info, payment accounts, and month-over-month statistics. Optionally include loan accounts.
+Retrieve all wallets for your business, including balances and the payment accounts that receive funds into each wallet. Loan accounts are not returned here; use [`GET /wallet/loans`](/api-reference/endpoint/wallet/loans) for those.
 
 ## Example Request
 
@@ -17,8 +17,8 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Business wallets retrieved successfully",
+  "success": true,
   "data": {
     "wallets": [
       {
@@ -28,13 +28,14 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
         "balance": {
           "availableBalance": 950000,
           "postedBalance": 1000000,
-          "pendingBalance": 50000
+          "pendingBalance": 50000,
+          "lienAmount": 0
         },
         "virtualAccounts": [
           {
-            "id": "va-uuid-here",
+            "id": "7f1c2a90-3b4d-4e5f-8a9b-0c1d2e3f4a5b",
             "status": "active",
-            "virtual_account_type": "deposit",
+            "virtual_account_type": "static",
             "currency_type": "fiat",
             "bank_name": "Wema Bank",
             "account_number": "0123456789",
@@ -49,13 +50,14 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
         "balance": {
           "availableBalance": 5000,
           "postedBalance": 5000,
-          "pendingBalance": 0
+          "pendingBalance": 0,
+          "lienAmount": 0
         },
         "virtualAccounts": [
           {
-            "id": "va-uuid-usd",
+            "id": "8e2d3b01-4c5e-4f60-9b0c-1d2e3f4a5b6c",
             "status": "active",
-            "virtual_account_type": "deposit",
+            "virtual_account_type": "static",
             "currency_type": "fiat",
             "bank_name": "Bank of America",
             "account_number": "9876543210",
@@ -79,13 +81,14 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
         "balance": {
           "availableBalance": 1200,
           "postedBalance": 1200,
-          "pendingBalance": 0
+          "pendingBalance": 0,
+          "lienAmount": 0
         },
         "virtualAccounts": [
           {
-            "id": "va-uuid-usdt",
+            "id": "9d3e4c12-5d6f-4a71-8c1d-2e3f4a5b6c7d",
             "status": "active",
-            "virtual_account_type": "deposit",
+            "virtual_account_type": "static",
             "currency_type": "crypto",
             "stablecoin_type": "USDT",
             "wallet_address": "0xAbCdEf1234567890abcdef1234567890AbCdEf12",
@@ -99,7 +102,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 ```
 
 <Tip>
-  Use `balance.availableBalance` (not `balance.postedBalance`) when checking if you have sufficient funds for a withdrawal. `postedBalance` includes pending debits that haven't settled yet.
+  Use `balance.availableBalance` (not `balance.postedBalance`) when checking if you have sufficient funds for a withdrawal. `postedBalance` includes pending debits that haven't settled yet, and `availableBalance` is already net of `lienAmount`, the portion reserved and unavailable for withdrawal.
 </Tip>
 
 <Note>

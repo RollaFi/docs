@@ -31,6 +31,9 @@ A `403` means the feature is not enabled for you. A `200` also tells you whether
 
 ```json
 {
+  "status": 200,
+  "message": "Payer names retrieved",
+  "success": true,
   "data": {
     "payer_names": [],
     "pagination": { "page": 1, "pageSize": 20, "total": 0, "totalPages": 0 },
@@ -181,11 +184,20 @@ The payer name is recorded on the transaction, so a payout always reports the na
   **A payout attached to a name that is not yet `active` is accepted, and then waits.** This is deliberate: you usually register a name because of a payment you are about to make, and refusing the payout would make you come back and redo it. But the money does not move until the name is usable, so for anything time-sensitive, wait for `payer_name.active` before sending.
 </Warning>
 
-A `payerNameId` that is rejected, archived, or belongs to another account is refused outright with a `400` — the payout is not created.
+A `payerNameId` that Rolla cannot use is refused outright and the payout is not created. On [`POST /wallet/withdraw`](/api-reference/endpoint/wallet/withdraw) every such refusal comes back as a `400`, whether the name was rejected, archived, unknown, or belongs to another account; the message says which. The payer-name endpoints themselves answer `404` for an unknown id, so do not branch on the status code alone when you call both.
 
 ### Where the name is applied
 
-Named Payouts apply on the payout rails that can carry a registered payer. Where a rail cannot, the payout still goes out and is still tagged with your chosen name for your own records, but the beneficiary sees your own business name as usual. Ask your account manager which of your corridors are covered before you promise the behaviour to your own customers.
+Named Payouts apply to **USD international wire (SWIFT) payouts only**. That is the one rail that carries a registered payer end to end.
+
+Attaching a `payerNameId` to any other rail — ACH, domestic wire, crypto, NGN, XAF, mobile money — does not fall back to your own name. The payout is refused outright with a `400` and nothing is created:
+
+```
+A payer name can only be used on an International Wire (SWIFT) payout. Remove the payer name,
+or send this payment to a beneficiary whose withdrawal method is international_wire.
+```
+
+So a default payer name only takes effect on international wire payouts; payouts on every other rail are unaffected by it and go out under your own business name.
 
 ## Testing in sandbox
 
@@ -213,7 +225,7 @@ What sandbox cannot show you is the waiting: `pending_review`, `changes_requeste
 | `400` | `Validation failed` | A field is missing or malformed; `errors` names each one |
 | `400` | At least one supporting document is required | Your account has `documentsRequired: true` and you sent none |
 | `400` | That payer name was rejected / has been archived | You attached an unusable name to a payout |
-| `404` | Payer name not found | No such name on your account |
+| `404` | Payer name not found | No such name on your account. On the payer-name endpoints only — a payout refuses an unknown name with a `400` |
 | `409` | You already have a payer name "…" in progress or approved | Duplicate `display_name` |
 | `409` | This payer name can no longer be edited | It has been approved, rejected or archived |
 

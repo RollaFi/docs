@@ -20,7 +20,7 @@ You'll hear about every move via [webhooks](/api-reference/webhooks/events#accou
 
 <Steps>
   <Step title="Create the account">
-    [Create Account](/api-reference/endpoint/accounts/create) with `type: "business"`, the business name, and a unique email. You get an `accountId` and a draft application.
+    [Create Account](/api-reference/endpoint/accounts/create) with `type: "business"`, the business name, and a unique email (`email` is required). The response carries the new account's `id` under `data.account`, plus a draft application.
   </Step>
   <Step title="Fill in business details">
     [Update Business Details](/api-reference/endpoint/accounts/update-business) with `business_info`, `business_address`, `contact_info`, and optionally `banking_info`. Sections merge, so you can save progress across calls.
@@ -67,4 +67,4 @@ If review comes back `changes_requested` instead, the webhook and [Get Account](
 
 ## Testing the journey
 
-In sandbox, [Approve Account](/api-reference/endpoint/accounts/approve-account) lets you self-approve a submitted application and run the whole flow — onboarding to payout — without waiting on compliance review. The [Platform Quickstart](/platform/quickstart) does exactly that.
+In sandbox, [Approve Account](/api-reference/endpoint/accounts/approve-account) lets you self-approve a submitted application and run the whole flow — onboarding to payout — without waiting on compliance review. It is sandbox-only, so call it against the staging host; in production it returns `404`. The [Platform Quickstart](/platform/quickstart) does exactly that.

@@ -13,12 +13,22 @@ It runs the **same approval path as the Rolla admin dashboard**, so wallets are 
 
 ## Prerequisites
 
-The account must already be **`submitted`** — which is only possible once every onboarding requirement is complete (see [Submit Application](/api-reference/endpoint/accounts/submit)). If it isn't, the call returns `409` with code `ACCOUNT_NOT_SUBMITTED`.
+The account must already be **`submitted`** — which is only possible once every onboarding requirement is complete (see [Submit Application](/api-reference/endpoint/accounts/submit)). If it isn't, the call returns `409` with code `ACCOUNT_NOT_SUBMITTED`:
+
+```json
+{
+  "status": 409,
+  "message": "Account must be submitted before it can be approved (current status: draft). Complete onboarding and submit the application first.",
+  "code": "ACCOUNT_NOT_SUBMITTED"
+}
+```
+
+The submission gate is re-run at approval time. If the account would no longer pass it, the call returns `400` whose `message` names the blocking requirement, the same message [Submit Application](/api-reference/endpoint/accounts/submit) reports.
 
 ## Example Request
 
 ```bash
-curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}/approve" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/approve" \
   -H "X-API-Key: your_api_key_here"
 ```
 
@@ -26,8 +36,9 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Account approved",
+  "success": true,
   "data": {
     "accountId": "eec3cbed-79d8-4370-87a0-b6be9e287337",
     "applicationStatus": "approved"
