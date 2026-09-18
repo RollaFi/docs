@@ -3,7 +3,7 @@ title: 'Get Loan Accounts'
 openapi: 'GET /wallet/loans'
 ---
 
-Retrieve all loan accounts associated with your business, including balances and available credit.
+Retrieve the credit lines associated with your business, with their balances and credit limits. All amounts are in the smallest unit of the loan currency (kobo for NGN, cents for USD).
 
 ## Example Request
 
@@ -16,24 +16,32 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/loans" \
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Loan accounts retrieved successfully",
-  "data": {
-    "loans": [
-      {
-        "id": "d4e5f6a7-b8c9-0123-defg-456789012345",
-        "currency": "NGN",
-        "limit": 5000000,
-        "balance": 2000000,
-        "available_balance": 3000000,
-        "status": "active",
-        "created_at": "2024-01-10T08:00:00.000Z"
-      }
-    ]
-  }
+  "success": true,
+  "loans": [
+    {
+      "id": "d4e5f6a7-b8c9-4012-9def-456789012345",
+      "name": "Acme Ltd NGN Credit Line",
+      "currency": "NGN",
+      "balance": {
+        "availableBalance": 2000000,
+        "postedBalance": 2000000,
+        "pendingBalance": 0,
+        "lienAmount": 0
+      },
+      "virtualAccounts": [],
+      "credit_limit": 5000000,
+      "interest_rate": 12.5
+    }
+  ]
 }
 ```
 
 <Info>
-  The `available_balance` is the remaining amount you can draw from the loan. The `balance` is the amount currently drawn.
+  `balance.postedBalance` is the amount currently drawn. The credit still available to draw is `credit_limit` minus `balance.postedBalance` — in the example above, 3000000 kobo. `interest_rate` is an annual percentage, not an amount, so it is never converted to minor units.
 </Info>
+
+<Note>
+  Unlike most reads on this API, the loan accounts sit at the top level of the response as `loans`, not under `data`.
+</Note>

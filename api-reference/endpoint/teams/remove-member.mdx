@@ -17,8 +17,8 @@ curl -X DELETE "https://api.rolla.xyz/api/v1/external/teams/members/a1b2c3d4-e5f
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Team member removed successfully",
+  "success": true,
   "data": {
     "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   }
@@ -26,5 +26,5 @@ curl -X DELETE "https://api.rolla.xyz/api/v1/external/teams/members/a1b2c3d4-e5f
 ```
 
 <Warning>
-  You cannot remove yourself or the business owner. Attempting to do so will return a `400 Bad Request` error.
+  The business owner cannot be removed. Attempting it returns `400 Bad Request` with the message `Cannot remove the business owner from the business`. A user who is not a member of your business returns `404 Not Found`.
 </Warning>

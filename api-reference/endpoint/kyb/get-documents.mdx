@@ -3,40 +3,75 @@ title: 'Get Documents'
 openapi: 'GET /kyb/documents'
 ---
 
-Retrieve documents associated with a KYB application. Filter by document type or related person.
+List the documents uploaded against a KYB application. The application must belong to your account.
 
 ## Example Request
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/documents?applicationId=f6a7b8c9-d0e1-2345-fghi-678901234567" \
+curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/documents?applicationId=3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10" \
   -H "X-API-Key: your_api_key_here"
 ```
 
 ## Query Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `applicationId` | string | **Required.** KYB application ID |
-| `relatedPersonKey` | string | Filter by related person |
-| `documentType` | string | Filter by document type |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `applicationId` | string | Yes | KYB application ID. Get it from [Get Application](/api-reference/endpoint/kyb/get-application) |
+| `documentType` | string | No | Return only documents of this type |
+| `relatedPersonKey` | string | No | Accepted for compatibility, but it does not narrow the result. Documents belonging to a related person are the ones whose `file_path` contains `related-persons/<person id>/` |
 
 ## Example Response
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Documents retrieved successfully",
-  "data": {
-    "documents": [
-      {
-        "id": "a7b8c9d0-e1f2-3456-ghij-789012345678",
-        "applicationId": "f6a7b8c9-d0e1-2345-fghi-678901234567",
-        "documentType": "certificate_of_incorporation",
-        "fileName": "cert_of_inc.pdf",
-        "fileUrl": "https://storage.rolla.xyz/documents/cert_of_inc.pdf",
-        "created_at": "2024-01-12T09:00:00.000Z"
-      }
-    ]
-  }
+  "success": true,
+  "data": [
+    {
+      "id": "8d41c6b2-90e5-4f37-b1a9-2c6de4f80a13",
+      "kyb_application_id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+      "document_type": "certificate_of_incorporation",
+      "file_name": "certificate-of-incorporation.pdf",
+      "file_path": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10/certificate_of_incorporation/certificate-of-incorporation_1789041164000.pdf",
+      "file_size": 284122,
+      "mime_type": "application/pdf",
+      "is_required": false,
+      "uploaded_at": "2026-09-14T11:02:10.000Z"
+    }
+  ]
+}
+```
+
+<Note>
+  `file_path` is the object's key in private storage, not a download URL. Documents are readable by Rolla's reviewers only; there is no public link.
+</Note>
+
+## Document types
+
+`certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `source_of_wealth_doc`, `director_register`, `shareholder_register`, `proof_of_tax_id`, `bank_statement`, `wolfsberg_questionnaire`, `msb_flow_form`, `flow_of_funds_diagram`, `aml_policy_procedures`, `ach_procedures`, `wire_procedures`, `customer_complaint_procedures`, `prohibited_jurisdictions_industries`.
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | `applicationId` is missing (`message: "Validation failed"`, with the offending field in `errors`) |
+| `401` | API key missing, invalid or inactive |
+| `403` | The application belongs to another account |
+| `404` | `Application not found` |
+| `500` | `Failed to load documents` |
+
+```json
+{
+  "status": 400,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "expected": "string",
+      "code": "invalid_type",
+      "path": ["applicationId"],
+      "message": "Invalid input: expected string, received undefined"
+    }
+  ]
 }
 ```

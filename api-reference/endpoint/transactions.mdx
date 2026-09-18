@@ -3,7 +3,7 @@ title: 'List Transactions'
 openapi: 'GET /transactions'
 ---
 
-Retrieve a paginated list of your transactions with optional filtering by status and date range.
+Retrieve a paginated list of your transactions, newest first, with optional filtering by status and date range.
 
 ## Example Request
 
@@ -16,19 +16,27 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `page` | integer | Page number (default: 1) |
-| `pageSize` | integer | Results per page (default: 20, max: 100) |
-| `status` | string | Filter by status: `pending`, `completed`, `failed` |
-| `startDate` | string | Start date filter (ISO 8601 format) |
-| `endDate` | string | End date filter (ISO 8601 format) |
+| `page` | integer | Page number, starting at 1 (default: 1) |
+| `pageSize` | integer | Results per page (default: 20) |
+| `status` | string | Filter by status: `pending`, `processing`, `completed`, `sent`, `failed`, `rejected`, `refunded`, `negotiating`, `cancelled` |
+| `startDate` | string | Inclusive start, `YYYY-MM-DD` or a full ISO 8601 timestamp |
+| `endDate` | string | Inclusive end, `YYYY-MM-DD` or a full ISO 8601 timestamp |
+
+<Note>
+  This endpoint filters on status and date only. To also filter by currency, type or reference,
+  use [List Wallet Transactions](/api-reference/endpoint/wallet/transactions), which reads the
+  same transactions.
+</Note>
+
+Transactions with status `failed` are left out unless you ask for them with `status=failed`.
 
 ## Example Response
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Transactions retrieved successfully",
+  "success": true,
   "data": {
     "transactions": [
       {
@@ -51,12 +59,28 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=
         "status": "completed",
         "description": "Deposit from Acme Trading Ltd",
         "external_reference": "US-DEP-7K4M2B",
-        "payment_rail": "wire_international",
         "fee_amount": 0,
         "source_amount": 2500000,
         "destination_amount": 2500000,
         "source_currency": "USD",
         "destination_currency": "USD",
+        "payment_rail": "wire_international",
+        "virtual_account": {
+          "id": "9c4e1f77-3a25-4d80-b6f1-0e7a2b5c8d93",
+          "currency": "USD",
+          "method": "bank_transfer",
+          "bank_name": "Lead Bank",
+          "account_number": "9876543210",
+          "account_name": "Acme Ltd / Rolla",
+          "routing_number": "021000021",
+          "swift_code": "LEADUS33"
+        },
+        "payer": {
+          "name": "Acme Trading Ltd",
+          "account_number": "5551234567",
+          "bank_name": "HSBC",
+          "country": "Hong Kong"
+        },
         "created_at": "2024-01-15T11:02:00.000Z",
         "updated_at": "2024-01-15T11:02:10.000Z"
       }
@@ -68,6 +92,9 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/transactions?page=1&pageSize=
   }
 }
 ```
+
+Amounts are in **minor units** — `500000` is ₦5,000.00. Fields that do not apply to a
+transaction are **omitted** rather than returned as `null`.
 
 ## Payment tracking references
 
@@ -108,13 +135,14 @@ them — the references a beneficiary's bank is chased with.
 
 ## Identifying the transfer method on deposits
 
-Incoming USD deposits carry a `payment_rail` field saying how the money arrived, so you can reconcile per channel rather than parsing the description.
+Incoming deposits carry a `payment_rail` field saying how the money arrived, so you can reconcile per channel rather than parsing the description.
 
 | Value | Meaning |
 |-------|---------|
 | `ach` | US domestic ACH |
 | `wire_domestic` | US domestic wire (Fedwire) |
 | `wire_international` | International wire — this is the **SWIFT** case |
+| `mobile_money` | Mobile money collection |
 
 There is no `swift` value; an international wire **is** the SWIFT case. The field is **omitted** (not `null`) when the provider does not report a transfer method, and never appears on payouts or crypto deposits — treat its absence as "rail unknown".
 

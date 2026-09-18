@@ -3,7 +3,7 @@ title: 'Get Related Persons'
 openapi: 'GET /kyb/related-persons'
 ---
 
-Retrieve the list of related persons (directors and beneficial owners) associated with your KYB application.
+List the related persons (directors and beneficial owners) declared on your KYB application. This is a name-and-role summary; the full details of each person are on the application itself.
 
 ## Example Request
 
@@ -16,32 +16,32 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/related-persons" \
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Related persons retrieved successfully",
-  "data": {
-    "relatedPersons": [
-      {
-        "id": "rp-001",
-        "firstName": "John",
-        "lastName": "Doe",
-        "roles": ["Director", "Beneficial Owner"],
-        "email": "john@acmecorp.com",
-        "phone": "+2341234567890",
-        "dateOfBirth": "1990-01-15",
-        "ownershipPercentage": 60,
-        "currentAddress": {
-          "street": "456 Oak Avenue",
-          "city": "Lagos",
-          "state": "Lagos",
-          "postalCode": "100001",
-          "country": "NG"
-        }
-      }
-    ]
-  }
+  "success": true,
+  "relatedPersons": [
+    {
+      "id": "b7e1f4c2-3a58-4d90-8c21-9e4f6a0b5d73",
+      "firstName": "John",
+      "lastName": "Doe",
+      "fullName": "John Doe",
+      "roles": ["Director", "Beneficial Owner"]
+    }
+  ]
 }
 ```
 
+<Warning>
+  `relatedPersons` sits at the top level of the response, not under `data`. An account with no declared persons gets an empty array.
+</Warning>
+
 <Info>
-  Related persons include anyone with a **Beneficial Owner** or **Director** role. All persons with 25% or more ownership must be declared as beneficial owners.
+  Only `id`, `firstName`, `lastName`, `fullName` and `roles` come back here. For contact details, address, ownership percentage and identifiers, read `related_persons` on [Get Application](/api-reference/endpoint/kyb/get-application); to add or change a person, send the whole array to [Update Application](/api-reference/endpoint/kyb/update-application). Anyone holding 25% or more must be declared as a beneficial owner.
 </Info>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `401` | API key missing, invalid or inactive |
+| `500` | The related persons could not be loaded |

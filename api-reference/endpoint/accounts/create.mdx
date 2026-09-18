@@ -42,8 +42,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Account created successfully",
+  "success": true,
   "data": {
     "account": {
       "id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
@@ -73,3 +74,17 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
   second account with the same `email` under your business returns `409 Conflict`
   with `code: "ACCOUNT_EMAIL_EXISTS"`.
 </Note>
+
+<Warning>
+  An email on Rolla's blocklist is refused with `403` and `code: "EMAIL_BLOCKLISTED"`:
+
+  ```json
+  {
+    "status": 403,
+    "message": "This email address cannot be used. Please contact Support for assistance.",
+    "code": "EMAIL_BLOCKLISTED"
+  }
+  ```
+
+  This is separate from the white-label `403` above, which has no `code`. Branch on `code`, not on the status alone.
+</Warning>

@@ -3,7 +3,7 @@ title: 'Draw Loan Funds'
 openapi: 'POST /wallet/loans/draw'
 ---
 
-Draw funds from a loan account into a destination wallet.
+Draw funds from a loan account into a destination wallet. `amount` is a whole number of the smallest unit of the loan currency (kobo for NGN, cents for USD).
 
 ## Example Request
 
@@ -12,7 +12,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/loans/draw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "loanAccountId": "d4e5f6a7-b8c9-0123-defg-456789012345",
+    "loanAccountId": "d4e5f6a7-b8c9-4012-9def-456789012345",
     "destinationWalletId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "amount": 50000,
     "description": "Draw funds for operations"
@@ -23,12 +23,61 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/loans/draw" \
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Loan funds drawn successfully",
-  "data": {}
+  "success": true,
+  "transaction": {
+    "id": "e5f6a7b8-c9d0-4123-8ef4-567890123456",
+    "transaction_type": "transfer",
+    "account_id": "d4e5f6a7-b8c9-4012-9def-456789012345",
+    "status": "pending",
+    "description": "Draw funds for operations",
+    "external_reference": "LN_DR_1705314600000",
+    "fee_amount": "0",
+    "source_amount": "50000",
+    "destination_amount": "50000",
+    "source_currency": "NGN",
+    "destination_currency": "NGN",
+    "meta": null,
+    "beneficiary_id": null,
+    "related_transaction_id": null,
+    "is_batch": false,
+    "batch_completed": 0,
+    "hidden_from_dashboard": false,
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "updated_at": "2024-01-15T10:30:00.000Z"
+  },
+  "entries": [
+    {
+      "id": "f6a7b8c9-d0e1-4234-9f05-678901234567",
+      "transaction_id": "e5f6a7b8-c9d0-4123-8ef4-567890123456",
+      "account_id": "d4e5f6a7-b8c9-4012-9def-456789012345",
+      "amount": 50000,
+      "currency": "NGN",
+      "direction": "debit",
+      "status": "pending",
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:00.000Z"
+    },
+    {
+      "id": "a7b8c9d0-e1f2-4345-8a16-789012345678",
+      "transaction_id": "e5f6a7b8-c9d0-4123-8ef4-567890123456",
+      "account_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "amount": 50000,
+      "currency": "NGN",
+      "direction": "credit",
+      "status": "pending",
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "updated_at": "2024-01-15T10:30:00.000Z"
+    }
+  ]
 }
 ```
 
+<Note>
+  `transaction` and `entries` are the raw ledger rows, at the top level rather than under `data`. They are read back before the entries are posted, so both report `"pending"` even though the draw has already settled: read the wallet or the transaction back if you need the final state. The ledger stores amounts as 64-bit integers, so `fee_amount`, `source_amount` and `destination_amount` arrive as strings of smallest units. Unused ledger columns (for example `approved_at`, `transfer_direction`) are present and `null`.
+</Note>
+
 <Warning>
-  The draw amount cannot exceed the `available_balance` of the loan account. Use `/wallet/loans` to check available credit before drawing.
+  The draw cannot take the outstanding balance past the loan account's `credit_limit`. Use [`GET /wallet/loans`](/api-reference/endpoint/wallet/loans) to check the limit and the amount already drawn before drawing.
 </Warning>

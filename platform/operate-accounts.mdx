@@ -26,7 +26,7 @@ curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 The `accountId` is the `id` returned by [Create Account](/api-reference/endpoint/accounts/create) (or [List Accounts](/api-reference/endpoint/accounts/list)). Accounts you create with your tenant key — and customers who onboard themselves through your white-label app — are automatically part of your tenancy.
 
 <Note>
-  There is no need to create per-customer API keys: one tenant key operates the whole book. Keep it server-side and [IP-allowlisted](/concepts/authentication#ip-allowlisting) — every key needs one.
+  There is no need to create per-customer API keys: one tenant key operates the whole book. Keep it server-side and [IP-allowlisted](/concepts/authentication#ip-allowlisting) — a key needs at least one allowlisted IP before it can pay out or transfer.
 </Note>
 
 ## Funding customer accounts
@@ -47,13 +47,13 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -d '{
     "amount": 100000,
     "currency": "NGN",
-    "beneficiaryId": "...",
-    "externalReference": "cust-3f1c-payout-042",
-    "metadata": { "your_user_id": "user_8412" }
+    "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "description": "Customer payout",
+    "metadata": { "your_user_id": "user_8412", "your_payout_id": "cust-3f1c-payout-042" }
   }'
 ```
 
-Beneficiaries are per-account too: create and reuse them under the customer's scope. Use `externalReference` and `metadata` to tie every transaction back to your own records — both come back on responses and [webhooks](/api-reference/webhooks/payloads).
+`description` is required on every withdrawal. Beneficiaries are per-account too: create and reuse them under the customer's scope. Use `metadata` to tie every transaction back to your own records — it comes back verbatim on responses and [webhooks](/api-reference/webhooks/payloads). On USD and other non-NGN bank rails you can also send your own `externalReference`, which is stored on the transaction and is looked up by [Get Transaction](/api-reference/endpoint/wallet/get-transaction); NGN and mobile money payouts get a Rolla-generated reference instead, so `metadata` is the handle that always works.
 
 ## Staying in sync
 

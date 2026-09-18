@@ -28,9 +28,14 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
     "fee_amount": 0,
     "fee_transaction_id": "…",
     "fee_reference": "…",
+    "fee_breakdown": [ ],
     "description": "…",
     "timestamp": "…",
     "beneficiary": { },
+    "virtual_account": { },
+    "payer": { },
+    "payment_rail": "…",
+    "customer_identifier": "…",
     "network": { },
     "metadata": { }
   }
@@ -59,10 +64,11 @@ Every webhook has the same envelope. Transaction details live under `data`. The 
 | `data.exchange_rate` | The effective rate for the conversion, computed as `destination_amount / source_amount` (destination per source, in minor units) — the same convention as the external [transactions API](/api-reference/endpoint/transactions). Present only for **FX** transactions (source and destination currencies differ); **omitted** otherwise. |
 | `data.fee_amount` | Fee applied, in **minor units**. Always the authoritative fee for the transaction, whichever account pays it. |
 | `data.fee_transaction_id` / `data.fee_reference` | The id and reference (`FEE-XXXXXXXX`) of the separate transaction the fee was booked as, when the fee is charged to another account rather than deducted from this one. **Both omitted** when no separate fee transaction exists, which is the ordinary case — treat them as optional. See [Fees paid by another account](#fees-paid-by-another-account). |
+| `data.fee_breakdown` | How `fee_amount` splits between the parties that earned it, as an array of `{ party, amount, transaction_id, reference }`. Present only when a white-label partner charged a margin on top of Rolla's fee; **omitted** otherwise. `fee_amount` is still the authoritative total — this only says where each part went. |
 | `data.beneficiary` | Beneficiary details — present for **payouts**, **omitted** otherwise (see below). Only fields relevant to the payout are included. |
-| `data.virtual_account` | The destination virtual account a **deposit** was paid into — present for **deposits**, **omitted** for payouts. Lets you reconcile the deposit to a specific account. Same shape as the [`account.virtual_account.created`](/api-reference/webhooks/events) payload (see below). |
+| `data.virtual_account` | The destination virtual account a **deposit** was paid into — present for **deposits**, **omitted** for payouts. Lets you reconcile the deposit to a specific account. See [the `virtual_account` object](#the-virtual_account-object-deposits) below; it is close to, but not identical with, the object on [`account.virtual_account.created`](/api-reference/webhooks/events). |
 | `data.payer` | The sender/originator of a **deposit** — present for **deposits** when the provider supplies sender details, and on the receiving side of a [Rolla transfer](/api-reference/endpoint/wallet/transfer); **omitted** for payouts. See below for availability by rail. |
-| `data.payment_rail` | Which rail an incoming **deposit** arrived on — `ach`, `wire_domestic` or `wire_international`. Present on **USD bank deposits** once the provider reports the transfer method, and on sandbox [simulated deposits](/api-reference/endpoint/accounts/simulate-deposit#choosing-the-rail); **omitted** otherwise, and never present on payouts. Not to be confused with `data.rail` above, which is `fiat` or `stablecoin`. See [Which rail a deposit arrived on](#which-rail-a-deposit-arrived-on). |
+| `data.payment_rail` | Which rail an incoming **deposit** arrived on — `ach`, `wire_domestic`, `wire_international` or `mobile_money`. Present once the provider reports the transfer method, which in practice means **USD bank deposits** and mobile money collections, and on sandbox [simulated deposits](/api-reference/endpoint/accounts/simulate-deposit#choosing-the-rail); **omitted** otherwise, and never present on payouts. Not to be confused with `data.rail` above, which is `fiat` or `stablecoin`. See [Which rail a deposit arrived on](#which-rail-a-deposit-arrived-on). |
 | `data.network` | On-chain details — present only for genuinely **on-chain** transactions (a real chain and/or wallet address). `chain` is the full network name (`Solana`); `tx_hash` is the on-chain transaction hash. **Omitted** for transactions with no on-chain leg — including stablecoin-funded payouts that settle to a fiat bank (e.g. a USDT → USD wire). |
 | `data.customer_identifier` | Present **only** for deposits into a **customer** (per-end-user) virtual account — the identifier you set when creating the account via [Generate Customer Virtual Account](/api-reference/endpoint/wallet/virtual-accounts-generate-customer). Use it to attribute the deposit to the specific end-user the account belongs to. **Omitted** for every other transaction (regular deposits and all payouts). |
 | `data.metadata` | Any metadata you supplied when creating the transaction — a [payout](/api-reference/endpoint/wallet/withdraw#attaching-your-own-metadata) or a [Rolla transfer](/api-reference/endpoint/wallet/transfer#attaching-your-own-metadata). Returned exactly as you sent it; **omitted** when you supplied none. On a transfer's receiving side it appears only when both accounts share an owner |
@@ -130,21 +136,36 @@ Looking the fee transaction up over REST (`GET /wallet/transactions`) returns it
 
 Drawn from this whitelisted set — but only the fields **relevant to the payout** are returned. Empty/`null` fields are omitted, so a fiat bank payout returns bank-account fields (no wallet fields), while a crypto payout returns wallet fields (no bank fields). Internal fields (your `business_id`, row timestamps) are never included.
 
-`id` · `account_name` · `account_number` · `bank_name` · `bank_code` · `bank_address` · `currency` · `withdrawal_method` · `routing_number` · `swift_code` · `iban` · `bic` · `sort_code` · `intermediary_bank_name` · `intermediary_bank_routing_number` · `wallet_address` · `wallet_chain` · `email` · `contact_person` · `label` · `beneficiary_address`
+`id` · `account_name` · `account_number` · `bank_name` · `bank_code` · `bank_address` · `currency` · `withdrawal_method` · `routing_number` · `swift_code` · `iban` · `bic` · `sort_code` · `intermediary_bank_name` · `intermediary_bank_routing_number` · `account_owner_type` · `account_category` · `wallet_address` · `wallet_chain` · `email` · `contact_person` · `label` · `beneficiary_address`
 
 <Note>
-  `wallet_chain` is the full network name (`Solana`). Inside `bank_address` / `beneficiary_address`, `country` is the full country name (e.g. `Côte d'Ivoire`, not `CI`). **A present `id` means the payout went to a saved beneficiary** (it's the beneficiary's UUID). One-time (inline) beneficiaries have **no `id` field at all** — use its absence to detect them.
+  `wallet_chain` is the full network name (`Solana`). Inside `bank_address` / `beneficiary_address`, `country` is the full country name (e.g. `Côte d'Ivoire`, not `CI`). **A present `id` means the payout went to a saved beneficiary** (it's the beneficiary's UUID). One-time (inline) beneficiaries have **no `id` field at all** — use its absence to detect them. `withdrawal_method` is the one field that is never dropped: it is returned as `null` when no rail was set (an NGN local transfer), because "not set" and "not applicable" mean different things for a payout.
 </Note>
 
 ### The `virtual_account` object (deposits)
 
-The destination account a deposit was received into. For a bank (fiat) deposit: `id` (the virtual account's Rolla id), `currency`, `method` (`bank_transfer`), `provider`, `bank_name`, `account_number`, `account_name`, and — when the account has them — `routing_number` / `swift_code`. For a stablecoin deposit: `id`, `currency`, `method` (`crypto`), `provider`, `wallet_address`, `network`. Empty fields are omitted.
+The destination account a deposit was received into. `method` is always present and says which shape to expect; every other field is dropped when empty.
+
+| `method` | Fields |
+|---|---|
+| `bank_transfer` | `id` (the virtual account's Rolla id), `currency`, `bank_name`, `account_number`, `account_name`, plus `routing_number` / `swift_code` when the account has them, and `reference` / `label` when you set your own id and name on it |
+| `crypto` | `id`, `currency`, `wallet_address`, `network` |
+| `mobile_money` | `id`, `currency`, `provider` (the mobile money operator), `phone_number`, `account_name` — this is the customer's own wallet the money came from, not an account Rolla issued |
+
+<Note>
+  The object on a **deposit** carries no `provider` and no `status` (except the operator name on the
+  `mobile_money` shape). The `virtual_account` on
+  [`account.virtual_account.created`](#sample-virtual-account-created) is a different, slightly wider
+  object: it does carry `provider` (always `rolla`) and `status`. Don't assume one from the other.
+</Note>
 
 ### The `payer` object (deposits)
 
 Who sent the deposit, as reported by the provider. Fields: `name`, `account_number`, `bank_name`, `country` — only the ones the provider supplies are included, so availability varies by rail:
 
-- **USD** — `name`, `account_number`, `bank_name` and `country` as the sending rail reports them.
+- **USD** — always `name` and `account_number`; `bank_name` and `country` are included when the
+  sending rail reports them.
+- **NGN** — `name`, `account_number` and `bank_name` from the NIP transfer; `country` is not reported.
 - **Rolla transfer (receiving side)** — `name` is the sending account's name and `bank_name` is `"Rolla"`. The sender's email is never included.
 - **Sandbox simulated USD deposit** — `name` only: the `sender_name` you passed, or `"Sandbox Sender"` when you omitted it.
 
@@ -152,13 +173,14 @@ Who sent the deposit, as reported by the provider. Fields: `name`, `account_numb
 
 ### Which rail a deposit arrived on
 
-`payment_rail` tells you how an incoming USD payment reached the account, so you can reconcile per channel instead of parsing the narration.
+`payment_rail` tells you how an incoming payment reached the account, so you can reconcile per channel instead of parsing the narration.
 
 | Value | Meaning |
 |-------|---------|
 | `ach` | US domestic ACH |
 | `wire_domestic` | US domestic wire (Fedwire) |
 | `wire_international` | International wire — this is the **SWIFT** case |
+| `mobile_money` | A mobile money collection (e.g. GHS wallet funding) |
 
 ```json
 "payment_rail": "wire_international"

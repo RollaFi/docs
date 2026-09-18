@@ -21,13 +21,15 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize
 | `search` | string | Search by name or email |
 | `status` | string | Filter by status: `active`, `inactive` |
 
+Members are returned newest first. `invite_status` is `pending` until the member accepts the invitation, then `accepted` (or `declined` if they refuse). `role` and `role_id` are `null` for a member who has no role assigned.
+
 ## Example Response
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Team members retrieved successfully",
+  "success": true,
   "data": {
     "members": [
       {
@@ -35,7 +37,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize
         "email": "jane@example.com",
         "fullname": "Jane Doe",
         "role": "initiator",
-        "role_id": "c3d4e5f6-7890-abcd-ef12-34567890abcd",
+        "role_id": "21302ed1-0e63-44e6-bb02-8db6baa2efcd",
         "status": "active",
         "invite_status": "accepted",
         "is_owner": false,
@@ -45,7 +47,8 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/members?page=1&pageSize
     "pagination": {
       "page": 1,
       "pageSize": 10,
-      "total": 3
+      "total": 3,
+      "totalPages": 1
     }
   }
 }

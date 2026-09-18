@@ -16,7 +16,7 @@ curl "https://api.rolla.xyz/api/v1/external/banks" \
   -H "X-API-Key: your_api_key_here"
 ```
 
-Keys are created in the [Rolla Dashboard](https://app.rolla.xyz) under **Settings → API Keys**, and every key must be locked to at least one allowlisted IP address — that applies across the board, not just to payouts.
+Keys are created in the [Rolla Dashboard](https://app.rolla.xyz) under **Settings → API Keys**. A key needs at least one allowlisted IP address before it can send payouts or transfers, and once a key has an allowlist it is enforced across the board, not just on the money-moving endpoints.
 
 See [Authentication](/concepts/authentication) for key management and security guidance.
 
@@ -48,7 +48,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/funding-
 
 ## Response format
 
-Successful responses carry `success: true` with the payload under `data`; errors carry the HTTP code and a message:
+Successful responses open with `status`, `message` and `success: true`, in that order, and most then nest the payload under `data` — check the endpoint's own page, since a few return it at the top level instead. Errors carry the HTTP code and a message, and never a `success` field:
 
 <CodeGroup>
 
@@ -78,11 +78,11 @@ Unless a route documents otherwise, numeric `amount` fields use each currency's 
 
 ## Pagination
 
-List endpoints that paginate take `page` and `pageSize` (max `100`) and return `totalCount`, `totalPages`, and `hasMore` alongside the rows. See [Pagination](/concepts/pagination).
+List endpoints that paginate take `page` and `pageSize` (max `100` on most endpoints). The counters come back in one of two shapes — flat inside `data` as `totalCount`/`page`/`pageSize`/`totalPages`, or nested under a `pagination` object that names the total `total`. Only the two account listings also return `hasMore`. See [Pagination](/concepts/pagination).
 
 ## Idempotency
 
-There is no global idempotency header; money-moving requests should follow the lookup-before-retry pattern with your own `externalReference`. See [Idempotency & Retries](/concepts/idempotency).
+There is no global idempotency header; money-moving requests should follow the lookup-before-retry pattern with your own `externalReference` — except on NGN and mobile money payouts, where Rolla mints the reference instead. See [Idempotency & Retries](/concepts/idempotency).
 
 ## Webhooks
 

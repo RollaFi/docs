@@ -3,15 +3,15 @@ title: 'Upload Document'
 openapi: 'POST /kyb/documents'
 ---
 
-Upload a document for a KYB application. This endpoint accepts `multipart/form-data` with the document file and metadata.
+Upload a document for a KYB application. The endpoint takes `multipart/form-data` with the file and its metadata, and the application must belong to your account.
 
 ## Example Request
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/kyb/documents" \
   -H "X-API-Key: your_api_key_here" \
-  -F "file=@/path/to/certificate.pdf" \
-  -F "applicationId=f6a7b8c9-d0e1-2345-fghi-678901234567" \
+  -F "file=@/path/to/certificate-of-incorporation.pdf" \
+  -F "applicationId=3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10" \
   -F "documentType=certificate_of_incorporation"
 ```
 
@@ -19,30 +19,93 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/kyb/documents" \
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `file` | file | Yes | The document file to upload |
+| `file` | file | Yes | The document to upload. Up to 50MB |
 | `applicationId` | string | Yes | KYB application ID |
-| `documentType` | string | Yes | Type of document being uploaded |
-| `relatedPersonKey` | string | No | Related person identifier (for person-specific documents) |
+| `documentType` | string | Yes | One of the document types below |
+| `relatedPersonKey` | string | No | The `id` of a related person, when the document belongs to that director or beneficial owner |
+
+## Document types
+
+`certificate_of_incorporation`, `articles_of_association`, `proof_of_address`, `source_of_wealth_doc`, `director_register`, `shareholder_register`, `proof_of_tax_id`, `bank_statement`, `wolfsberg_questionnaire`, `msb_flow_form`, `flow_of_funds_diagram`, `aml_policy_procedures`, `ach_procedures`, `wire_procedures`, `customer_complaint_procedures`, `prohibited_jurisdictions_industries`.
+
+<Warning>
+  One document is kept per type. Uploading the same `documentType` again (for the same related person, or for the business when `relatedPersonKey` is omitted) deletes the file already stored under it.
+</Warning>
 
 ## Example Response
 
+The response is the whole application with its documents, so you can see the new file in place without a second call.
+
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Document uploaded successfully",
+  "success": true,
   "data": {
-    "document": {
-      "id": "a7b8c9d0-e1f2-3456-ghij-789012345678",
-      "applicationId": "f6a7b8c9-d0e1-2345-fghi-678901234567",
-      "documentType": "certificate_of_incorporation",
-      "fileName": "certificate.pdf",
-      "fileUrl": "https://storage.rolla.xyz/documents/certificate.pdf",
-      "created_at": "2024-01-15T10:30:00.000Z"
-    }
+    "application": {
+      "id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+      "invite_id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
+      "current_step": 4,
+      "is_complete": false,
+      "status": "draft",
+      "business_info": {
+        "legalName": "Acme Corp Ltd",
+        "tradingName": "Acme",
+        "businessType": "Limited Company",
+        "incorporationDate": "2020-01-15",
+        "incorporationCountry": "NG",
+        "registrationNumber": "RC-1234567",
+        "taxId": "12345678-0001"
+      },
+      "business_address": {
+        "street": "123 Main Street",
+        "city": "Lagos",
+        "state": "Lagos",
+        "postalCode": "100001",
+        "country": "NG"
+      },
+      "contact_info": {
+        "email": "contact@acmecorp.com",
+        "phone": "+2341234567890"
+      },
+      "related_persons": [],
+      "banking_info": null,
+      "entity_type": "business",
+      "individual_info": null,
+      "flagged_fields": [],
+      "change_request_note": null,
+      "change_requested_at": null,
+      "rejection_reason": null,
+      "created_at": "2026-08-20T09:12:44.000Z",
+      "updated_at": "2026-09-14T10:41:03.000Z"
+    },
+    "documents": [
+      {
+        "id": "8d41c6b2-90e5-4f37-b1a9-2c6de4f80a13",
+        "kyb_application_id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+        "document_type": "certificate_of_incorporation",
+        "file_name": "certificate-of-incorporation.pdf",
+        "file_path": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10/certificate_of_incorporation/certificate-of-incorporation_1789041164000.pdf",
+        "file_size": 284122,
+        "mime_type": "application/pdf",
+        "is_required": false,
+        "uploaded_at": "2026-09-14T11:02:10.000Z"
+      }
+    ]
   }
 }
 ```
 
 <Note>
-  Use the `relatedPersonKey` field when uploading documents for specific directors or beneficial owners (e.g., ID documents, proof of address).
+  Use `relatedPersonKey` for documents that belong to a specific director or beneficial owner (ID document, proof of address). Those files are stored under `<applicationId>/related-persons/<relatedPersonKey>/<documentType>/`, which is how you tell them apart in the `documents` array.
 </Note>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `400` | `No file uploaded`, `Application ID is required` or `Document type is required` |
+| `401` | API key missing, invalid or inactive |
+| `403` | The application belongs to another account |
+| `404` | `Application not found` |
+| `500` | The file could not be stored (`Failed to upload file to storage`) |

@@ -18,35 +18,41 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Bank accounts retrieved successfully",
+  "success": true,
   "data": {
     "bankAccounts": [
       {
         "id": "7f3a2b10-91c4-4f3b-b1d2-0a8e44c10a55",
         "currency": "NGN",
-        "provider": "rolla",
         "bankName": "Guaranty Trust Bank",
         "accountNumber": "1238726395",
         "accountName": "Beta Logistics LLC",
+        "routingNumber": null,
+        "swiftCode": null,
+        "bankAddress": null,
         "type": "static",
         "status": "active",
         "reference": null,
         "label": null,
+        "expiresAt": null,
         "createdAt": "2026-06-13T01:50:00.000Z"
       },
       {
-        "id": "b2c7d918-4e10-4b6a-8d55-1f0a9c3e77b2",
+        "id": "c81f0a44-2d6e-4a5b-9c31-77b0e2d1f904",
         "currency": "USD",
-        "provider": "rolla",
         "bankName": "Lead Bank",
         "accountNumber": "8823410077",
         "accountName": "Beta Logistics LLC",
         "routingNumber": "021000021",
+        "swiftCode": "LEADUS33",
+        "bankAddress": null,
         "type": "static",
         "status": "active",
         "reference": "store-amazon-uk",
         "label": "Amazon UK",
+        "expiresAt": null,
         "createdAt": "2026-06-14T09:22:11.000Z"
       }
     ],
@@ -65,4 +71,6 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `currency` | string | No | Filter by `NGN` or `USD` |
+| `currency` | string | No | Filter by `NGN` or `USD`. Any other value returns `400` with `"message": "Validation failed"` |
+
+`usdOnboarding` lists USD provider onboarding that is not yet active, one entry per provider still in review, and is empty once the USD account is live. It is only populated when `currency` is omitted or `USD`.

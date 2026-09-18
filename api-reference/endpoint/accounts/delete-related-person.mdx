@@ -16,10 +16,14 @@ curl -X DELETE "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-437
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Related person deleted successfully",
-  "data": {
-    "success": true
-  }
+  "success": true
 }
 ```
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `404` | Account not found, or no related person with that `personId` is on its application (`Related person not found`) |

@@ -3,7 +3,7 @@ title: 'Swap Currency'
 openapi: 'POST /wallet/swap'
 ---
 
-Swap funds from one currency to another at the current exchange rate. Use a `rateToken` from the `/wallet/rates` endpoint to lock in a specific rate.
+Swap funds from one currency to another at the current exchange rate. Use a `rateToken` from the `/wallet/rates` endpoint to lock in a specific rate. `fromAmount` is a whole number of the smallest unit of `fromCurrency` (cents for USD, kobo for NGN), and the amounts on the returned transaction are in smallest units too.
 
 ## Example Request
 
@@ -16,7 +16,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/swap" \
     "toCurrency": "NGN",
     "fromAmount": 1000,
     "description": "Convert USD to NGN",
-    "rateToken": "rt_abc123def456"
+    "rateToken": "eyJhbGci..."
   }'
 ```
 
@@ -25,23 +25,23 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/swap" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Swap completed successfully",
+  "success": true,
   "data": {
     "transaction": {
-      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "id": "1f2a3b4c-5d6e-4f70-8a91-b2c3d4e5f607",
       "transaction_type": "swap",
       "status": "completed",
       "description": "Convert USD to NGN",
-      "external_reference": null,
+      "external_reference": "SWAP_1705314600000",
       "fee_amount": 0,
       "source_amount": 1000,
       "destination_amount": 1405399,
       "source_currency": "USD",
       "destination_currency": "NGN",
-      "exchange_rate": 1405.3992,
+      "exchange_rate": 1405.399,
       "created_at": "2024-01-15T10:30:00.000Z",
-      "updated_at": "2024-01-15T10:30:05.000Z"
+      "updated_at": "2024-01-15T10:30:00.000Z"
     }
   }
 }

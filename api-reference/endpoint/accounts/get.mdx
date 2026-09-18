@@ -16,41 +16,82 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-a
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Account retrieved successfully",
+  "success": true,
   "data": {
     "account": {
       "id": "b6075be0-f1d0-451f-a468-3e94563101d2",
       "name": "Jane Doe",
-      "email": "owner@example.com",
+      "email": "jane.doe@example.com",
       "entityType": "individual",
       "createdAt": "2026-06-12T23:30:43.040Z"
     },
     "application": {
       "id": "f436daf8-146b-4949-bf28-9b36440085a4",
+      "invite_id": "b6075be0-f1d0-451f-a468-3e94563101d2",
+      "entity_type": "individual",
       "status": "submitted",
       "current_step": 3,
       "is_complete": true,
-      "entity_type": "individual",
+      "business_info": null,
+      "business_address": null,
+      "contact_info": null,
+      "banking_info": null,
+      "related_persons": null,
       "individual_info": {
         "firstName": "Jane",
         "lastName": "Doe",
         "phone": "+2348012345678",
         "dateOfBirth": "1990-05-14",
-        "citizenship": "NG"
-      }
+        "citizenship": "NG",
+        "countryOfResidence": "NG",
+        "nin": "12345678901",
+        "bvn": "22212345678",
+        "address": {
+          "street": "12 Marina Rd",
+          "line2": "Suite 4",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "101241",
+          "country": "NG"
+        },
+        "employment": {
+          "status": "self-employed",
+          "employerName": "Acme Trading Ltd",
+          "sourceOfWealth": "business_income",
+          "annualIncome": "50k-100k"
+        }
+      },
+      "change_request_note": null,
+      "flagged_fields": [],
+      "created_at": "2026-06-12T23:30:43.040Z",
+      "updated_at": "2026-06-13T09:14:02.117Z"
     },
     "documents": [
       {
         "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
+        "kyb_application_id": "f436daf8-146b-4949-bf28-9b36440085a4",
         "document_type": "proof_of_address",
         "file_name": "bank_statement.pdf",
-        "mime_type": "application/pdf"
+        "file_path": "f436daf8-146b-4949-bf28-9b36440085a4/proof_of_address/bank_statement_1781304842117.pdf",
+        "file_size": 284119,
+        "mime_type": "application/pdf",
+        "is_required": true,
+        "uploaded_at": "2026-06-13T09:14:02.117Z"
       }
     ]
   }
 }
 ```
+
+<Note>
+  `application` is the stored application row, so its keys are snake_case and the sections that
+  do not apply to the account's `entity_type` come back as `null` — a business account carries
+  `business_info`, `business_address`, `contact_info`, `banking_info` and `related_persons`, an
+  individual account carries `individual_info`. Documents are listed for the whole application;
+  a related person's documents carry their id in `file_path`.
+</Note>
 
 <Tip>
   Application `status` moves from `draft` → `submitted` → `approved` (or `changes_requested` / `rejected`). When changes are requested, the application becomes editable again and `change_request_note` explains what needs fixing.

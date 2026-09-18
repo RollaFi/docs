@@ -23,7 +23,7 @@ Every account you create belongs to the same owner as the business your API key 
 
 <Steps>
   <Step title="Create the account">
-    `POST /accounts` with `type: "business"` and the business name. You get back an `accountId` and a draft application.
+    `POST /accounts` with `type: "business"`, the business name and the account's own email. You get back the new account's `id` (use it as `accountId` below) and a draft application.
   </Step>
   <Step title="Fill in business details">
     `PUT /accounts/{accountId}/business` with `business_info`, `business_address`, `contact_info` and optionally `banking_info`. Sections merge, so you can save progress across multiple calls.
@@ -45,7 +45,7 @@ Every account you create belongs to the same owner as the business your API key 
 
 <Steps>
   <Step title="Create the account">
-    `POST /accounts` with `type: "individual"`.
+    `POST /accounts` with `type: "individual"` and the account's own email.
   </Step>
   <Step title="Fill in personal details">
     `PUT /accounts/{accountId}/individual` with personal information, residential address and employment details.
