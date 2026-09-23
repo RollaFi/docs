@@ -8,7 +8,7 @@ Create a permanent NGN virtual account dedicated to **one of your end-users**. E
 The provider requires the end-user's **BVN**, **name** and **date of birth** to open a dedicated personal account.
 
 <Info>
-This endpoint is **idempotent per `customer_identifier`**. Re-requesting for the same customer returns the account already on file (HTTP `200`, `existing: true`) rather than creating a duplicate. Use a **new** `customer_identifier` to create a **new** account for a different user.
+This endpoint is **idempotent per `customer_identifier`**. Re-requesting for the same customer returns the account already on file rather than creating a duplicate: HTTP `200` with `"message": "Customer virtual account already exists for this customer_identifier"` and `existing: true`, against HTTP `201` and `existing: false` when a new account is minted. Use a **new** `customer_identifier` to create a **new** account for a different user.
 </Info>
 
 ## `customer_identifier`
@@ -53,8 +53,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/gene
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Customer virtual account generated successfully",
+  "success": true,
   "data": {
     "virtualAccount": {
       "id": "9632c120-3c98-4a1c-baf2-47c17a079802",

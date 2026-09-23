@@ -28,16 +28,27 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/lookup" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Account details retrieved successfully",
+  "success": true,
   "data": {
     "accountNumber": "0123456789",
     "accountName": "JOHN DOE",
     "bankCode": "000014",
-    "bankName": "Access Bank"
+    "bankName": "Access Bank",
+    "bvn": "",
+    "accountNameVerified": true
   }
 }
 ```
+
+`accountNameVerified` is always `true` here: `accountName` is the name NIP's name enquiry returned
+for the account, not a name you supplied. `bvn` is always an empty string: the BVN is deliberately
+stripped from the lookup result, and the field is kept only so existing integrations keep parsing.
+
+An account number that no bank recognises returns `404` with
+`"Account not found. Please verify the account number and bank are correct."`, and a missing
+`bankCode` or `accountNumber` returns `400` with `"Bank code is required"` or
+`"Account number is required"`.
 
 <Warning>
   Always verify the account name with your user before initiating a payout. Incorrect details may result in failed or misdirected payments.

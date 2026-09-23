@@ -14,11 +14,13 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/beneficiaries/nigerian-banks"
 
 ## Example Response
 
+The full list (several hundred banks and microfinance banks) is returned in one response with no paging.
+
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Banks retrieved successfully",
+  "success": true,
   "data": {
     "banks": [
       { "bankName": "Access Bank", "bankCode": "000014" },

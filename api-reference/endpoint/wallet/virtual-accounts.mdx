@@ -3,7 +3,7 @@ title: 'List Virtual Accounts'
 openapi: 'GET /wallet/virtual-accounts'
 ---
 
-Retrieve virtual accounts for receiving payments. Filter by currency, account type, or integration type.
+Retrieve the active virtual accounts your business can receive payments into. Filter by currency or account type.
 
 ## Example Request
 
@@ -16,16 +16,16 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts?curre
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `currency` | string | Filter by 3-letter currency code |
-| `virtualAccountType` | string | Filter by type: `static` or `dynamic` |
+| `currency` | string | Filter by currency code, 3 or 4 characters (for example `NGN`, `USD`, `USDT`). Matched case-insensitively. |
+| `virtualAccountType` | string | Filter by type: `static` or `dynamic`. Defaults to `static` when omitted, so dynamic accounts are only returned when you ask for them. |
 
 ## Example Response
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Virtual accounts retrieved successfully",
+  "success": true,
   "data": {
     "virtualAccounts": [
       {
@@ -41,6 +41,8 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts?curre
   }
 }
 ```
+
+Fields that are empty for an account are left out, so a fiat account carries bank details while a crypto account carries `wallet_address`, `wallet_chain` and `stablecoin_type` instead. USD accounts also carry `routing_number`, `swift_code` and `bank_address`, and a dynamic account carries `expires_at`.
 
 <Info>
   **Static** virtual accounts are permanent and can receive multiple payments. **Dynamic** virtual accounts are created for a specific amount and expire after use.

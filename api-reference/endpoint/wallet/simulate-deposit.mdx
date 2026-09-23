@@ -26,12 +26,12 @@ Send **exactly one** of the following. The account must belong to your business.
 | `account_number` | string | Conditional | The account number of any of your virtual accounts. Provide this **or** `customer_identifier`, not both. |
 | `amount` | string | Yes | Deposit amount in major units of the account currency (e.g. Naira). Must be **greater than the pay-in fee** on the account, otherwise the request is rejected. |
 | `sender_name` | string | No | Name to record as the sender on the transaction (appears in the webhook's sender snapshot). |
-| `provider` | string | No | Sandbox only. Overrides which payment rail the simulated deposit is tagged against. Omit to inherit the target account's own rail — recommended, and the closest match to a real deposit. |
+| `provider` | string | No | Sandbox only. Overrides which payment rail the simulated deposit is tagged against: one of `HABARI`, `NOMBA`, `VFD`, `NETMFB`. Omit to inherit the target account's own rail — recommended, and the closest match to a real deposit. |
 
 ## Example Request — by `customer_identifier`
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -44,7 +44,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simu
 ## Example Request — by `account_number`
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
@@ -58,8 +58,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simu
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Simulated deposit created",
+  "success": true,
   "data": {
     "transactionId": "8f2a1d64-9c11-4b7e-b3a0-2b5f0c9a77e1",
     "externalReference": "sim_2f1c9e3a-4d6b-4f2a-9c88-7a1e5b3d0c42",
@@ -71,6 +71,19 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simu
 }
 ```
 
+`customer_identifier` is echoed only when you targeted the account that way; a request by `account_number` omits it. `status` is the transaction's own status, `completed` once the deposit has been posted.
+
+An account number or customer identifier that does not match an **active** virtual account of yours returns `404`, rather than crediting anything:
+
+```json
+{
+  "status": 404,
+  "message": "No active virtual account found for account_number \"9999999999\" under this business"
+}
+```
+
+A body that fails validation, such as neither or both targeting fields or a non-numeric `amount`, returns `400` with `"message": "Validation failed"` and an `errors` array.
+
 ## What happens
 
 1. The deposit is routed through the **same crediting path a real provider deposit uses** — your wallet is credited (net of the pay-in fee) and the deposit is tagged with the account's provider.
@@ -78,7 +91,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simu
 3. For a **customer** virtual account, the webhook payload includes the `customer_identifier`, so you can attribute the deposit to the right end-user. See [Webhook Payloads](/api-reference/webhooks/payloads).
 
 <Note>
-  `amount` must be **greater than the pay-in fee** on the account. A smaller amount is rejected with `400 "Deposit amount is too small — it must be greater than the pay-in fee configured on this account."` — retry with a larger amount.
+  `amount` must be **greater than the pay-in fee** on the account. A smaller amount is rejected with `400` and the message `Deposit amount is too small — it must be greater than the payin fee configured on this account. Try a larger amount.`
 </Note>
 
 <Info>

@@ -13,7 +13,7 @@ Every `amount` field on the API — in requests **and** responses — is an inte
 | USD | cent | `100` = \$1.00 |
 | USDC / USDT | cent | `100` = 1.00 |
 
-A fractional or zero amount is rejected with a validation error (`amount must be a whole number of smallest currency units`). This keeps money arithmetic exact — no floating point.
+A fractional amount is rejected with `400 amount must be a whole number of smallest currency units (e.g. cents)`, and anything below `1` with `400 amount must be at least 1 in the smallest currency unit`. This keeps money arithmetic exact — no floating point.
 
 <Note>
   A handful of currencies have no minor unit at all — JPY, KRW, XAF, and XOF among them. For those, the "smallest unit" is just the currency unit itself: `1000` XAF is 1,000 francs, not 10.

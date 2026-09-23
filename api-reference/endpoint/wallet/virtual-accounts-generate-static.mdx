@@ -21,8 +21,8 @@ No request body required.
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Static virtual account generated successfully",
+  "success": true,
   "data": {
     "virtualAccount": {
       "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
@@ -38,9 +38,9 @@ No request body required.
 ```
 
 <Warning>
-  Only one static virtual account can exist per business. This endpoint will return an error if one already exists. Use the [Get Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts) endpoint to check first.
+  Only one static virtual account can exist per business on a given provider. If one already exists the call returns `400` with a message naming the provider, for example `"NOMBA virtual account already exists for this business"`. Use the [List Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts) endpoint to check first.
 </Warning>
 
 <Note>
-  Your business KYB must be approved before a static virtual account can be generated. Account details are automatically derived from your KYB application.
+  Your business KYB must be approved before a static virtual account can be generated: an unapproved business gets `400 "KYB application is not yet approved or still pending review"`. Account details are automatically derived from your KYB application.
 </Note>

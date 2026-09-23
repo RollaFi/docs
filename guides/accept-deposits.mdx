@@ -60,7 +60,7 @@ Once a deposit lands, you'll get a webhook like this:
 `amount` is in cents, so `500000` = $5,000.00.
 
 <Tip>
-  Testing without a real wire? [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) credits your USD wallet through the same webhook path. Pass `sender_name` and `payment_rail` (`ach`, `fedwire` or `swift`) to test payer and per-rail reconciliation.
+  Testing without a real wire? [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit) credits your USD wallet through the same webhook path. Pass `sender_name` and `payment_rail` (`ach`, `fedwire` or `swift`) to test payer and per-rail reconciliation. It exists in sandbox only — call it against `https://api-staging.rolla.xyz`; in production it returns `404`.
 </Tip>
 
 ## Accept a local currency deposit (e.g. NGN)
@@ -97,7 +97,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/gene
 Show the returned `account_number` and `bank_name` to your user. Every transfer they make to it lands in **your** wallet, tagged with their `customer_identifier` so you can credit the right user. List them any time with [List Customer Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts-customers).
 
 <Note>
-  Customer virtual accounts require the end user's BVN for KYC. It is stored securely and never returned by the API.
+  Customer virtual accounts require the end user's BVN for KYC, along with their name, date of birth (`mm/dd/yyyy`), address and gender. The raw BVN is never echoed back — responses carry only `bvn_last4`. In sandbox, use the test BVN `22222222222`.
 </Note>
 
 <Info>
@@ -123,7 +123,7 @@ Once a deposit lands, match it by `virtual_account` and `customer_identifier` in
 A deposit can arrive as `transaction.pending` first and complete moments later — treat `transaction.completed` as the signal that funds are spendable.
 
 <Tip>
-  Testing without a real transfer? [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) credits an account by `account_number` or `customer_identifier` and fires the same webhook.
+  Testing without a real transfer? [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) credits an account by `account_number` or `customer_identifier` and fires the same webhook. It exists in sandbox only — call it against `https://api-staging.rolla.xyz`; in production it returns `404`.
 </Tip>
 
 ## Stablecoin deposits

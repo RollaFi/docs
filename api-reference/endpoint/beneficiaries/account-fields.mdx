@@ -11,14 +11,14 @@ to migrate existing beneficiaries before enforcement begins.
 
 | Field | Enum values | Required when |
 |-------|-------------|---------------|
-| `account_owner_type` | `individual`, `business` | Every **bank-account** beneficiary — any fiat method that is not crypto or `rolla_transfer` (NGN bank transfer, `ach`, `domestic_wire`, `international_wire`). **Not applicable** to `crypto_usdt`, `crypto_usdc`, or `rolla_transfer`. |
+| `account_owner_type` | `individual`, `business` | Every **bank-account** beneficiary except NGN — any fiat method that is not crypto, `mobile_money` or `rolla_transfer` (`ach`, `domestic_wire`, `international_wire`). Accepted but not required for NGN. **Not applicable** to `crypto_usdt`, `crypto_usdc`, `mobile_money`, or `rolla_transfer`. |
 | `account_category` | `checking`, `savings` | Only when `currency` is `USD`. If you are not sure, use `checking`. |
 
 Both fields are accepted on [`POST /beneficiaries`](/api-reference/endpoint/beneficiaries/create)
 and [`PATCH /beneficiaries/{beneficiaryId}`](/api-reference/endpoint/beneficiaries/update), and are
 returned on every beneficiary read ([list](/api-reference/endpoint/beneficiaries/list) and
 [get](/api-reference/endpoint/beneficiaries/get)). Legacy records created before this change
-return `null` for these fields until you backfill them.
+omit these fields from the response until you backfill them.
 
 <Info>
   Invalid values are always rejected, even during the grace period. `account_owner_type` must be
@@ -44,7 +44,7 @@ The rollout runs in two phases so existing integrations do not break:
 <Note>
   The exact enforcement date is communicated by email to all MSB and business API clients before
   the grace period begins. It is also surfaced in the `enforcement_date` field of every
-  `deprecation_warning` response.
+  `deprecation_warning` response (`null` until the date has been set).
 </Note>
 
 ### Deprecation warning response
@@ -54,14 +54,14 @@ During the grace period, an incomplete request returns a `2xx` with a warning ap
 ```json
 {
   "status": 201,
-  "success": true,
   "message": "Beneficiary created successfully",
+  "success": true,
   "data": { "...": "..." },
   "deprecation_warning": {
     "code": "BENEFICIARY_FIELDS_REQUIRED_SOON",
-    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries.",
+    "message": "The field(s) account_owner_type will soon be required for beneficiaries. account_owner_type (individual|business) is required for bank-account beneficiaries except NGN; account_category (checking|savings) is required for USD beneficiaries.",
     "missing_fields": ["account_owner_type"],
-    "enforcement_date": "2026-09-01T00:00:00.000Z"
+    "enforcement_date": "2026-12-01T00:00:00.000Z"
   }
 }
 ```
@@ -71,15 +71,14 @@ After enforcement, the same request instead returns:
 ```json
 {
   "status": 400,
-  "success": false,
-  "message": "Missing required field(s): account_owner_type. account_owner_type (individual|business) is required for bank-account beneficiaries; account_category (checking|savings) is required for USD beneficiaries."
+  "message": "Missing required field(s): account_owner_type. account_owner_type (individual|business) is required for bank-account beneficiaries except NGN; account_category (checking|savings) is required for USD beneficiaries."
 }
 ```
 
 ## Migrating existing beneficiaries
 
-1. **List your beneficiaries** and find records where `account_owner_type` is `null`, or where
-   `currency` is `USD` and `account_category` is `null`.
+1. **List your beneficiaries** and find records where `account_owner_type` is absent, or where
+   `currency` is `USD` and `account_category` is absent.
 2. **Backfill each one** with a `PATCH`, sending the missing field(s) alongside the existing
    details:
 
@@ -102,8 +101,9 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
    enforcement.
 
 <Tip>
-  Crypto (`crypto_usdt`, `crypto_usdc`) and `rolla_transfer` beneficiaries do **not** need either
-  field — they are exempt from routing classification.
+  Crypto (`crypto_usdt`, `crypto_usdc`), `mobile_money` and `rolla_transfer` beneficiaries do **not**
+  need `account_owner_type` — they are exempt from routing classification. NGN bank beneficiaries
+  are exempt as well.
 </Tip>
 
 ## Changelog
@@ -111,7 +111,7 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
 <Update label="Beneficiary account classification">
   Added `account_owner_type` (`individual` | `business`) and `account_category`
   (`checking` | `savings`) to the beneficiary create, update, get, and list endpoints.
-  `account_owner_type` is required for all bank-account beneficiaries; `account_category` is
+  `account_owner_type` is required for all bank-account beneficiaries except NGN; `account_category` is
   required for USD beneficiaries. Enforced after a 60-day grace period during which incomplete
   requests receive a `deprecation_warning`.
 </Update>

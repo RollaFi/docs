@@ -14,24 +14,48 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/teams/invite" \
   -d '{
     "email": "jane@example.com",
     "fullname": "Jane Doe",
-    "roleId": "e5f6a7b8-c9d0-1234-efgh-567890123456"
+    "roleId": "21302ed1-0e63-44e6-bb02-8db6baa2efcd"
   }'
 ```
 
 ## Example Response
 
+An existing Rolla user is added to the business and emailed an invitation to accept.
+
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Invitation sent successfully",
+  "success": true,
   "data": {
     "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "email": "jane@example.com",
     "fullname": "Jane Doe",
+    "isNewUser": false
+  }
+}
+```
+
+When the email does not belong to an existing user, an account is created for them, the message changes, and `data` also carries the `magicToken` from the sign-in link they were emailed.
+
+```json
+{
+  "status": 201,
+  "message": "User account created and added to team",
+  "success": true,
+  "data": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "email": "jane@example.com",
+    "fullname": "Jane Doe",
+    "magicToken": "b7f1c2a4d9e84f3ba0c5d6e7f8a9b0c1",
     "isNewUser": true
   }
 }
 ```
+
+<Warning>
+  `magicToken` signs the new user in and sets their password. Treat it as a secret: do not log it or forward it to anyone but the invitee. It expires 48 hours after the invitation is sent.
+</Warning>
 
 <Info>
   The `roleId` is optional and defaults to the **Initiator** role when omitted. Use [`/teams/roles`](/api-reference/endpoint/teams/roles) to get available role IDs — the assignable set is `initiator`, `approver`, and `business_admin` (the `approver` and `business_admin` roles can only be assigned by Business Owners and Business Admins). The `roleId` UUID model itself is unchanged.

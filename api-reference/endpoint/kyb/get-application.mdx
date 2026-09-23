@@ -3,7 +3,9 @@ title: 'Get Application'
 openapi: 'GET /kyb'
 ---
 
-Retrieve the KYB (Know Your Business) application for your business, including business information, address, contact details, and verification status.
+Retrieve the KYB (Know Your Business) application for your account, including business information, address, contact details, declared related persons and review status.
+
+The application is always the one belonging to the API key's own account (or, for a tenant key sending `X-Account-Id`, the account named in that header). If the account has no application row yet, an empty `draft` one is created and returned.
 
 ## Example Request
 
@@ -16,40 +18,77 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb" \
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Application retrieved successfully",
+  "success": true,
   "data": {
-    "application": {
-      "id": "f6a7b8c9-d0e1-2345-fghi-678901234567",
-      "status": "submitted",
-      "current_step": 4,
-      "is_complete": true,
-      "business_info": {
-        "legalName": "Acme Corp Ltd",
-        "tradingName": "Acme",
-        "businessType": "Limited Company",
-        "incorporationDate": "2020-01-15",
-        "incorporationCountry": "NG",
-        "registrationNumber": "RC-1234567",
-        "taxId": "12345678-0001"
-      },
-      "business_address": {
-        "street": "123 Main Street",
-        "city": "Lagos",
-        "state": "Lagos",
-        "postalCode": "100001",
-        "country": "NG"
-      },
-      "contact_info": {
-        "email": "contact@acmecorp.com",
-        "phone": "+2341234567890"
-      },
-      "created_at": "2024-01-10T08:00:00.000Z",
-      "updated_at": "2024-01-15T12:00:00.000Z"
-    }
+    "id": "3f0c2a1e-7b64-4d2e-9a58-1c9f4b7e2d10",
+    "invite_id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
+    "current_step": 5,
+    "is_complete": true,
+    "status": "submitted",
+    "business_info": {
+      "legalName": "Acme Corp Ltd",
+      "tradingName": "Acme",
+      "businessType": "Limited Company",
+      "incorporationDate": "2020-01-15",
+      "incorporationCountry": "NG",
+      "registrationNumber": "RC-1234567",
+      "taxId": "12345678-0001"
+    },
+    "business_address": {
+      "street": "123 Main Street",
+      "city": "Lagos",
+      "state": "Lagos",
+      "postalCode": "100001",
+      "country": "NG"
+    },
+    "contact_info": {
+      "email": "contact@acmecorp.com",
+      "phone": "+2341234567890"
+    },
+    "related_persons": [
+      {
+        "id": "b7e1f4c2-3a58-4d90-8c21-9e4f6a0b5d73",
+        "firstName": "John",
+        "lastName": "Doe",
+        "roles": ["Director", "Beneficial Owner"],
+        "email": "john@acmecorp.com",
+        "phone": "+2341234567890",
+        "dateOfBirth": "1990-01-15",
+        "ownershipPercentage": 60,
+        "currentAddress": {
+          "street": "456 Oak Avenue",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "100001",
+          "country": "NG"
+        },
+        "nin": "12345678901"
+      }
+    ],
+    "banking_info": {
+      "bankName": "Access Bank",
+      "accountNumber": "0123456789",
+      "routingNumber": "000014",
+      "accountType": "checking",
+      "currency": "NGN"
+    },
+    "entity_type": "business",
+    "individual_info": null,
+    "flagged_fields": [],
+    "change_request_note": null,
+    "change_requested_at": null,
+    "rejection_reason": null,
+    "created_at": "2026-08-20T09:12:44.000Z",
+    "updated_at": "2026-09-15T10:30:00.000Z"
   }
 }
 ```
+
+<Note>
+  The payload is the stored application row, so its keys are snake_case while the JSON blocks inside it (`business_info`, `related_persons`, ...) are camelCase. A few reviewer-side columns are also present and are `null` until they apply: `sumsub_registered_ids`, `change_request_history`, `rejected_at`.
+</Note>
 
 ### Application Statuses
 
@@ -58,5 +97,31 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb" \
 | `draft` | Application is incomplete and can be edited |
 | `submitted` | Application has been submitted for review |
 | `approved` | Application has been approved |
-| `rejected` | Application has been rejected |
-| `changes_requested` | Changes have been requested before approval |
+| `rejected` | Application has been rejected. `rejection_reason` carries the reason |
+| `changes_requested` | A reviewer asked for changes. `change_request_note` carries the summary and `flagged_fields` names the fields |
+
+An account whose application has been deactivated, blacklisted or deleted cannot call the API at all: the key is refused with `403` (`code: ACCOUNT_RESTRICTED`) or `401` (`code: ACCOUNT_DOES_NOT_EXIST`) before the request reaches this endpoint.
+
+### Flagged fields
+
+When a reviewer requests changes, `flagged_fields` lists each field they flagged. Resolution is recomputed on every read, so a field you have since edited comes back with `resolved: true`, and one that no longer applies with `not_applicable: true`.
+
+```json
+{
+  "key": "business_info.registrationNumber",
+  "label": "Registration number",
+  "section": "business_info",
+  "feedback": "This does not match the certificate of incorporation",
+  "value_snapshot": "RC-1234567",
+  "flagged_at": "2026-09-10T14:22:00.000Z",
+  "resolved": false
+}
+```
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `401` | API key missing, invalid or inactive |
+| `403` | API access is disabled for the account, or the account is restricted (`code: ACCOUNT_RESTRICTED`) |
+| `500` | `Failed to load application` |

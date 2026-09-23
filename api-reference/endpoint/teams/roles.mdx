@@ -5,7 +5,7 @@ openapi: 'GET /teams/roles'
 
 Retrieve the list of roles available for assignment when inviting team members or assigning a role to an existing member.
 
-The roles returned depend on the caller's own role. Business Owners and Business Admins receive the full assignable set (`initiator`, `approver`, `business_admin`); other roles only see `initiator`. The `business_owner` and `individual_owner` roles are reserved and never returned by this endpoint.
+The roles returned depend on the caller's own role. Business Owners and Business Admins receive the full assignable set (`approver`, `business_admin`, `initiator`); other roles only see `initiator`. The `business_owner` and `individual_owner` roles are reserved and never returned by this endpoint. Roles come back sorted by `name`.
 
 ## Example Request
 
@@ -19,10 +19,15 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Available roles retrieved successfully",
+  "success": true,
   "data": {
     "roles": [
+      {
+        "id": "9a7b6c5d-4e3f-4a1b-8c9d-8e7f6a5b4c3d",
+        "name": "approver",
+        "description": "Can approve transactions and manage beneficiaries, but cannot initiate outbound sends"
+      },
       {
         "id": "fc4cd36d-f81c-4971-a23f-688162e14d21",
         "name": "business_admin",
@@ -31,12 +36,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/teams/roles" \
       {
         "id": "21302ed1-0e63-44e6-bb02-8db6baa2efcd",
         "name": "initiator",
-        "description": "Can initiate transactions including sending money, but cannot approve them."
-      },
-      {
-        "id": "9a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
-        "name": "approver",
-        "description": "Can approve transactions and manage beneficiaries, but cannot initiate outbound sends."
+        "description": "Can initiate transactions including sending money, but cannot approve them"
       }
     ]
   }

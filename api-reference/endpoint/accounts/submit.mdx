@@ -16,24 +16,51 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Application submitted successfully",
+  "success": true,
   "data": {
     "application": {
       "id": "f436daf8-146b-4949-bf28-9b36440085a4",
+      "invite_id": "b6075be0-f1d0-451f-a468-3e94563101d2",
+      "entity_type": "individual",
       "status": "submitted",
+      "current_step": 3,
       "is_complete": true,
-      "entity_type": "individual"
+      "individual_info": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "phone": "+2348012345678",
+        "dateOfBirth": "1990-05-14",
+        "citizenship": "NG"
+      },
+      "change_request_note": null,
+      "flagged_fields": [],
+      "created_at": "2026-06-12T23:30:43.040Z",
+      "updated_at": "2026-06-13T09:31:08.554Z"
     },
     "documents": [
       {
+        "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
+        "kyb_application_id": "f436daf8-146b-4949-bf28-9b36440085a4",
         "document_type": "proof_of_address",
-        "file_name": "bank_statement.pdf"
+        "file_name": "bank_statement.pdf",
+        "file_path": "f436daf8-146b-4949-bf28-9b36440085a4/proof_of_address/bank_statement_1781304842117.pdf",
+        "file_size": 284119,
+        "mime_type": "application/pdf",
+        "is_required": true,
+        "uploaded_at": "2026-06-13T09:14:02.117Z"
       }
     ]
   }
 }
 ```
+
+<Note>
+  A business account's application is returned in the same envelope, with `business_info`,
+  `business_address`, `contact_info`, `banking_info` and `related_persons` in place of
+  `individual_info`, and `current_step` set to `6`.
+</Note>
 
 ## Error Responses
 
@@ -65,11 +92,16 @@ To find out what a submit would return without calling it, read `submitBlocker` 
 
 ### No beneficial owners declared (`400`)
 
+A business that has not declared anyone is reported through the same
+`APPLICATION_INCOMPLETE` body, with the bare `related_persons` entry in `missingFields`:
+
 ```json
 {
   "status": 400,
-  "message": "A business must declare at least one beneficial owner or director before submission",
-  "code": "BENEFICIAL_OWNERS_REQUIRED"
+  "message": "Application is incomplete",
+  "code": "APPLICATION_INCOMPLETE",
+  "missingFields": ["related_persons"],
+  "missingDocuments": []
 }
 ```
 
@@ -99,6 +131,18 @@ To find out what a submit would return without calling it, read `submitBlocker` 
   ]
 }
 ```
+
+### Already submitted or approved (`409`)
+
+```json
+{
+  "status": 409,
+  "message": "Application already submitted"
+}
+```
+
+An application that has already been approved returns the same shape with
+`"message": "Application already approved"`. Neither carries a `code`.
 
 ## Key Behaviours
 

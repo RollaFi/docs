@@ -12,7 +12,7 @@ Retrieve a paginated list of businesses you have referred. Filter by referral st
 ## Example Request
 
 ```bash
-curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referred-businesses?page=1&pageSize=20&status=approved" \
+curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referred-businesses?page=1&pageSize=20&status=completed" \
   -H "X-API-Key: your_api_key_here"
 ```
 
@@ -22,33 +22,41 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referred-businesses?pa
 |-----------|------|-------------|
 | `page` | integer | Page number (default: 1) |
 | `pageSize` | integer | Results per page (default: 20, max: 100) |
-| `status` | string | Filter by status: `started`, `completed`, `created`, `approved` |
+| `status` | string | Filter by onboarding status: `created`, `started`, `completed`, `approved` |
+
+Businesses are returned newest first. `data` is the array of businesses and `pagination` sits beside it at the top level, not inside `data`.
 
 ## Example Response
 
 ```json
 {
+  "status": 200,
+  "message": "Referred businesses fetched successfully",
   "success": true,
-  "message": "Referred businesses retrieved successfully",
-  "data": {
-    "businesses": [
-      {
-        "id": "d4e5f6a7-b8c9-0123-defg-456789012345",
-        "businessName": "Acme Corp Ltd",
-        "email": "contact@acmecorp.com",
-        "status": "approved",
-        "created_at": "2024-01-15T10:30:00.000Z"
-      }
-    ],
-    "pagination": {
-      "page": 1,
-      "pageSize": 20,
-      "total": 15
+  "data": [
+    {
+      "id": "d4e5f6a7-b8c9-4123-9def-456789012345",
+      "name": "Acme Corp Ltd",
+      "email": "contact@acmecorp.com",
+      "status": "completed",
+      "created_at": "2024-01-15T10:30:00.000Z",
+      "application_status": "approved",
+      "negotiation_enabled": false
     }
+  ],
+  "pagination": {
+    "page": 1,
+    "pageSize": 20,
+    "total": 15,
+    "totalPages": 1
   }
 }
 ```
 
 <Tip>
-  The `approved` status means the referred business has completed KYB verification and is active. You will start earning commissions from their transactions.
+  `status` is the business's own onboarding status (`created`, `started`, `completed`, `expired`). The KYB decision is `application_status` (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`, `deactivated`, `blacklisted`, `deleted`), and it is `null` until the business starts a KYB application. Once `application_status` is `approved` the business is live and you start earning commissions from its transactions.
 </Tip>
+
+<Note>
+  The `status` filter is matched against the business's onboarding status, so filtering by `approved` returns no rows. Filter by `completed` and read `application_status` instead.
+</Note>

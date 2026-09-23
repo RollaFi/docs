@@ -3,7 +3,7 @@ title: 'Get Issuance Requirements'
 openapi: 'GET /accounts/{accountId}/bank-accounts/requirements'
 ---
 
-Shows everything needed to issue a bank account for the given currency: which provider will be used, the details prefilled from the account's application, and anything still missing. Whatever is missing can be supplied via `accountData` when calling [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+Shows everything needed to issue a bank account for the given currency: the details prefilled from the account's application, and anything still missing. Whatever is missing can be supplied via `accountData` when calling [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
 
 ## Example Request
 
@@ -18,11 +18,11 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Bank account requirements retrieved successfully",
+  "success": true,
   "data": {
     "currency": "NGN",
-    "provider": "rolla",
     "applicationApproved": true,
     "requiredFields": ["businessName", "businessIdentifier", "mobileNum", "bvn"],
     "missingFields": ["bvn"],
@@ -40,11 +40,11 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Bank account requirements retrieved successfully",
+  "success": true,
   "data": {
     "currency": "USD",
-    "provider": "rolla",
     "applicationApproved": true,
     "onboardingState": null,
     "prefilled": {
@@ -71,9 +71,15 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 | Field | Description |
 |-------|-------------|
-| `provider` | Provider that will issue the account, chosen by currency and account type |
+| `currency` | The currency you asked about (`NGN` or `USD`) |
 | `applicationApproved` | Bank accounts can only be issued once the application is approved |
 | `requiredFields` / `missingFields` | NGN: fields the provider requires and which are still empty |
 | `onboardingState` | USD: provider onboarding state, `null` until first submission |
-| `prefilled` | The payload that will be sent, built from the account's application |
-| `availableDocuments` | USD: documents that will be attached, from the application and identity verification |
+| `prefilled` | The payload that will be sent, built from the account's application. For USD business accounts this holds `onboardingDetails`, `representatives` and `kybDocs`; for USD individual accounts, `onboardingDetails` and `personalDocs` |
+| `availableDocuments` | USD: documents that will be attached, from the application and identity verification. Keyed `business` and `representatives` for business accounts, `personal` for individual accounts |
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `currency` | string | Yes | `NGN` or `USD`. Any other value returns `400` with `"message": "Validation failed"` |

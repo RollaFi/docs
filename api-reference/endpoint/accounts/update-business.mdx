@@ -24,12 +24,12 @@ Updates the application of a business account. Each section you send (`business_
 | `legalName` | **Mandatory** | The registered legal name |
 | `businessType` | **Mandatory** | e.g. `Limited Liability Company` |
 | `incorporationDate` | **Mandatory** | `YYYY-MM-DD` |
-| `incorporationCountry` | **Mandatory** | ISO-2 country code |
+| `incorporationCountry` | **Mandatory** | Accepts an ISO-2 code, a country name or a demonym; stored as the ISO-2 code |
 | `registrationNumber` | **Mandatory** | Company registration number |
 | `taxId` | **Mandatory** | Tax identification or business-licence number |
 | `description` | **Mandatory** | 10–1000 characters |
-| `monthlyVolume` | **Mandatory** | Digits only, greater than 0 |
-| `annualRevenue` | **Mandatory** | Digits only, greater than 0 |
+| `monthlyVolume` | **Mandatory** | Numeric string greater than 0, decimals allowed, e.g. `"100000"` |
+| `annualRevenue` | **Mandatory** | Numeric string greater than 0, decimals allowed, e.g. `"1200000"` |
 | `primaryFundingSource` | **Mandatory** | e.g. `Business Revenue` |
 | `website` | **Mandatory** | Valid URL, including the scheme |
 | `tradingName` | Optional | The name the business trades under, when it differs from the legal name. We use the legal name when it is absent |
@@ -38,11 +38,11 @@ Updates the application of a business account. Each section you send (`business_
 
 | Field | | Notes |
 |---|---|---|
-| `street` | **Mandatory** | Max 200 characters |
+| `street` | **Mandatory** | |
 | `city` | **Mandatory** | |
 | `state` | **Mandatory** | State, province or region |
-| `postalCode` | **Mandatory** | 3–10 characters |
-| `country` | **Mandatory** | ISO-2 country code |
+| `postalCode` | **Mandatory** | |
+| `country` | **Mandatory** | Accepts an ISO-2 code (`US`), a country name (`United States`) or a demonym; stored as the ISO-2 code |
 
 ### `contact_info`
 
@@ -116,17 +116,48 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Application updated successfully",
+  "success": true,
   "data": {
     "application": {
       "id": "fbb45236-881a-4c58-8954-22759499eab4",
-      "status": "draft",
+      "invite_id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
       "entity_type": "business",
+      "status": "draft",
+      "current_step": 1,
+      "is_complete": false,
       "business_info": {
         "legalName": "Beta Logistics LLC",
-        "businessType": "Limited Liability Company"
-      }
+        "businessType": "Limited Liability Company",
+        "incorporationDate": "2020-03-01",
+        "incorporationCountry": "US",
+        "registrationNumber": "LLC-123987",
+        "taxId": "98-7654321",
+        "description": "Freight and logistics services across West Africa",
+        "monthlyVolume": "100000",
+        "annualRevenue": "1200000",
+        "primaryFundingSource": "Business Revenue",
+        "website": "https://betalogistics.com"
+      },
+      "business_address": {
+        "street": "77 Commerce Ave",
+        "city": "Wilmington",
+        "state": "DE",
+        "postalCode": "19801",
+        "country": "US"
+      },
+      "contact_info": {
+        "email": "ops@betalogistics.com",
+        "phone": "+13025550123"
+      },
+      "banking_info": null,
+      "related_persons": [],
+      "individual_info": null,
+      "change_request_note": null,
+      "flagged_fields": [],
+      "created_at": "2026-06-12T23:28:05.373Z",
+      "updated_at": "2026-06-13T08:41:19.402Z"
     },
     "documents": []
   }

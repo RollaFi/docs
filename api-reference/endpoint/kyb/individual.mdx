@@ -3,7 +3,7 @@ title: 'Get Individual Application'
 openapi: 'GET /kyb/individual'
 ---
 
-Retrieve the individual KYB application details for sole proprietors or individual accounts.
+Retrieve the onboarding application for an individual account, together with its uploaded documents.
 
 ## Example Request
 
@@ -16,12 +16,85 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/individual" \
 
 ```json
 {
+  "status": 200,
+  "message": "Application retrieved successfully",
   "success": true,
-  "message": "Individual application retrieved successfully",
-  "data": {}
+  "data": {
+    "application": {
+      "id": "5c7a91d4-2e80-4b6f-a3d1-7f0b8c25e419",
+      "invite_id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
+      "current_step": 3,
+      "is_complete": true,
+      "status": "submitted",
+      "business_info": null,
+      "business_address": null,
+      "contact_info": null,
+      "related_persons": null,
+      "banking_info": null,
+      "entity_type": "individual",
+      "individual_info": {
+        "firstName": "Ada",
+        "lastName": "Obi",
+        "email": "ada.obi@example.com",
+        "phone": "+2348012345678",
+        "dateOfBirth": "1990-05-14",
+        "citizenship": "NG",
+        "countryOfResidence": "NG",
+        "nin": "12345678901",
+        "bvn": "22345678901",
+        "idDocument": {
+          "type": "passport",
+          "number": "P123456789",
+          "issueDate": "2020-01-01",
+          "expirationDate": "2030-01-01"
+        },
+        "address": {
+          "street": "12 Marina Rd",
+          "line2": "Suite 4",
+          "city": "Lagos",
+          "state": "Lagos",
+          "postalCode": "101241",
+          "country": "NG"
+        },
+        "employment": {
+          "status": "employed",
+          "employerName": "Acme Corp Ltd",
+          "sourceOfWealth": "salary",
+          "annualIncome": "50k-100k"
+        }
+      },
+      "flagged_fields": [],
+      "change_request_note": null,
+      "change_requested_at": null,
+      "rejection_reason": null,
+      "created_at": "2026-08-20T09:12:44.000Z",
+      "updated_at": "2026-09-15T10:30:00.000Z"
+    },
+    "documents": [
+      {
+        "id": "8d41c6b2-90e5-4f37-b1a9-2c6de4f80a13",
+        "kyb_application_id": "5c7a91d4-2e80-4b6f-a3d1-7f0b8c25e419",
+        "document_type": "proof_of_address",
+        "file_name": "utility-bill.pdf",
+        "file_path": "5c7a91d4-2e80-4b6f-a3d1-7f0b8c25e419/proof_of_address/utility-bill_1789041164000.pdf",
+        "file_size": 118422,
+        "mime_type": "application/pdf",
+        "is_required": false,
+        "uploaded_at": "2026-09-14T11:02:10.000Z"
+      }
+    ]
+  }
 }
 ```
 
 <Note>
-  This endpoint is for businesses registered as sole proprietors or individual accounts. For corporate entities, use the standard `/kyb` endpoints.
+  This endpoint answers only for accounts whose `entity_type` is `individual`. A business account has no individual application and gets a `404`; read [Get Application](/api-reference/endpoint/kyb/get-application) instead. The business-shaped columns (`business_info`, `related_persons`, ...) are present on the row and stay `null`.
 </Note>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `401` | API key missing, invalid or inactive |
+| `404` | `Application not found` — the account is not an individual account, or has no application yet |
+| `500` | The application could not be loaded |

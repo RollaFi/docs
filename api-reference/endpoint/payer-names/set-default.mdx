@@ -25,9 +25,19 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4
   "success": true,
   "data": {
     "id": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f",
+    "type": "business",
     "name": "Acme Trading Ltd",
+    "firstName": null,
+    "lastName": null,
+    "registrationNumber": "RC1234567",
+    "registrationDate": "2019-04-02",
+    "country": "NG",
+    "address": { "line1": "14 Marina Road", "city": "Lagos", "state": "Lagos", "postalCode": "101001" },
     "status": "active",
     "isDefault": true,
+    "decisionNote": null,
+    "documents": [],
+    "metadata": { "vendor_id": "V-4471" },
     "createdAt": "2026-09-01T09:14:22.000Z",
     "updatedAt": "2026-09-04T12:00:00.000Z"
   }
@@ -37,7 +47,7 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/payer-names/9f8e7d6c-5b4a-4
 ## Rules
 
 - **One default per account.** Setting a new one moves the flag off the old one; there is no need to clear it first.
-- **It must have cleared review.** A name still in `pending_review` or `changes_requested` is rejected with a `400` — a default that cannot be used would silently apply to every payout.
+- **It must have cleared review.** Anything that is not approved — still in `pending_review` or `changes_requested`, or already `rejected` or `archived` — is refused with a `400`. A default that cannot be used would silently apply to every payout.
 - **Archiving clears it.** [Archiving](/api-reference/endpoint/payer-names/archive) your default leaves you with none, and payouts revert to your own business name.
 
 <Warning>

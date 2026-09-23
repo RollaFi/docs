@@ -42,13 +42,35 @@ curl -X PUT "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Related person updated successfully",
+  "success": true,
   "data": {
     "id": "a3d4f21e-f499-488f-8508-43228dfea485",
     "firstName": "Jane",
     "lastName": "Doe",
-    "ownershipPercentage": 75
+    "roles": ["Beneficial Owner", "Director"],
+    "email": "jane@betalogistics.com",
+    "phone": "+13025550124",
+    "dateOfBirth": "1985-09-21",
+    "ownershipPercentage": 75,
+    "currentAddress": {
+      "street": "5 Oak St",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19801",
+      "country": "US"
+    },
+    "taxId": "123456789"
   }
 }
 ```
+
+`data` is the whole merged record, not just the fields you sent.
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `400` | Validation failed |
+| `404` | Account not found, or no related person with that `personId` is on its application (`Related person not found`) |

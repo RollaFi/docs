@@ -8,42 +8,82 @@ Paginated endpoints use offset pagination with two query parameters:
 | Parameter | Default | Max | |
 |---|---|---|---|
 | `page` | `1` | — | 1-indexed page number |
-| `pageSize` | `20` | `100` | Rows per page |
+| `pageSize` | `20` | `100` on most endpoints | Rows per page |
 
 ```bash
 curl "https://api.rolla.xyz/api/v1/external/wallet/transactions?page=2&pageSize=50" \
   -H "X-API-Key: your_api_key_here"
 ```
 
-The response's `data` carries the rows plus paging metadata:
+<Note>
+  Not every endpoint enforces the same `pageSize` ceiling, and a few enforce none at all. Each endpoint's reference page states its own limit.
+</Note>
+
+## Two response shapes
+
+Paging metadata comes back in one of two shapes, depending on the endpoint. Check the endpoint's reference page rather than assuming.
+
+### Flat inside `data`
+
+The transaction and beneficiary listings put the rows and the paging counters side by side inside `data`:
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Transactions retrieved successfully",
+  "success": true,
   "data": {
-    "transactions": [ ... ],
+    "transactions": [],
     "totalCount": 132,
     "page": 2,
     "pageSize": 50,
-    "totalPages": 3,
-    "hasMore": true
+    "totalPages": 3
   }
 }
 ```
 
-Iterate until `hasMore` is `false` (or `page` reaches `totalPages`).
+Used by [List Transactions](/api-reference/endpoint/transactions), [List Wallet Transactions](/api-reference/endpoint/wallet/transactions), and [List Beneficiaries](/api-reference/endpoint/beneficiaries/list).
+
+[List Accounts](/api-reference/endpoint/accounts/list) and [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) use the same shape plus a boolean `hasMore`. Those two are the only endpoints that return it, so iterate on `page` against `totalPages` everywhere else.
+
+### Nested `pagination` object
+
+The team, broker, and payer-name listings nest the counters under `pagination`, and the total is named `total` rather than `totalCount`:
+
+```json
+{
+  "status": 200,
+  "message": "Team members retrieved successfully",
+  "success": true,
+  "data": {
+    "members": [],
+    "pagination": {
+      "page": 1,
+      "pageSize": 20,
+      "total": 42,
+      "totalPages": 3
+    }
+  }
+}
+```
+
+Used by [Get Team Members](/api-reference/endpoint/teams/members), [Get Commissions](/api-reference/endpoint/broker/commissions), and [List Payer Names](/api-reference/endpoint/payer-names/list).
+
+[Get Referred Businesses](/api-reference/endpoint/broker/referred-businesses) is the one exception to both shapes: its `data` is the array of rows itself, and `pagination` sits beside `data` at the top level of the response rather than inside it.
 
 ## CSV exports
 
-Endpoints that return CSV — such as [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) with `format=csv` — carry the paging metadata in response **headers** instead, since the body is the file:
+[List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions) with `format=csv` returns the file as the response body, so its paging metadata travels in response **headers** instead:
 
 | Header | Meaning |
 |---|---|
 | `X-Total-Count` | Total rows across all pages |
 | `X-Total-Pages` | Total pages at the requested `pageSize` |
 
+<Note>
+  [Export Transactions](/api-reference/endpoint/wallet/export-transactions) behaves differently: it does not return a CSV body at all, but a JSON response carrying a signed download URL.
+</Note>
+
 ## Unpaginated lists
 
-A few small collections return the full array in one response with no paging parameters — [Get Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts), [List Beneficiaries](/api-reference/endpoint/beneficiaries/list), and [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts) among them. Each endpoint's reference page states which behaviour it uses.
+A few small collections return the full array in one response with no paging parameters — [Get Virtual Accounts](/api-reference/endpoint/wallet/virtual-accounts), [List Bank Accounts](/api-reference/endpoint/accounts/list-bank-accounts), and [List Banks](/api-reference/endpoint/banks) among them. Each endpoint's reference page states which behaviour it uses.

@@ -3,7 +3,7 @@ title: 'Get Referral Link'
 openapi: 'GET /broker/referral-link'
 ---
 
-Retrieve your existing referral link.
+Retrieve your existing referral link. If your broker account has no active link yet, one is generated and returned by this call.
 
 <Warning>
   **Broker activation is required.** Broker accounts are activated by the Rolla admin team — you cannot activate a broker account yourself through the API. Once your business has been activated as a broker by Rolla, all broker endpoints become available. Until then, all requests will return a `403 Forbidden` error. Contact [support@rolla.xyz](mailto:support@rolla.xyz) to request broker activation.
@@ -20,12 +20,24 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/referral-link" \
 
 ```json
 {
+  "status": 200,
+  "message": "Referral link",
   "success": true,
-  "message": "Referral link retrieved successfully",
   "data": {
-    "code": "REF-ABCD1234",
-    "inviteUrl": "https://app.rolla.xyz/register?code=REF-ABCD1234"
+    "code": "REF-K7M2QXRT",
+    "inviteUrl": "https://app.rolla.xyz/register?code=REF-K7M2QXRT"
   }
+}
+```
+
+## Error Response
+
+A business that has not been activated as a broker gets a `403`.
+
+```json
+{
+  "status": 403,
+  "message": "Business is not activated as a broker"
 }
 ```
 

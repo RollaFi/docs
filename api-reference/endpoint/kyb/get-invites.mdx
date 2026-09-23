@@ -3,7 +3,7 @@ title: 'Get Invite'
 openapi: 'GET /kyb/invites'
 ---
 
-Retrieve the KYB invite information for your business.
+Retrieve the onboarding invite for your account: the account's name, contact email, entity type and where it is in onboarding.
 
 ## Example Request
 
@@ -23,20 +23,43 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/kyb/invites" \
     "id": "69c68e7d-e989-4c75-8b77-c8381467ecf7",
     "name": "Acme Corp Ltd",
     "email": "contact@acmecorp.com",
-    "entity_type": "limited_company",
+    "entity_type": "business",
     "status": "completed",
     "usd_only": false,
     "expires_at": null,
-    "created_at": "2024-01-10T08:00:00.000Z",
-    "updated_at": "2024-01-10T08:00:00.000Z"
+    "created_at": "2026-08-20T09:12:44.000Z",
+    "updated_at": "2026-09-15T10:30:00.000Z"
   }
 }
 ```
+
+The invite id is the account id: it is what you send in `X-Account-Id` on a tenant key, and what identifies the account on webhooks.
+
+## Entity Types
+
+| Value | Meaning |
+|-------|---------|
+| `business` | A company, onboarded through the KYB application |
+| `individual` | A person, onboarded through the [individual application](/api-reference/endpoint/kyb/individual) |
+| `pending` | The account has not chosen yet |
 
 ## Status Values
 
 | Status | Meaning |
 |--------|---------|
-| `active` | Invite created, KYB not yet started |
-| `started` | KYB application is in progress |
-| `completed` | KYB submitted and approved — business is fully active |
+| `created` | Invite created, onboarding not yet started |
+| `started` | The application is in progress |
+| `completed` | The application has been submitted |
+| `expired` | The invite lapsed before it was used |
+
+<Note>
+  `status` tracks the invite, not the review outcome. Whether the account has been approved is the application's `status` from [Get Application](/api-reference/endpoint/kyb/get-application).
+</Note>
+
+## Errors
+
+| Status | Cause |
+|--------|-------|
+| `401` | API key missing, invalid or inactive |
+| `404` | `Invalid invite` |
+| `500` | `Failed to load invite` |

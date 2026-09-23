@@ -43,8 +43,14 @@ For the vast majority of corridors, USD SWIFT payouts require the **same core se
 | **Account number / IBAN** | The beneficiary's account number, or IBAN in [IBAN countries](#countries-that-require-an-iban) | Always |
 | **Account name** | The beneficiary's full name, exactly as registered with their bank | Always |
 | **Bank name** | The name of the beneficiary's bank | Always |
-| **Bank address** | The bank's address (street, city, country) | Always |
-| **Beneficiary address** | The recipient's address (street, city, country) | Always |
+| **Bank address** | The bank's address — `street`, `city`, `state`, `postalCode`, and `country` as a 2-letter ISO code | Always |
+| **Beneficiary address** | The recipient's address — the same five parts | Always |
+| **Account owner type** | `individual` or `business` (`account_owner_type`) | Always |
+| **Account category** | `checking` or `savings` (`account_category`) | Always, on USD |
+
+<Warning>
+  Both addresses must be **complete**. A missing `state` or `postalCode`, or a country written out in full rather than as a 2-letter ISO code, is rejected with a `400` naming each offending part (for example `bank_address.postalCode`).
+</Warning>
 
 ### The one variation: IBAN vs. account number
 
@@ -103,10 +109,10 @@ To send a USD SWIFT payout, create a beneficiary with the `international_wire` w
 
 <Steps>
   <Step title="Create the beneficiary">
-    Call [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) with `currency: "USD"`, `withdrawal_method: "international_wire"`, the `swift_code`, the `account_number` (or `iban`), `account_name`, `bank_name`, `bank_address`, and `beneficiary_address`.
+    Call [Create Beneficiary](/api-reference/endpoint/beneficiaries/create) with `currency: "USD"`, `withdrawal_method: "international_wire"`, the `swift_code`, the `account_number` (plus `iban` where the country uses one), `account_name`, `bank_name`, `account_owner_type`, `account_category`, `bank_address`, and `beneficiary_address`.
   </Step>
   <Step title="Withdraw from your USD wallet">
-    Call [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) with the beneficiary ID and the amount (in cents — `100` = \$1.00).
+    Call [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) with the beneficiary ID, a `description`, and the amount (in cents — `100` = \$1.00). A SWIFT payout must carry supporting documents, so it is sent as `multipart/form-data` rather than JSON — see below.
   </Step>
   <Step title="Track the payout">
     Monitor status via [Transactions](/api-reference/endpoint/transactions) or webhooks, and subscribe to [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events) for the payment's UETR (see below).
@@ -120,22 +126,56 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/beneficiaries" \
   -d '{
     "currency": "USD",
     "withdrawal_method": "international_wire",
+    "label": "Acme GmbH",
     "account_name": "ACME GMBH",
+    "account_number": "DE89370400440532013000",
     "iban": "DE89370400440532013000",
     "swift_code": "COBADEFFXXX",
     "bank_name": "Commerzbank AG",
+    "account_owner_type": "business",
+    "account_category": "checking",
     "bank_address": {
-      "street": "Kaiserplatz",
+      "street": "Kaiserplatz 16",
       "city": "Frankfurt",
+      "state": "Hessen",
+      "postalCode": "60311",
       "country": "DE"
     },
     "beneficiary_address": {
       "street": "Hauptstrasse 1",
       "city": "Berlin",
+      "state": "Berlin",
+      "postalCode": "10827",
       "country": "DE"
     }
   }'
 ```
+
+<Note>
+  `account_number` is required on `international_wire` even in an IBAN country — send the IBAN as
+  `account_number` and, where you hold it separately, in `iban` too.
+</Note>
+
+```bash Send the payout
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "amount=250000" \
+  -F "currency=USD" \
+  -F "description=Invoice 2291" \
+  -F "beneficiaryId=c3d4e5f6-a7b8-9012-cdef-123456789012" \
+  -F "documents=@/path/to/invoice.pdf"
+```
+
+<Warning>
+  USD international wire is the one withdrawal that must be sent as `multipart/form-data`: reference
+  documents or invoices are required, and a request without at least one file under `documents` is
+  rejected with `400 Reference documents/invoices are required for international wire withdrawals`.
+  Every other currency and method uses a normal JSON body.
+</Warning>
+
+`250000` cents = \$2,500.00. By default the fee is taken from your wallet on top of `amount`, so the
+beneficiary receives the full \$2,500; pass `deductFeesFromBalance: false` to take it out of the
+amount sent instead.
 
 ## Tracing a payout: the UETR
 

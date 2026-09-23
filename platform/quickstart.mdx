@@ -8,7 +8,7 @@ This walkthrough takes a **tenant API key** from zero to a payout made on behalf
 ## Prerequisites
 
 - Your business activated as a **white-label tenant** (contact [support](mailto:support@rolla.xyz) if `/accounts` returns `403`)
-- A **sandbox** API key with at least one [allowlisted IP](/concepts/authentication#ip-allowlisting) — required on every key
+- A **sandbox** API key with at least one [allowlisted IP](/concepts/authentication#ip-allowlisting) — required before the key can reach Step 6
 
 ## Step 1: Create a customer account
 
@@ -23,7 +23,26 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts" \
   }'
 ```
 
-The response returns an `accountId` and a draft application. Each account needs its own unique email (`409 ACCOUNT_EMAIL_EXISTS` otherwise). Save the `accountId` — it's the value you'll put in `X-Account-Id` for the rest of this guide.
+```json
+{
+  "status": 201,
+  "message": "Account created successfully",
+  "success": true,
+  "data": {
+    "account": {
+      "id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+      "name": "Beta Logistics LLC",
+      "email": "ops@betalogistics.com",
+      "status": "created",
+      "entityType": "business"
+    },
+    "applicationId": "fbb45236-881a-4c58-8954-22759499eab4",
+    "applicationStatus": "draft"
+  }
+}
+```
+
+`data.account.id` is the account id — there is no `accountId` field. Save it: it's the value you'll put in `X-Account-Id` for the rest of this guide, and in the `{accountId}` path segments below. `email` is required and must be unique across your accounts (`409` with `code: "ACCOUNT_EMAIL_EXISTS"` otherwise).
 
 ## Step 2: Complete and submit the application
 
@@ -45,10 +64,10 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/submit"
 
 ## Step 3: Approve it (sandbox only)
 
-In production, submitted applications are reviewed by Rolla's compliance team. In sandbox, approve it yourself:
+In production, submitted applications are reviewed by Rolla's compliance team. In sandbox, approve it yourself — note the staging host: this endpoint does not exist in production and returns `404` there.
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/approve" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}/approve" \
   -H "X-API-Key: your_tenant_api_key"
 ```
 
@@ -67,10 +86,10 @@ NGN accounts are issued **instantly**; USD accounts go through provider review f
 
 ## Step 5: Fund it (simulated)
 
-Simulate an NGN deposit into the account you just issued — note the `X-Account-Id` header scoping the request to your customer, and that simulate endpoints take the amount in **major units** as a string:
+Simulate an NGN deposit into the account you just issued — note the staging host (this endpoint is sandbox-only too), the `X-Account-Id` header scoping the request to your customer, and that simulate endpoints take the amount in **major units** as a string:
 
 ```bash
-curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/virtual-accounts/simulate-deposit" \
   -H "X-API-Key: your_tenant_api_key" \
   -H "X-Account-Id: {accountId}" \
   -H "Content-Type: application/json" \
@@ -101,11 +120,11 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
       "bank_code": "000014"
     },
     "description": "Customer payout",
-    "externalReference": "cust-A-payout-001"
+    "metadata": { "your_payout_id": "cust-A-payout-001" }
   }'
 ```
 
-`100000` kobo = ₦1,000, in [minor units](/concepts/amounts-and-currencies) as everywhere. The same header works on any endpoint — check the customer's balance with `GET /wallet/wallets` + `X-Account-Id`, list their transactions, manage their beneficiaries.
+`100000` kobo = ₦1,000, in [minor units](/concepts/amounts-and-currencies) as everywhere, and `description` is required. The fee comes out of the customer's wallet on top of `amount` by default, so the beneficiary receives the full ₦1,000. There's no `externalReference` here on purpose: NGN payouts always get a Rolla-generated reference (`NG-XXXXXXXX`), so tie the payout to your own record with `metadata`, which is returned verbatim on the transaction and on every webhook for it. The same header works on any endpoint — check the customer's balance with `GET /wallet/wallets` + `X-Account-Id`, list their transactions, manage their beneficiaries.
 
 ## Step 7: Reconcile
 

@@ -96,8 +96,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Related person added successfully",
+  "success": true,
   "data": {
     "id": "a3d4f21e-f499-488f-8508-43228dfea485",
     "firstName": "Jane",
@@ -113,10 +114,20 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
       "state": "DE",
       "postalCode": "19801",
       "country": "US"
-    }
+    },
+    "taxId": "123456789"
   }
 }
 ```
+
+The stored record is the `id` plus exactly the fields you sent: anything you left out is absent until you supply it, and `roles` is filled in with `["Beneficial Owner"]` when omitted. Use `id` as the `personId` on the update and delete calls, and as the `relatedPersonId` when uploading this person's documents.
+
+## Errors
+
+| Status | When |
+|--------|------|
+| `400` | Validation failed, or the account is an individual account (`Related persons can only be added to business accounts`) |
+| `404` | Account not found |
 
 ## Parameters
 
@@ -130,6 +141,6 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 | `dateOfBirth` | string | Yes | Date of birth (`YYYY-MM-DD`) |
 | `ownershipPercentage` | number | No | Ownership stake, 0–100 |
 | `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`) |
-| `sourceOfWealthExplanation` | string | Not on this call — required before submission | Free-text source of wealth |
-| `taxId` | string | Not on this call — required before submission | The person's government identifier, in [the format their country of residence issues](#government-identifier). Nigerian residents send `nin` instead. Can be patched later via [Update Related Person](/api-reference/endpoint/accounts/update-related-person) |
-| `bvn` / `nin` | string | No | Nigerian identifiers. `nin` (11 digits) is what Nigerian residents send in place of `taxId` |
+| `sourceOfWealthExplanation` | string | No (required before submission) | Free-text source of wealth |
+| `taxId` | string | No (required before submission) | The person's government identifier, in [the format their country of residence issues](#government-identifier). Nigerian residents send `nin` instead. Can also be patched later via [Update Related Person](/api-reference/endpoint/accounts/update-related-person) |
+| `bvn` / `nin` | string | No | Nigerian identifiers. `nin` (11 digits) is what Nigerian residents send in place of `taxId`. Both are checked for 11 digits only when `currentAddress.country` is `NG` |

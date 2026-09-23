@@ -20,10 +20,17 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/teams/members/a1b2c3d4-e5f6
 
 ```json
 {
+  "status": 200,
+  "message": "Member status updated to inactive successfully",
   "success": true,
-  "message": "Member status updated successfully"
+  "data": {
+    "userId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "status": "inactive"
+  }
 }
 ```
+
+The `message` echoes the status you sent, so activating a member returns `Member status updated to active successfully`.
 
 <Warning>
   The business owner's status cannot be changed, and pending invites cannot be activated or deactivated. Only `active` and `inactive` members can have their status updated.

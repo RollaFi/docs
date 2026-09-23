@@ -25,8 +25,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Bank account issued successfully",
+  "success": true,
   "data": {
     "status": "issued",
     "bankAccount": {
@@ -35,12 +36,21 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
       "bankName": "Guaranty Trust Bank",
       "accountNumber": "1238726395",
       "accountName": "Beta Logistics LLC",
+      "routingNumber": null,
+      "swiftCode": null,
+      "bankAddress": null,
       "type": "static",
-      "status": "active"
+      "status": "active",
+      "reference": null,
+      "label": null,
+      "expiresAt": null,
+      "createdAt": "2026-06-13T01:50:00.000Z"
     }
   }
 }
 ```
+
+If the provider still needs details that are neither on the application nor in `accountData`, the call returns `400` with code `MISSING_ACCOUNT_DETAILS` listing them (see [Errors](#errors)).
 
 ## USD accounts
 
@@ -80,8 +90,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ```json
 {
-  "success": true,
+  "status": 202,
   "message": "Bank account request accepted",
+  "success": true,
   "data": {
     "status": "submitted_for_review",
     "requestId": "185b0aaf-ba79-4f9b-9c6d-5e0587d14314",
@@ -94,6 +105,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 `requestId` identifies this request — quote it when asking us about a request that is taking longer than you expect.
 
 Call the endpoint again once the account is approved — the response then includes the deposit account with `accountNumber`, `routingNumber` and `swiftCode`. While review is in progress, repeat calls keep returning `202` with the same `requestId`, so retrying is safe and never creates a second request.
+
+Two other `202` bodies can come back while you wait. If the review asks you to correct something, `data.status` is `changes_requested` and `data.message` carries the note; re-submit with corrected `accountData`. Once the request is approved on our side but the banking partner is still finishing its own checks, `data.status` is `pending_provider_review` (with the provider `state` and no `requestId`); keep retrying until the account is returned. If the request was declined, the call returns `409` with code `REQUEST_DECLINED` (see [Errors](#errors)).
 
 <Tip>
   Rather than polling, subscribe to [`account.virtual_account.created`](/api-reference/webhooks/events) — it fires as soon as the deposit account exists, with the account details in the payload.
@@ -141,20 +154,27 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-
 
 ```json
 {
-  "success": true,
+  "status": 201,
   "message": "Bank account issued successfully",
+  "success": true,
   "data": {
     "status": "created",
+    "message": "Additional deposit account created.",
     "bankAccount": {
       "id": "c81f0a44-2d6e-4a5b-9c31-77b0e2d1f904",
       "currency": "USD",
+      "bankName": "Lead Bank",
       "accountNumber": "8823410077",
       "accountName": "Beta Logistics LLC",
       "routingNumber": "021000021",
+      "swiftCode": "LEADUS33",
+      "bankAddress": null,
+      "type": "static",
+      "status": "active",
       "reference": "store-amazon-uk",
       "label": "Amazon UK",
-      "type": "static",
-      "status": "active"
+      "expiresAt": null,
+      "createdAt": "2026-06-14T09:22:11.000Z"
     }
   }
 }
@@ -169,6 +189,36 @@ That field is the reliable way to tell the two apart, and it is returned on [Lis
 <Info>
   **The reference is the idempotency key.** The same reference always returns the same account with `status: already_exists`, so a retry, a duplicated job or a replayed request can never mint a second account for one source. There is no cap on how many references a client can have.
 </Info>
+
+A repeat call (with or without a `reference`) returns the existing account with `200` instead of `201`:
+
+```json
+{
+  "status": 200,
+  "message": "Client already onboarded",
+  "success": true,
+  "data": {
+    "status": "already_exists",
+    "message": "An account already exists for this reference; returning it.",
+    "bankAccount": {
+      "id": "c81f0a44-2d6e-4a5b-9c31-77b0e2d1f904",
+      "currency": "USD",
+      "bankName": "Lead Bank",
+      "accountNumber": "8823410077",
+      "accountName": "Beta Logistics LLC",
+      "routingNumber": "021000021",
+      "swiftCode": "LEADUS33",
+      "bankAddress": null,
+      "type": "static",
+      "status": "active",
+      "reference": "store-amazon-uk",
+      "label": "Amazon UK",
+      "expiresAt": null,
+      "createdAt": "2026-06-14T09:22:11.000Z"
+    }
+  }
+}
+```
 
 <Warning>
   Requesting an additional account requires the client to already hold its primary account — that is what proves the provider approved the entity. Issue one **without** a `reference` first, or the call is rejected.
@@ -189,3 +239,41 @@ That field is the reliable way to tell the two apart, and it is returned on [Lis
 <Note>
   **Re-issuing.** A USD call without a `reference` returns the client's existing account with `status: already_exists` (`200`) rather than creating another — safe to retry. A USD call **with** a `reference` behaves the same way per reference. NGN is one account per provider and returns `409 Conflict` once one exists.
 </Note>
+
+## Errors
+
+Error bodies carry `status` and `message`; the ones below also carry a `code`.
+
+`400` with code `MISSING_ACCOUNT_DETAILS` when an NGN provider still needs fields you have not supplied:
+
+```json
+{
+  "status": 400,
+  "message": "Missing required details: bvn. Provide them in accountData or complete the application.",
+  "code": "MISSING_ACCOUNT_DETAILS",
+  "provider": "rolla",
+  "missingFields": ["bvn"]
+}
+```
+
+`400` with code `APPLICATION_NOT_APPROVED` when the account's application is not yet approved:
+
+```json
+{
+  "status": 400,
+  "message": "The account application must be approved before bank accounts can be issued",
+  "code": "APPLICATION_NOT_APPROVED"
+}
+```
+
+`409` with code `REQUEST_DECLINED` when a USD request was declined during review. The message includes the decision note when one was left:
+
+```json
+{
+  "status": 409,
+  "message": "This deposit-account request was declined: Business registration document could not be verified.",
+  "code": "REQUEST_DECLINED"
+}
+```
+
+USD provider-side validation failures return `400` with an `errors` array; a duplicate NGN issuance returns `409` with a plain `message`; malformed request bodies return `400` with `"message": "Validation failed"` and an `errors` array.

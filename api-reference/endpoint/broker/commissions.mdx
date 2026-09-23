@@ -24,35 +24,68 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/broker/commissions?page=1&pag
 | `pageSize` | integer | Results per page (default: 20, max: 100) |
 | `startDate` | string | Start date filter (YYYY-MM-DD) |
 | `endDate` | string | End date filter (YYYY-MM-DD) |
-| `currency` | string | Filter by 3-letter currency code (uppercase, e.g. `USD`) |
+| `currency` | string | Filter by currency code (uppercase, 3 or 4 letters, e.g. `USD`) |
+| `referredBusinessId` | string | Only commissions earned from this referred business (UUID) |
+
+Commissions are returned newest first. Every amount is an integer in the currency's smallest unit: `commission_amount` is in the smallest unit of `commission_currency`, `source_amount` of `source_currency`, and `destination_amount` of `destination_currency`.
 
 ## Example Response
 
 ```json
 {
+  "status": 200,
+  "message": "Commissions fetched successfully",
   "success": true,
-  "message": "Commissions retrieved successfully",
   "data": {
     "commissions": [
       {
-        "id": "e5f6a7b8-c9d0-1234-efgh-567890123456",
-        "amount": 15.50,
-        "currency": "USD",
-        "businessName": "Acme Corp Ltd",
-        "businessEmail": "contact@acmecorp.com",
-        "transactionAmount": 1000,
-        "created_at": "2024-01-20T14:00:00.000Z"
+        "id": "e5f6a7b8-c9d0-4234-8fab-567890123456",
+        "commission_amount": 1550,
+        "commission_currency": "USD",
+        "commission_margin": "0.01000000",
+        "currency_pair": "USD/NGN",
+        "rate_margin": "5.00000000",
+        "rate_margin_type": "flat",
+        "referred_business_id": "d4e5f6a7-b8c9-4123-9def-456789012345",
+        "transaction_id": "8f1c2d3e-4a5b-4c6d-8e9f-0a1b2c3d4e5f",
+        "created_at": "2024-01-20T14:00:00.000Z",
+        "business_name": "Acme Corp Ltd",
+        "exchange_rate": 1480,
+        "base_rate": 1475,
+        "source_currency": "USD",
+        "source_amount": 100000,
+        "destination_currency": "NGN",
+        "destination_amount": 148000000,
+        "swap_transaction": {
+          "id": "3b9d5a7c-2e18-4f60-9a7d-1c0b5e8f4d22",
+          "transaction_type": "swap",
+          "status": "completed",
+          "description": "Swap USD to NGN",
+          "external_reference": "SWP-20240120-0001",
+          "source_currency": "USD",
+          "source_amount": 100000,
+          "destination_currency": "NGN",
+          "destination_amount": 148000000,
+          "created_at": "2024-01-20T13:59:58.000Z"
+        }
       }
     ],
     "pagination": {
       "page": 1,
       "pageSize": 20,
-      "total": 45
+      "total": 45,
+      "totalPages": 3
     }
   }
 }
 ```
 
+In the row above the broker earned USD 15.50 on a USD 1,000 swap into NGN at a rate of 1,480 against a base rate of 1,475.
+
+<Note>
+  `swap_transaction` is `null` for a commission with no underlying swap on record, and `exchange_rate`, `base_rate`, `source_amount` and `destination_amount` are `null` when the pricing detail was not captured. Rows also carry `meta`, `transaction` and `referredBusiness` objects holding internal pricing detail; treat them as informational and do not depend on their contents.
+</Note>
+
 <Tip>
-  Use the `startDate` and `endDate` filters to generate commission reports for specific periods.
+  Use the `startDate` and `endDate` filters to generate commission reports for specific periods. Both accept a date (`2024-01-01`) or a full ISO 8601 timestamp, and are matched against `created_at`.
 </Tip>

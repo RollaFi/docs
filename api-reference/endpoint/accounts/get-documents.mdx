@@ -3,7 +3,7 @@ title: 'List Documents'
 openapi: 'GET /accounts/{accountId}/documents'
 ---
 
-Lists documents uploaded to an account's application. Optionally filter by `documentType`.
+Lists every document uploaded to an account's application, including the documents attached to its related persons. Optionally filter by `documentType`.
 
 ## Example Request
 
@@ -16,25 +16,42 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Documents retrieved successfully",
+  "success": true,
   "data": [
     {
       "id": "0c95b2a1-7a93-4a3a-9a52-2a1f0b9b3c11",
       "kyb_application_id": "fbb45236-881a-4c58-8954-22759499eab4",
       "document_type": "certificate_of_incorporation",
       "file_name": "certificate.pdf",
+      "file_path": "fbb45236-881a-4c58-8954-22759499eab4/certificate_of_incorporation/certificate_1789655131420.pdf",
       "file_size": 248301,
-      "mime_type": "application/pdf"
+      "mime_type": "application/pdf",
+      "is_required": false,
+      "uploaded_at": "2026-09-17T14:25:31.420Z"
     },
     {
       "id": "1d06c3b2-8ba4-4b4b-8b63-3b201c0c4d22",
       "kyb_application_id": "fbb45236-881a-4c58-8954-22759499eab4",
       "document_type": "proof_of_address",
       "file_name": "utility_bill.pdf",
+      "file_path": "fbb45236-881a-4c58-8954-22759499eab4/related-persons/a3d4f21e-f499-488f-8508-43228dfea485/proof_of_address/utility_bill_1789657367883.pdf",
       "file_size": 102844,
-      "mime_type": "application/pdf"
+      "mime_type": "application/pdf",
+      "is_required": false,
+      "uploaded_at": "2026-09-17T15:02:47.883Z"
     }
   ]
 }
 ```
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `documentType` | string | No | Return only documents of this type. Must be one of the [document types](/api-reference/endpoint/accounts/upload-document#document-types) |
+
+<Note>
+  The listing is not filtered by related person, and there is no `relatedPersonId` field on a document. A document attached to a person is recognised by `related-persons/<relatedPersonId>` in its `file_path`.
+</Note>

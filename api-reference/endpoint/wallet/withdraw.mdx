@@ -15,18 +15,22 @@ Either `beneficiaryId` or `inlineBeneficiary` must be provided. The required fie
 For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents = **\$1.00** USD transferred (consistent with ledger `*_amount` fields returned on transactions).
 </Info>
 
+<Warning>
+  **IP whitelisting** — this endpoint requires your API key to have at least one whitelisted IP configured. Without one the request is refused with `403` and the message `"This endpoint requires IP whitelisting. Add at least one whitelisted IP to your API key before using withdraw."`
+</Warning>
+
 ## Top-level Parameters
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD — **100 cents = \$1.00 USD**) |
+| `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD — **100 cents = \$1.00 USD**). Must be a whole number of smallest units and at least `1` |
 | `currency` | string | Yes | 3-letter currency code — `NGN`, `USD`, or `XAF` |
-| `description` | string | No | Narration for the transaction |
-| `externalReference` | string | No | Your own unique reference for this transaction |
+| `description` | string | Yes | Narration for the transaction, 1–500 characters |
+| `externalReference` | string | No | Your own unique reference for this transaction, up to 255 characters. Used on USD and other non-NGN bank rails. NGN and Mobile Money payouts always get a Rolla-generated reference instead (for example `NG-NFNUJTUW`), because the provider imposes its own format |
 | `beneficiaryId` | string (UUID) | No* | ID of a saved beneficiary |
 | `inlineBeneficiary` | object | No* | One-time beneficiary details (see per-currency fields below) |
 | `saveBeneficiary` | boolean | No | Save the inline beneficiary for future use |
-| `deductFeesFromBalance` | boolean | No | If `true`, fees are deducted from your wallet; beneficiary receives the exact amount |
+| `deductFeesFromBalance` | boolean | No | Defaults to `true` on this API: the fee is taken from your wallet balance on top of `amount`, and the beneficiary receives the exact `amount`. Set `false` to take the fee out of the amount instead, so the beneficiary receives less |
 | `metadata` | object | No | Your own key/value data, stored on the transaction and returned on every response and webhook for it. See [Attaching your own metadata](#attaching-your-own-metadata) |
 | `payerNameId` | string (UUID) | No | Which of your registered payer names the beneficiary should see on this payout. Requires [Named Payouts](/guides/named-payouts) to be enabled. See [Choosing the payer name](#choosing-the-payer-name) |
 
@@ -145,6 +149,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -d '{
     "amount": 1000,
     "currency": "USD",
+    "description": "Supplier settlement",
     "inlineBeneficiary": {
       "withdrawal_method": "domestic_wire",
       "account_name": "Jane Smith",
@@ -186,6 +191,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -F "amount=1000" \
   -F "currency=USD" \
+  -F "description=Invoice 2291" \
   -F 'inlineBeneficiary={
         "withdrawal_method": "international_wire",
         "account_name": "Jane Smith",
@@ -218,6 +224,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -d '{
     "amount": 100,
     "currency": "USD",
+    "description": "Treasury top-up",
     "inlineBeneficiary": {
       "withdrawal_method": "crypto_usdt",
       "account_name": "My USDT Wallet",
@@ -248,23 +255,42 @@ A payout reaches the beneficiary under your own business name by default. If
 under one of your registered affiliated payer names instead — a related entity of yours, or the
 end-customer you are paying on behalf of.
 
+<Warning>
+  **`payerNameId` is accepted on USD international wire only.** Attaching one to any other rail —
+  ACH, domestic wire, crypto, NGN, XAF, mobile money — is refused with a `400`:
+
+  ```
+  A payer name can only be used on an International Wire (SWIFT) payout. Remove the payer name,
+  or send this payment to a beneficiary whose withdrawal method is international_wire.
+  ```
+
+  Because international wire is the one rail that must be sent as `multipart/form-data`, a payout
+  carrying `payerNameId` is always a multipart request — never a JSON body.
+</Warning>
+
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 250000,
-    "currency": "USD",
-    "beneficiaryId": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "description": "Invoice 2291",
-    "payerNameId": "9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f"
-  }'
+  -F "amount=250000" \
+  -F "currency=USD" \
+  -F "description=Invoice 2291" \
+  -F "beneficiaryId=c3d4e5f6-a7b8-9012-cdef-123456789012" \
+  -F "payerNameId=9f8e7d6c-5b4a-4938-8271-0a1b2c3d4e5f" \
+  -F "documents=@/path/to/invoice.pdf"
 ```
+
+The beneficiary referenced by `beneficiaryId` must itself be an `international_wire` beneficiary;
+the rail is read from the beneficiary when you do not send `inlineBeneficiary`.
 
 Omit `payerNameId` and the payout uses your [default payer name](/api-reference/endpoint/payer-names/set-default) if you have set one, and your own business name if you have not.
 
-The id must be a payer name on your own account, and it must not be rejected or archived —
-either is refused with a `400` and no payout is created. A name that has not finished
+The id must be a payer name on your own account, and it must not be rejected or archived. Every one
+of those is refused here with a `400` and no payout is created: a rejected or archived name with
+`"That payer name was rejected and cannot be used"` / `"That payer name has been archived and can no
+longer be used"`, and an id that does not exist or belongs to another account with
+`"Payer name not found"`. Note that this endpoint answers `400` for the unknown id too, rather than
+`404`: a payer name is scoped to your own account, so an id you cannot use simply reads as an
+unusable name on the payout you tried to create. A name that has not finished
 registration yet **is** accepted, but the payout waits until the name is usable before the money
 moves, so send time-sensitive payments only under a name reported as `active`. The
 [Named Payouts guide](/guides/named-payouts) covers the statuses and the webhook that tells you
@@ -291,6 +317,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -d '{
     "amount": 5000,
     "currency": "NGN",
+    "description": "Vendor payment",
     "beneficiaryId": "79ee09c0-1518-4a5c-86c7-d880a78ec6e5",
     "metadata": {
       "invoice_id": "INV-2026-042",
@@ -334,8 +361,8 @@ Exceeding any of these returns `400` and the payout is not created.
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Withdrawal initiated successfully",
+  "success": true,
   "data": {
     "transaction": {
       "id": "866b7abd-6cac-40f2-a04f-d6e58bf47d04",
@@ -344,8 +371,8 @@ Exceeding any of these returns `400` and the payout is not created.
       "description": "Vendor payment",
       "external_reference": "NG-NFNUJTUW",
       "fee_amount": 25,
-      "source_amount": 5000,
-      "destination_amount": 4975,
+      "source_amount": 5025,
+      "destination_amount": 5000,
       "source_currency": "NGN",
       "destination_currency": "NGN",
       "created_at": "2026-03-23T13:45:28.138Z",
@@ -361,10 +388,21 @@ Exceeding any of these returns `400` and the payout is not created.
 }
 ```
 
+`source_amount` is what left your wallet and `destination_amount` is what the beneficiary
+receives. With the default `deductFeesFromBalance: true`, `source_amount` is `amount + fee_amount`
+and `destination_amount` equals the `amount` you sent.
+
+The `beneficiary` block is present only when the payout carried a beneficiary snapshot. Two other
+fields are conditional: `metadata` appears when you sent any, and `uetr` / `tracking_codes` appear
+on cross-border payouts once the rail returns them, which is never on the response to this call.
+For those, read the payout back from
+[`GET /wallet/transaction/{transactionId}`](/api-reference/endpoint/wallet/get-transaction) or wait
+for the webhook rather than expecting them here.
+
 <Info>
   Use `beneficiaryId` to pay a saved beneficiary. Use `inlineBeneficiary` for one-time transfers. Set `saveBeneficiary: true` to save the inline beneficiary automatically for reuse.
 </Info>
 
 <Warning>
-  **Fees**: By default, fees are deducted from the withdrawal amount (beneficiary receives less). Set `deductFeesFromBalance: true` so fees come out of your wallet balance and the beneficiary receives the exact amount specified.
+  **Fees**: on this API, fees come out of your wallet balance by default and the beneficiary receives the exact `amount` you specified. Set `deductFeesFromBalance: false` to take the fee out of the withdrawal amount instead, so the beneficiary receives less than `amount`.
 </Warning>

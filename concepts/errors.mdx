@@ -5,12 +5,12 @@ description: "Response envelopes, HTTP status codes, and error codes"
 
 ## Response envelopes
 
-Successful responses carry `success: true` and the payload under `data`:
+Successful responses always open with `status`, `message` and `success: true`, in that order. Most endpoints then nest the payload under `data`, but some return it at the top level beside `success` — each endpoint's reference page shows which:
 
 ```json
 {
   "status": 200,
-  "message": "Wallets retrieved successfully",
+  "message": "Business wallets retrieved successfully",
   "success": true,
   "data": { ... }
 }
@@ -45,7 +45,7 @@ Error responses carry the HTTP code in `status` and a human-readable `message` �
 
 ## Validation errors
 
-Requests that fail validation return `400` with an `errors` array describing each offending field:
+Requests that fail schema validation return `400` with `"message": "Validation failed"` and an `errors` array carrying one entry per offending field. Each entry has a `code`, a `message` and a `path` (an array, because the field may be nested), and the field's own name is prefixed onto `message` so a single string is enough to show a user:
 
 ```json
 {
@@ -53,12 +53,15 @@ Requests that fail validation return `400` with an `errors` array describing eac
   "message": "Validation failed",
   "errors": [
     {
-      "path": ["amount"],
-      "message": "amount must be a whole number of smallest currency units (e.g. cents)"
+      "code": "too_small",
+      "message": "Description: Memo is required",
+      "path": ["description"]
     }
   ]
 }
 ```
+
+Not every `400` carries an `errors` array. Rejections that come from a domain rule rather than the schema — insufficient balance, an unsupported currency, a duplicate account number — return a descriptive `message` and nothing else.
 
 ## Error codes
 
@@ -66,16 +69,18 @@ Some errors additionally carry a machine-readable `code` at the top level of the
 
 | `code` | HTTP | Meaning |
 |---|---|---|
-| `ACCOUNT_DOES_NOT_EXIST` | `401` | The account behind the API key no longer exists |
-| `ACCOUNT_RESTRICTED` | `403` | The account is deactivated or restricted (also sets `accountBlocked: true`) |
+| `ACCOUNT_DOES_NOT_EXIST` | `401` | The account behind the API key has been deleted |
+| `ACCOUNT_RESTRICTED` | `403` | The account is deactivated or blacklisted (also sets `accountBlocked: true`) |
+| `EMAIL_BLOCKLISTED` | `403` | The email cannot be used ([Create Account](/api-reference/endpoint/accounts/create)) |
+| `PAYER_NAMES_DISABLED` | `403` | [Named Payouts](/guides/named-payouts) is not enabled for your account |
 | `ACCOUNT_EMAIL_EXISTS` | `409` | An account with that email already exists ([Create Account](/api-reference/endpoint/accounts/create)) |
-| `NOT_A_PARTNER` | `403` | Endpoint requires a white-label tenant key |
 | `APPLICATION_NOT_APPROVED` | `400` | The account's application must be approved first |
 | `MISSING_ACCOUNT_DETAILS` | `400` | Bank account issuance needs more data — the body lists the missing fields |
+| `ACCOUNT_NOT_SUBMITTED` | `409` | The account must be submitted before it can be approved ([Approve Account](/api-reference/endpoint/accounts/approve-account), sandbox) |
 | `REQUEST_DECLINED` | `409` | A previous issuance request for this account was declined |
 | `USD_ACCOUNT_NOT_FOUND` | `404` | No USD deposit account exists for this account |
 
-Errors without a `code` are identified by their HTTP status and `message`.
+Errors without a `code` are identified by their HTTP status and `message`. Most `403`s carry no code — a key that isn't a white-label tenant calling `/accounts` or [List Transactions Across Accounts](/api-reference/endpoint/accounts/list-transactions), or a request from an IP that isn't allowlisted, are refused by `message` alone.
 
 ## Handling failures in money movement
 

@@ -24,7 +24,7 @@ This guide takes you from zero to a completed NGN payout **on your own account**
     Click **Create API Key**, name it, and copy the key. It is shown **once** — store it securely.
   </Step>
   <Step title="Allowlist your server IPs">
-    Add your server's IP addresses to the key's allowlist — every key needs at least one, and it's checked on every request, not just the money-moving ones.
+    Add your server's IP addresses to the key's allowlist. A key needs at least one before it can call [Withdraw Funds](/api-reference/endpoint/wallet/withdraw) or [Rolla Transfer](/api-reference/endpoint/wallet/transfer), and once a key has an allowlist it is enforced on **every** endpoint, not just the money-moving ones.
   </Step>
 </Steps>
 
@@ -44,16 +44,19 @@ curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Business wallets retrieved successfully",
+  "success": true,
   "data": {
     "wallets": [
       {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "name": "NGN Wallet",
         "currency": "NGN",
         "balance": {
           "availableBalance": 950000,
           "postedBalance": 1000000,
-          "pendingBalance": 50000
+          "pendingBalance": 50000,
+          "lienAmount": 0
         }
       }
     ]
@@ -61,7 +64,7 @@ curl "https://api.rolla.xyz/api/v1/external/wallet/wallets" \
 }
 ```
 
-Every successful response carries `status` (the HTTP code), `success: true`, a human-readable `message`, and the payload under `data`. All amounts are in the currency's **smallest unit** — kobo for NGN, cents for USD. See [Amounts & Currencies](/concepts/amounts-and-currencies).
+Every successful response carries `status` (the HTTP code as a number), a human-readable `message`, and `success: true`, in that order. Most endpoints then nest the payload under `data`, but not all of them do — each endpoint's reference page shows its exact shape. All amounts are in the currency's **smallest unit** — kobo for NGN, cents for USD. See [Amounts & Currencies](/concepts/amounts-and-currencies).
 
 ## Step 3: Fund your wallet
 
@@ -123,25 +126,54 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
     "amount": 100000,
     "currency": "NGN",
     "beneficiaryId": "BENEFICIARY_ID_FROM_STEP_4",
-    "description": "Test payout",
-    "externalReference": "your-unique-ref-001"
+    "description": "Test payout"
   }'
 ```
 
-`100000` kobo = ₦1,000. Fees are deducted from the withdrawal amount by default; want a fee quote first? Call [Get Transaction Fee](/api-reference/endpoint/wallet/fee).
+`100000` kobo = ₦1,000, and `description` is required. By default the fee comes out of your wallet balance on top of `amount`, so the beneficiary receives the full ₦1,000; pass `deductFeesFromBalance: false` to take it out of the amount sent instead. Want a fee quote first? Call [Get Transaction Fee](/api-reference/endpoint/wallet/fee).
 
 <Warning>
   This request must come from an IP on your key's allowlist (Step 1), or it is rejected with `403`.
 </Warning>
 
-The response includes a transaction `id` and a `reference`. The `externalReference` is your own reconciliation handle on the payout — you can [fetch the transaction by it](/api-reference/endpoint/wallet/get-transaction) later. See [Idempotency & Retries](/concepts/idempotency) before retrying failed requests.
+```json
+{
+  "status": 200,
+  "message": "Withdrawal initiated successfully",
+  "success": true,
+  "data": {
+    "transaction": {
+      "id": "866b7abd-6cac-40f2-a04f-d6e58bf47d04",
+      "transaction_type": "withdrawal",
+      "status": "pending",
+      "description": "Test payout",
+      "external_reference": "NG-NFNUJTUW",
+      "fee_amount": 2500,
+      "source_amount": 102500,
+      "destination_amount": 100000,
+      "source_currency": "NGN",
+      "destination_currency": "NGN",
+      "created_at": "2026-03-23T13:45:28.138Z",
+      "updated_at": "2026-03-23T13:45:28.263Z",
+      "beneficiary": {
+        "bank_name": "Access Bank",
+        "bank_code": "000014",
+        "account_name": "JOHN DOE",
+        "account_number": "0123456789"
+      }
+    }
+  }
+}
+```
+
+Keep the transaction `id`. `source_amount` is what left your wallet (`amount` plus the fee) and `destination_amount` is what the beneficiary gets. On USD and other non-NGN bank rails you can also send your own `externalReference` and [fetch the transaction by it](/api-reference/endpoint/wallet/get-transaction) later — but NGN and mobile money payouts always get a Rolla-generated reference like `NG-NFNUJTUW` instead, because the provider imposes its own format. See [Idempotency & Retries](/concepts/idempotency) before retrying failed requests.
 
 ## Step 6: Track it
 
 Poll the transaction:
 
 ```bash
-curl "https://api.rolla.xyz/api/v1/external/wallet/transaction/TRANSACTION_ID" \
+curl "https://api.rolla.xyz/api/v1/external/wallet/transaction/866b7abd-6cac-40f2-a04f-d6e58bf47d04" \
   -H "X-API-Key: your_api_key_here"
 ```
 

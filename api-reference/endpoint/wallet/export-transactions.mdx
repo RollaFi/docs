@@ -3,7 +3,9 @@ title: 'Export Transactions'
 openapi: 'GET /wallet/transactions/export'
 ---
 
-Export wallet transactions as a downloadable file. Supports the same filters as the transaction list endpoint but without pagination.
+Build a CSV of your wallet transactions and get a signed link to it. The response is JSON; the
+file itself is fetched from `data.url`. Takes the same filters as the transaction list endpoint,
+without paging.
 
 ## Example Request
 
@@ -16,26 +18,41 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions/export?cu
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `currency` | string | Filter by 3-letter currency code |
-| `transactionType` | string | Filter by type: `deposit`, `withdrawal`, `swap` |
-| `status` | string | Filter by status: `pending`, `completed`, `failed`, `rejected`, `sent` |
-| `startDate` | string | Start date filter (YYYY-MM-DD) |
-| `endDate` | string | End date filter (YYYY-MM-DD) |
+| `currency` | string | Filter by source currency code |
+| `transactionType` | string | Filter by type: `deposit`, `withdrawal`, `swap`, `card_funding`, `payin`, `fee` |
+| `status` | string | Filter by status: `pending`, `completed`, `failed`, `rejected`, `sent`, `negotiating`, `cancelled` |
+| `startDate` | string | Inclusive start (`YYYY-MM-DD`) |
+| `endDate` | string | Inclusive end (`YYYY-MM-DD`) |
+| `search` | string | Case-insensitive substring match on `external_reference` |
 
 ## Example Response
 
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Transactions exported successfully",
+  "success": true,
   "data": {
-    "url": "https://fpqdjdeslwryrsertmji.supabase.co/storage/v1/object/sign/transaction_documents/exports/4f7d3522-3a52-4402-8a0e-f1bd041c3eec/1774432456044.csv?token=eyJr...",
+    "url": "https://fpqdjdeslwryrsertmji.supabase.co/storage/v1/object/sign/transaction_documents/exports/4f7d3522-3a52-4402-8a0e-f1bd041c3eec/1774432456044.csv?token=eyJr",
     "format": "csv",
-    "totalRecords": 317
+    "totalRecords": 317,
+    "exportedRecords": 317
   }
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| `url` | Signed download link for the CSV |
+| `format` | Always `csv` |
+| `totalRecords` | How many transactions matched the filters |
+| `exportedRecords` | How many were written to the file — the lower of `totalRecords` and 10,000 |
+| `truncated` | Present and `true` only when more than 10,000 transactions matched and the file was cut short |
+
+The file has one header row and these columns: `id`, `transaction_type`, `status`,
+`description`, `external_reference`, `fee_amount`, `source_amount`, `destination_amount`,
+`source_currency`, `destination_currency`, `exchange_rate`, `created_at`, `updated_at`.
+Amounts are in minor units.
 
 <Tip>
   Use `startDate` and `endDate` to export transactions for a specific period, such as a monthly reconciliation report.
@@ -46,5 +63,12 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transactions/export?cu
 </Info>
 
 <Warning>
-  If no transactions match the selected filters, the endpoint returns a `404` error instead of an empty file.
+  If no transactions match the selected filters, the endpoint returns a `404` instead of an empty file:
+
+  ```json
+  {
+    "status": 404,
+    "message": "No transactions found for the selected filters"
+  }
+  ```
 </Warning>

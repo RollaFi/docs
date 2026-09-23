@@ -8,6 +8,7 @@ Update the details of an existing saved beneficiary.
 <Info>
   `PATCH` is the current update verb. `PUT /beneficiaries/{beneficiaryId}` remains supported as a
   backward-compatible alias with identical behaviour, but new integrations should use `PATCH`.
+  Both verbs run the same handler and the same validation schema, so requests and responses are identical.
 </Info>
 
 ## Example Request
@@ -23,7 +24,6 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
     "account_number": "0123456789",
     "bank_name": "Access Bank",
     "bank_code": "000014",
-    "account_owner_type": "business",
     "email": "john.updated@example.com"
   }'
 ```
@@ -36,27 +36,39 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
 
 ## Example Response
 
+The updated beneficiary is returned directly under `data`, in the same shape as [Get Beneficiary](/api-reference/endpoint/beneficiaries/get). During the grace period a `deprecation_warning` object is appended when a required classification field is missing, exactly as on create.
+
 ```json
 {
   "status": 200,
-  "success": true,
   "message": "Beneficiary updated successfully",
+  "success": true,
   "data": {
     "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
-    "currency": "NGN",
-    "label": "Updated label",
     "account_name": "JOHN DOE",
+    "currency": "NGN",
+    "email": "john.updated@example.com",
+    "withdrawal_method": null,
+    "label": "Updated label",
     "account_number": "0123456789",
     "bank_name": "Access Bank",
-    "bank_code": "000014",
-    "withdrawal_method": null,
-    "account_owner_type": "business",
-    "email": "john.updated@example.com",
-    "created_at": "2024-01-10T08:00:00.000Z",
-    "updated_at": "2024-01-15T12:00:00.000Z"
+    "bank_code": "000014"
   }
 }
 ```
+
+## Error Response
+
+Every failure, including an unknown `beneficiaryId`, returns `400`:
+
+```json
+{
+  "status": 400,
+  "message": "Beneficiary not found: c3d4e5f6-a7b8-9012-cdef-123456789012"
+}
+```
+
+Schema failures return `400` with `"message": "Validation failed"` and an `errors` array, as on create.
 
 <Note>
   The same validation rules apply as when creating a beneficiary, including the new
@@ -70,5 +82,6 @@ curl -X PATCH "https://api.rolla.xyz/api/v1/external/beneficiaries/c3d4e5f6-a7b8
   The body is validated as a whole, not as a partial patch — send the method's full required
   field set, not just the fields you are changing. In particular, a beneficiary on
   `"withdrawal_method": "ach"` or `"domestic_wire"` must include `routing_number` in the same
-  request, now that it is enforced for both rails.
+  request, now that it is enforced for both rails. Omit `withdrawal_method` to keep the current
+  rail; send `null` or `""` to clear it.
 </Warning>

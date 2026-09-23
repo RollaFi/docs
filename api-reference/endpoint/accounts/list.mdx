@@ -16,16 +16,17 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts?page=1&pageSize=20" 
 
 ```json
 {
-  "success": true,
+  "status": 200,
   "message": "Accounts retrieved successfully",
+  "success": true,
   "data": {
     "accounts": [
       {
-        "id": "6adb1c69-f42c-493c-9f66-6e8cfd6d2c35",
-        "name": "Acme Trading Ltd",
-        "email": "owner@example.com",
+        "id": "eec3cbed-79d8-4370-87a0-b6be9e287337",
+        "name": "Beta Logistics LLC",
+        "email": "ops@betalogistics.com",
         "entityType": "business",
-        "applicationId": "4d4ad44f-8e72-4be8-83f6-1e6c69e77962",
+        "applicationId": "fbb45236-881a-4c58-8954-22759499eab4",
         "applicationStatus": "approved",
         "currentStep": 6,
         "isComplete": true,
@@ -34,7 +35,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts?page=1&pageSize=20" 
       {
         "id": "b6075be0-f1d0-451f-a468-3e94563101d2",
         "name": "Jane Doe",
-        "email": "owner@example.com",
+        "email": "jane.doe@example.com",
         "entityType": "individual",
         "applicationId": "f436daf8-146b-4949-bf28-9b36440085a4",
         "applicationStatus": "submitted",
