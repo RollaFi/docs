@@ -10568,7 +10568,7 @@
       "post": {
         "operationId": "createAccountVerificationToken",
         "summary": "Create Verification Token",
-        "description": "Creates an identity verification (Sumsub WebSDK) access token for an individual account so the account holder can complete ID document upload and liveness checks in your app. Tokens expire after 30 minutes; request a new one when it expires. For business accounts, use the related-person KYC link instead.",
+        "description": "Uploads the account holder's identity document and returns a Sumsub WebSDK access token for the liveness check, in one call. For an individual account only.\n\nThe document is required. The SDK session covers liveness only, so a token issued without a document leaves the applicant with no identity document on file, and USD account issuance then fails because the document set is incomplete.\n\nTokens expire after 30 minutes; call this again for a new one. For business accounts, use the related-person KYC link instead.",
         "parameters": [
           {
             "name": "accountId",
@@ -10581,6 +10581,62 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document"
+                ],
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "The account holder's identity document, image or PDF. Front side for a two-sided document"
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required for ID_CARD, DRIVER_LICENSE and RESIDENCE_PERMIT"
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "INTERNATIONAL_PASSPORT",
+                    "example": "ID_CARD",
+                    "description": "Which identity document is being sent. Defaults to INTERNATIONAL_PASSPORT"
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "NG",
+                    "description": "2-letter ISO code of the country that issued the document. Defaults to the country on the account's address"
+                  },
+                  "front": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Alias for `document`"
+                  },
+                  "back": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Alias for `documentBack`"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": "Verification token created successfully",
@@ -10659,7 +10715,7 @@
             }
           },
           "400": {
-            "description": "Not an individual account (use the related-person KYC link for business owners and directors), or the identity provider request failed",
+            "description": "Missing identity document, a two-sided document sent without its reverse, an unsupported documentType, not an individual account (use the related-person KYC link for business owners and directors), or the identity provider rejected the document",
             "content": {
               "application/json": {
                 "schema": {
