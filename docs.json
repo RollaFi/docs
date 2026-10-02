@@ -207,6 +207,7 @@
                 "group": "Verification & KYC",
                 "pages": [
                   "api-reference/endpoint/accounts/verification",
+                  "api-reference/endpoint/accounts/related-person-verification",
                   "api-reference/endpoint/accounts/verification-status",
                   "api-reference/endpoint/accounts/individual-kyc-link",
                   "api-reference/endpoint/accounts/kyc-link",

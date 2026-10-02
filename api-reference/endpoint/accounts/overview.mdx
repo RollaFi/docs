@@ -32,7 +32,7 @@ Every account you create belongs to the same owner as the business your API key 
     `POST /accounts/{accountId}/documents` for each required document: certificate of incorporation, articles of association, proof of address, director register, shareholder register and a bank statement.
   </Step>
   <Step title="Register related persons">
-    `POST /accounts/{accountId}/related-persons` for each beneficial owner and director, then generate a hosted KYC link for each with `POST .../related-persons/{personId}/kyc-link` and share it with them. Each person must complete ID verification and a liveness check.
+    `POST /accounts/{accountId}/related-persons` for each beneficial owner and director, then verify each of them. Either share a hosted KYC link (`POST .../related-persons/{personId}/kyc-link`), or send their identity document to `POST .../related-persons/{personId}/verification` and embed the returned SDK token for their liveness check. Each person must complete both halves, one call per person.
 
     If you already verify these people yourself, [Submit Representative KYC Reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance) lets you send the passport and liveness capture you collected instead, one call per person.
   </Step>

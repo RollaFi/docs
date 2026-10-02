@@ -10839,6 +10839,167 @@
         }
       }
     },
+    "/accounts/{accountId}/related-persons/{personId}/verification": {
+      "post": {
+        "operationId": "createRelatedPersonVerificationToken",
+        "summary": "Create Representative Verification Token",
+        "description": "Uploads the identity document of one representative of a business account and returns a Sumsub WebSDK access token for their liveness check, in one call.\n\nThe document is required. The SDK session covers liveness only, so a token issued without a document leaves that representative with no identity document on file, and USD account issuance then fails because their document set is incomplete.\n\nOne call per representative: each beneficial owner and director is verified separately, on their own personId. Tokens expire after 30 minutes. For an individual account, use the account-level verification endpoint instead.",
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "personId",
+            "in": "path",
+            "required": true,
+            "description": "The representative's id, as returned by Add Related Person",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "document"
+                ],
+                "properties": {
+                  "document": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "That representative's identity document, image or PDF. Front side for a two-sided document"
+                  },
+                  "documentBack": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Reverse side. Required for ID_CARD, DRIVER_LICENSE and RESIDENCE_PERMIT"
+                  },
+                  "documentType": {
+                    "type": "string",
+                    "enum": [
+                      "INTERNATIONAL_PASSPORT",
+                      "ID_CARD",
+                      "DRIVER_LICENSE",
+                      "RESIDENCE_PERMIT"
+                    ],
+                    "default": "INTERNATIONAL_PASSPORT",
+                    "example": "ID_CARD",
+                    "description": "Which identity document is being sent. Defaults to INTERNATIONAL_PASSPORT"
+                  },
+                  "country": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "example": "NG",
+                    "description": "2-letter ISO code of the country that issued the document. Defaults to the country on that representative's own address"
+                  },
+                  "front": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Alias for `document`"
+                  },
+                  "back": {
+                    "type": "string",
+                    "format": "binary",
+                    "deprecated": true,
+                    "description": "Alias for `documentBack`"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Verification token created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Verification token created successfully"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "sumsubToken": {
+                          "type": "object",
+                          "properties": {
+                            "token": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "externalUserId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "relatedPersonId": {
+                          "type": "string",
+                          "format": "uuid"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing identity document, a two-sided document sent without its reverse, an unsupported documentType, an individual account (use the account-level verification endpoint), or the identity provider rejected the document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, not owned by your API key's business, or no representative with that personId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/accounts/{accountId}/submit": {
       "post": {
         "operationId": "submitAccount",
