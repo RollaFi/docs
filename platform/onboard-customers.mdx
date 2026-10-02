@@ -38,7 +38,7 @@ You'll hear about every move via [webhooks](/api-reference/webhooks/events#accou
 
 ## Individual customers
 
-Same shape, shorter path: [create](/api-reference/endpoint/accounts/create) with `type: "individual"`, fill in [personal details](/api-reference/endpoint/accounts/update-individual), upload proof of address, complete [identity verification](#kyc-options), and [submit](/api-reference/endpoint/accounts/submit) once requirements are clear.
+Same shape, shorter path: [create](/api-reference/endpoint/accounts/create) with `type: "individual"`, fill in [personal details](/api-reference/endpoint/accounts/update-individual), upload proof of address, complete [identity verification](#kyc-options) (identity document **and** liveness), and [submit](/api-reference/endpoint/accounts/submit) once requirements are clear.
 
 ## KYC options
 
@@ -47,8 +47,12 @@ You choose how identity verification happens, per account and per related person
 | Option | How it works | Use when |
 |---|---|---|
 | **Hosted KYC link** | [Generate a link](/api-reference/endpoint/accounts/individual-kyc-link) ([per related person](/api-reference/endpoint/accounts/kyc-link) for businesses) and send it to the person — they complete ID upload and liveness on a Rolla-hosted page | You don't run your own KYC |
-| **Verification SDK token** | [Create a verification token](/api-reference/endpoint/accounts/verification) and embed the verification flow in your own app; [poll the status](/api-reference/endpoint/accounts/verification-status) | You want the flow inside your product |
+| **Verification SDK token** | Collect the person's ID document in your own UI and [send it with a token request](/api-reference/endpoint/accounts/verification), then embed the SDK for the liveness check; [poll the status](/api-reference/endpoint/accounts/verification-status) | You want the flow inside your product |
 | **KYC reliance** | [Submit the passport and liveness capture you already collected](/api-reference/endpoint/accounts/kyc-reliance) ([per related person](/api-reference/endpoint/accounts/related-person-kyc-reliance)) | You're a licensed entity running your own KYC — so customers aren't verified twice |
+
+<Note>
+  Whichever option you pick, both halves have to happen: an identity document **and** a liveness check. The hosted link and KYC reliance each cover both. With the SDK token you supply the document and the SDK covers liveness — the SDK never asks for a document itself.
+</Note>
 
 <Note>
   KYC reliance is gated per partner — ask Rolla to enable it for your tenancy.

@@ -54,7 +54,7 @@ Every account you create belongs to the same owner as the business your API key 
     `POST /accounts/{accountId}/documents` with `documentType: proof_of_address` (bank statement, utility bill or lease agreement issued in the last 3 months).
   </Step>
   <Step title="Complete identity verification">
-    `POST /accounts/{accountId}/verification` returns a verification SDK token for ID upload and liveness checks. Poll `GET /accounts/{accountId}/verification` for the result.
+    `POST /accounts/{accountId}/verification` takes the account holder's identity document and returns an SDK token for the liveness check. Embed the SDK, then poll `GET /accounts/{accountId}/verification` for the result.
 
     If you already verify identity yourself, [Submit KYC Reliance](/api-reference/endpoint/accounts/kyc-reliance) lets you send the passport and liveness capture you collected instead, so your customers are not asked to verify twice.
   </Step>
