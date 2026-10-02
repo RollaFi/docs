@@ -1,0 +1,137 @@
+---
+title: 'Create Representative Verification Token'
+openapi: 'POST /accounts/{accountId}/related-persons/{personId}/verification'
+---
+
+Uploads the identity document of one representative — a beneficial owner or director — of a **business account**, and returns a Sumsub WebSDK access token for their liveness check.
+
+This is the per-representative parallel of [Create Verification Token](/api-reference/endpoint/accounts/verification), which covers individual accounts. Use it to run a company's owners and directors through verification inside your own product, instead of sending each of them to a [hosted KYC link](/api-reference/endpoint/accounts/kyc-link).
+
+The two halves of verification are split between you and us: you send the identity document, and the SDK session you embed captures liveness. The SDK does **not** ask for a document, so collect it in your own UI and send it here.
+
+<Warning>
+  The document is required. A token issued without one leaves that representative with no identity document on file, and [USD account issuance](/api-reference/endpoint/accounts/issue-bank-account) later fails because their document set is incomplete.
+</Warning>
+
+<Warning>
+  **One call per representative.** Each beneficial owner and director is verified separately, on their own `personId`, with their own document and their own liveness session. Verifying one does not verify the others, and [Submit Application](/api-reference/endpoint/accounts/submit) still requires every one of them to pass.
+</Warning>
+
+## Request
+
+Send as `multipart/form-data`.
+
+| Part | Type | Required | Description |
+|------|------|----------|-------------|
+| `document` | file | Yes | That representative's identity document, image or PDF. Front side for a two-sided document |
+| `documentBack` | file | Conditional | The reverse side. **Required** for `ID_CARD`, `DRIVER_LICENSE` and `RESIDENCE_PERMIT` |
+| `documentType` | string | No | One of `INTERNATIONAL_PASSPORT`, `ID_CARD`, `DRIVER_LICENSE`, `RESIDENCE_PERMIT`. Defaults to `INTERNATIONAL_PASSPORT` |
+| `country` | string | No | 2-letter ISO code of the country that issued the document, e.g. `NG`. Defaults to the country on **that representative's** own address |
+
+<Note>
+  `front` and `back` also work in place of `document` and `documentBack`, so the part names match whichever upload endpoint you are already integrated against.
+</Note>
+
+`personId` is the `id` returned by [Add Related Person](/api-reference/endpoint/accounts/add-related-person) — the same id used for the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link), for [reliance](/api-reference/endpoint/accounts/related-person-kyc-reliance), and for that person's document uploads.
+
+## Document types
+
+| `documentType` | Reverse side |
+| --- | --- |
+| `INTERNATIONAL_PASSPORT` (default) | not needed |
+| `ID_CARD` | **required** |
+| `DRIVER_LICENSE` | **required** |
+| `RESIDENCE_PERMIT` | **required** |
+
+## Example Request
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-8c92-5f7a0e913d19/related-persons/1c0742e5-5a58-4705-a473-ddd1ae213787/verification" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "documentType=INTERNATIONAL_PASSPORT" \
+  -F "country=NG" \
+  -F "document=@/path/to/passport.jpg"
+```
+
+A two-sided document carries both faces:
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-8c92-5f7a0e913d19/related-persons/1c0742e5-5a58-4705-a473-ddd1ae213787/verification" \
+  -H "X-API-Key: your_api_key_here" \
+  -F "documentType=ID_CARD" \
+  -F "country=NG" \
+  -F "document=@/path/to/id-front.jpg" \
+  -F "documentBack=@/path/to/id-back.jpg"
+```
+
+## Example Response
+
+```json
+{
+  "status": 201,
+  "message": "Verification token created successfully",
+  "success": true,
+  "data": {
+    "sumsubToken": {
+      "token": "_act-sbx-jwt-eyJhbGciOiJub25lIn0...",
+      "userId": "1c0742e5-5a58-4705-a473-ddd1ae213787"
+    },
+    "externalUserId": "1c0742e5-5a58-4705-a473-ddd1ae213787",
+    "relatedPersonId": "1c0742e5-5a58-4705-a473-ddd1ae213787"
+  }
+}
+```
+
+The token is tied to that representative alone — `userId` and `externalUserId` are their `personId`, not the account's id.
+
+## Using the token
+
+Pass the token to the [Sumsub WebSDK](https://docs.sumsub.com/docs/get-started-with-web-sdk) in your frontend. The document is already on file by this point, so the session that representative sees is the liveness check:
+
+```javascript
+import SumsubWebSdk from '@sumsub/websdk-react';
+
+<SumsubWebSdk
+  accessToken={data.sumsubToken.token}
+  expirationHandler={() => fetchNewToken(personId)}
+/>
+```
+
+<Info>
+  Tokens expire after **30 minutes**, and each one belongs to a single representative. Use the SDK's expiration handler to request a fresh token for **that** person — send their document again with it.
+</Info>
+
+## Key Behaviours
+
+<Info>
+  The review is **not instant**. Poll [Get Requirements](/api-reference/endpoint/accounts/requirements) until that person reads `verified` under `relatedPersons`.
+</Info>
+
+<Tip>
+  This endpoint and the hosted link can be mixed on the same account: embed the flow for some representatives and send a [KYC link](/api-reference/endpoint/accounts/kyc-link) to the rest. Both resolve to the same per-person verification, and the application reports them identically.
+</Tip>
+
+<Tip>
+  A document uploaded here is reused when a USD account is issued, so a bank-account request will not ask for it again. See [Issue Bank Account](/api-reference/endpoint/accounts/issue-bank-account).
+</Tip>
+
+<Note>
+  Use [Get Representative Verification Documents](/api-reference/endpoint/accounts/related-person-verification-documents) to confirm what we hold for a representative. The identity document appears there as soon as this call succeeds, before they have started their liveness check.
+</Note>
+
+## Errors
+
+| Status | Meaning |
+|--------|---------|
+| `400` | `document` is missing, a two-sided document arrived without `documentBack`, `documentType` is not a recognised value, `country` is not a 2-letter code, the account is an individual (use [Create Verification Token](/api-reference/endpoint/accounts/verification)), or the identity provider rejected the document |
+| `401` | Invalid or missing API key |
+| `404` | Account not found, not owned by your API key's business, or no representative with that `personId` |
+
+When the identity provider rejects a document, the reason is passed through rather than hidden behind a generic failure:
+
+```json
+{
+  "status": 400,
+  "message": "Identity provider rejected the document: document is unreadable (code 1002)"
+}
+```
