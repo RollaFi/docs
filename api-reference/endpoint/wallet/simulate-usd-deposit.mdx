@@ -89,3 +89,7 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/simulate-usd-
 <Info>
   Because this credits a real (sandbox) wallet balance, treat it like any other write: it moves your test wallet's balance and generates a real transaction record and webhook delivery.
 </Info>
+
+<Info>
+  A simulated deposit lands as **`pending`** and stays there until it is decided — no provider confirms a transfer in sandbox. Settle it yourself with [Approve or Reject a Transaction](/api-reference/endpoint/wallet/decide-transaction) instead of asking the Rolla team to clear it.
+</Info>
