@@ -1,0 +1,114 @@
+---
+title: 'Approve or Reject a Transaction (Sandbox)'
+openapi: 'POST /wallet/transactions/{transactionId}/decision'
+---
+
+Settles or rejects a transaction that is waiting on a decision, so you can run deposit and payout tests end-to-end without asking the Rolla team to clear each one by hand.
+
+In sandbox no provider ever confirms a transfer, so a simulated deposit or payout stays `pending` until somebody decides it. This endpoint is that decision, and it runs **the same settlement path Rolla's own operators run** — the behaviour you test against is the behaviour you get in production.
+
+<Warning>
+  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`.
+</Warning>
+
+## Request Body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `action` | string | Yes | `approve` to settle the transaction, `reject` to discard it. Any other value returns `400`. |
+| `reason` | string | No | Why it was rejected, up to 500 characters. Recorded on the transaction and included in the rejection email. Ignored for `approve`. |
+
+One endpoint covers both outcomes and **every currency** — USD, NGN, GHS and crypto all settle the same way.
+
+## Approving
+
+```bash
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/transactions/357cf04f-2096-4b45-9c14-e33db131b5dd/decision" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "action": "approve" }'
+```
+
+```json
+{
+  "status": 200,
+  "message": "Transaction approved successfully",
+  "success": true,
+  "data": { "transaction": { "id": "357cf04f-2096-4b45-9c14-e33db131b5dd", "status": "completed" } }
+}
+```
+
+Approving posts the ledger, credits (or debits) the wallet, sends the confirmation email and emits the `transaction.completed` [webhook](/api-reference/webhooks/overview).
+
+## Rejecting
+
+```bash
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/wallet/transactions/565aa698-af83-4a9b-9082-a412ecd419b6/decision" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{ "action": "reject", "reason": "simulating a failed inbound wire" }'
+```
+
+```json
+{
+  "status": 200,
+  "message": "Transaction rejected successfully",
+  "success": true,
+  "data": { "transaction": { "id": "565aa698-af83-4a9b-9082-a412ecd419b6", "status": "rejected" } }
+}
+```
+
+Rejecting discards the entries and moves the transaction to `rejected`. The `reason` is sent to the account's notification recipients, exactly as a Rolla-side rejection would be.
+
+## Fees settle with the transaction
+
+A deposit or payout usually carries fee transactions alongside it. They follow the decision automatically — you never decide them separately:
+
+| Decision | The transaction | Its fee transactions |
+|---|---|---|
+| `approve` | `completed` | `completed` — fees are charged |
+| `reject` | `rejected` | `failed`, entries discarded — **nothing is charged** |
+
+So a rejected deposit costs you nothing, and a rejected deposit that would have carried a platform fee leaves no fee behind.
+
+## Which transactions you can decide
+
+Any transaction in **your own book**, plus — if you are a platform partner — any belonging to an account in your tenancy. It is the same set [List Transactions](/api-reference/endpoint/accounts/list-transactions) returns, so anything you can read, you can decide.
+
+A transaction outside that set reports the same `404` as one that does not exist, so an id cannot be used to probe another partner's book.
+
+## When a decision is refused
+
+| Status | Why |
+|---|---|
+| `400` | `action` missing or not `approve`/`reject` — `"Validation failed"` |
+| `400` | Already decided: `"Transaction is not pending or sent: completed"` |
+| `400` | A Rolla operator currently holds the transaction, or it is a Mobile Money collection awaiting its provider callback |
+| `404` | No such transaction in your book |
+
+Only transactions in `pending`, `sent` or `processing` can be decided. Deciding one twice is refused rather than repeated, so a retry after a timeout is safe.
+
+<Note>
+  Simulated deposits are credited by the provider's webhook and can take a few minutes to appear. Poll [Transactions](/api-reference/endpoint/wallet/transactions) until the transaction exists and is `pending`, then decide it.
+</Note>
+
+## Who decided it is recorded
+
+Every decision is attributed, the same way a Rolla operator's is. The transaction records the action, the time, the reason, **and the API key that made the call** — so when a business holds several keys you can still tell which integration settled what.
+
+## A full sandbox loop
+
+<Steps>
+  <Step title="Simulate the money arriving">
+    Call [Simulate an Account Deposit](/api-reference/endpoint/accounts/simulate-deposit) or [Simulate a USD Deposit](/api-reference/endpoint/wallet/simulate-usd-deposit).
+  </Step>
+  <Step title="Wait for the transaction">
+    Poll [Transactions](/api-reference/endpoint/wallet/transactions) until the deposit appears as `pending`.
+  </Step>
+  <Step title="Decide it">
+    `POST /wallet/transactions/{transactionId}/decision` with `approve` or `reject`.
+  </Step>
+  <Step title="Check what you expected">
+    Confirm the balance moved and your webhook endpoint received `transaction.completed`.
+  </Step>
+</Steps>

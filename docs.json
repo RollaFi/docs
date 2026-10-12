@@ -157,7 +157,8 @@
               "api-reference/endpoint/wallet/get-transaction",
               "api-reference/endpoint/wallet/export-transactions",
               "api-reference/endpoint/wallet/statement",
-              "api-reference/endpoint/accounts/list-transactions"
+              "api-reference/endpoint/accounts/list-transactions",
+              "api-reference/endpoint/wallet/decide-transaction"
             ]
           },
           {

@@ -2262,6 +2262,149 @@
         }
       }
     },
+    "/wallet/transactions/{transactionId}/decision": {
+      "post": {
+        "operationId": "decideTransaction",
+        "summary": "Approve or Reject a Transaction (Sandbox)",
+        "description": "Sandbox only: settles or rejects a transaction that is waiting on a decision, so you do not have to ask the Rolla team to clear your test transactions by hand.\n\nNo provider confirms a transfer in sandbox, so simulated deposits and payouts stay `pending` until somebody decides them. `approve` runs the same settlement Rolla's own operators run — the ledger posts, related fee transactions settle with it, the confirmation email is sent and the `transaction.completed` webhook fires. `reject` discards the entries, moves the transaction to `rejected` and fails its related fee transactions, so a failed deposit costs nothing.\n\nWorks for every currency. The route does not exist in production, where it returns 404.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "description": "Rolla's transaction ID (UUID), as returned by List Transactions.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "357cf04f-2096-4b45-9c14-e33db131b5dd"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "approve",
+                      "reject"
+                    ],
+                    "description": "`approve` settles the transaction; `reject` discards it. Any other value is rejected with `400 Validation failed`.",
+                    "example": "approve"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500,
+                    "description": "Why the transaction was rejected. Recorded on the transaction and included in the rejection email sent to the account's notification recipients. Ignored for `approve`.",
+                    "example": "simulating a failed inbound wire"
+                  }
+                }
+              },
+              "examples": {
+                "approve": {
+                  "summary": "Settle a pending transaction",
+                  "value": {
+                    "action": "approve"
+                  }
+                },
+                "reject": {
+                  "summary": "Reject it, with a reason",
+                  "value": {
+                    "action": "reject",
+                    "reason": "simulating a failed inbound wire"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The transaction after the decision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Transaction approved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "transaction": {
+                          "$ref": "#/components/schemas/Transaction"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body was malformed (`\"message\": \"Validation failed\"` with an `errors` array), or the transaction cannot be decided — it is not `pending`, `sent` or `processing`, it is a Mobile Money collection awaiting its provider callback, or a Rolla operator currently holds it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 400,
+                  "message": "Transaction is not pending or sent: completed"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such transaction in your book, or the endpoint was called in production (sandbox-only). A transaction belonging to another partner reports the same 404 as one that does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 404,
+                  "message": "Transaction not found: 00000000-0000-4000-8000-000000000000"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/wallet/statement": {
       "get": {
         "operationId": "getStatement",
