@@ -123,7 +123,7 @@ Once a deposit lands, match it by `virtual_account` and `customer_identifier` in
 A deposit can arrive as `transaction.pending` first and complete moments later — treat `transaction.completed` as the signal that funds are spendable.
 
 <Tip>
-  Testing without a real transfer? [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit) credits an account by `account_number` or `customer_identifier` and fires the same webhook. It exists in sandbox only — call it against `https://api-staging.rolla.xyz`; in production it returns `404`.
+  Testing without a real transfer? [Simulate an NGN Deposit](/api-reference/endpoint/wallet/simulate-deposit) credits an account by `account_number` or `customer_identifier` and fires the same webhook. It exists in sandbox only — call it against `https://api-staging.rolla.xyz`; in production it returns `404`.
 </Tip>
 
 ## Stablecoin deposits

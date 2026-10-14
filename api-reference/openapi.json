@@ -11866,7 +11866,7 @@
     "/wallet/virtual-accounts/simulate-deposit": {
       "post": {
         "operationId": "simulateDeposit",
-        "summary": "Simulate a Deposit (Sandbox)",
+        "summary": "Simulate an NGN Deposit (Sandbox)",
         "description": "Sandbox only: injects a deposit into one of your own virtual accounts. The wallet is credited and the deposit webhook is delivered, without a real bank transfer. The route does not exist in production, where it returns 404. Provide exactly one of `customer_identifier` or `account_number`.",
         "servers": [
           {
@@ -13014,7 +13014,7 @@
     "/accounts/{accountId}/bank-accounts/simulate-deposit": {
       "post": {
         "operationId": "simulateAccountDeposit",
-        "summary": "Simulate a Deposit (Sandbox)",
+        "summary": "Simulate an Account Deposit (Sandbox)",
         "description": "Sandbox only. Simulates an incoming USD deposit into one of an account's deposit accounts, so you can exercise deposit crediting and webhooks without a real transfer.\n\nWith `bank_account_reference` the deposit is credited to that specific account; without it, to the client's primary account. The balance is credited **asynchronously** via the provider's normal deposit webhook; this call only submits the simulated inbound transfer.\n\nThe route is not registered in production, where it returns `404`.",
         "servers": [
           {

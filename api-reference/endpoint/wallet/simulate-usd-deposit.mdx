@@ -5,7 +5,7 @@ openapi: 'POST /wallet/simulate-usd-deposit'
 
 A testing helper that simulates an **incoming USD deposit** into your account's **USD wallet** so you can verify your USD funding flow end-to-end — the wallet is credited and the deposit [webhook](/api-reference/webhooks/overview) is delivered — **without sending a real wire transfer**.
 
-It is the USD counterpart of [Simulate a Deposit](/api-reference/endpoint/wallet/simulate-deposit). The request is dispatched to your account's USD provider sandbox; the wallet balance is then credited **asynchronously** via that provider's normal deposit webhook — so the call only *submits* the simulated inbound transfer.
+It is the USD counterpart of [Simulate an NGN Deposit](/api-reference/endpoint/wallet/simulate-deposit). The request is dispatched to your account's USD provider sandbox; the wallet balance is then credited **asynchronously** via that provider's normal deposit webhook — so the call only *submits* the simulated inbound transfer.
 
 <Warning>
   **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`. Use it against your sandbox environment only.
