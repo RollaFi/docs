@@ -31,6 +31,8 @@ Send as `multipart/form-data`.
 | `documentNumber` | string | No | The document's number |
 | `issueDate` | string | No | `YYYY-MM-DD` |
 | `expirationDate` | string | No | `YYYY-MM-DD` |
+| `firstNameNative` | string | No | First name as written on the document, in its own script, e.g. `超虎`. Max 100 characters. Must be sent together with `lastNameNative` |
+| `lastNameNative` | string | No | Last name as written on the document, in its own script, e.g. `邱`. Must be sent together with `firstNameNative` |
 
 <Note>
   `passport` still works in place of `document`, so an integration built against the
@@ -38,6 +40,10 @@ Send as `multipart/form-data`.
 </Note>
 
 `personId` is the `id` returned by [Add Related Person](/api-reference/endpoint/accounts/add-related-person) — the same id used for the [related-person KYC link](/api-reference/endpoint/accounts/kyc-link) and for that person's document uploads.
+
+<Tip>
+  **Documents in a non-Latin script** (e.g. a Chinese national ID): the identity provider compares the name it reads off the document with the name we send. Send the name as printed on the document in `firstNameNative` / `lastNameNative` (both or neither); the Latin name on the account is unchanged. Without them, the comparison is made against the Latin name and a native-script document can be rejected.
+</Tip>
 
 ## Example Request
 
@@ -51,7 +57,9 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/a55eb4aa-8356-4d6d-
   -F "country=NG" \
   -F "documentNumber=A01234567" \
   -F "issueDate=2020-03-14" \
-  -F "expirationDate=2030-03-13"
+  -F "expirationDate=2030-03-13" \
+  -F "firstNameNative=超虎" \
+  -F "lastNameNative=邱"
 ```
 
 ## Example Response

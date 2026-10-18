@@ -12496,6 +12496,20 @@
                     "description": "YYYY-MM-DD",
                     "example": "2030-03-13"
                   },
+                  "firstNameNative": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "First name as written on the document, in its own script (e.g. Chinese). Send together with `lastNameNative`; the name on the account stays as is. Use it when the document is not in Latin script.",
+                    "example": "超虎"
+                  },
+                  "lastNameNative": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Last name as written on the document, in its own script. Required whenever `firstNameNative` is sent, and vice versa.",
+                    "example": "邱"
+                  },
                   "passport": {
                     "type": "string",
                     "format": "binary",
@@ -12512,7 +12526,9 @@
                 "country": "CN",
                 "documentNumber": "110101199003074567",
                 "issueDate": "2020-03-14",
-                "expirationDate": "2030-03-13"
+                "expirationDate": "2030-03-13",
+                "firstNameNative": "超虎",
+                "lastNameNative": "邱"
               }
             }
           }
@@ -12711,6 +12727,20 @@
                     "description": "YYYY-MM-DD",
                     "example": "2030-03-13"
                   },
+                  "firstNameNative": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "First name as written on the document, in its own script (e.g. Chinese). Send together with `lastNameNative`; the name on the account stays as is. Use it when the document is not in Latin script.",
+                    "example": "超虎"
+                  },
+                  "lastNameNative": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100,
+                    "description": "Last name as written on the document, in its own script. Required whenever `firstNameNative` is sent, and vice versa.",
+                    "example": "邱"
+                  },
                   "passport": {
                     "type": "string",
                     "format": "binary",
@@ -12727,7 +12757,9 @@
                 "country": "NG",
                 "documentNumber": "A01234567",
                 "issueDate": "2020-03-14",
-                "expirationDate": "2030-03-13"
+                "expirationDate": "2030-03-13",
+                "firstNameNative": "超虎",
+                "lastNameNative": "邱"
               }
             }
           }
