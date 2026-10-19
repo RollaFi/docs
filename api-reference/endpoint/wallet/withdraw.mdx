@@ -24,7 +24,7 @@ For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents =
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `amount` | number | Yes | Amount in the smallest unit (kobo for NGN, cents for USD — **100 cents = \$1.00 USD**). Must be a whole number of smallest units and at least `1` |
-| `currency` | string | Yes | 3-letter currency code — `NGN`, `USD`, or `XAF` |
+| `currency` | string | Yes | Currency of the wallet the payout leaves — the balance that is debited. Any currency from [Get Supported Currencies](/api-reference/endpoint/wallet/supported-currencies), including `USDT` and `USDC` |
 | `description` | string | Yes | Narration for the transaction, 1–500 characters |
 | `externalReference` | string | No | Your own unique reference for this transaction, up to 255 characters. Used on USD and other non-NGN bank rails. NGN and Mobile Money payouts always get a Rolla-generated reference instead (for example `NG-NFNUJTUW`), because the provider imposes its own format |
 | `beneficiaryId` | string (UUID) | No* | ID of a saved beneficiary |
@@ -32,9 +32,12 @@ For **USD**, the top-level **`amount`** is **US cents** — e.g. **100** cents =
 | `saveBeneficiary` | boolean | No | Save the inline beneficiary for future use |
 | `deductFeesFromBalance` | boolean | No | Defaults to `true` on this API: the fee is taken from your wallet balance on top of `amount`, and the beneficiary receives the exact `amount`. Set `false` to take the fee out of the amount instead, so the beneficiary receives less |
 | `metadata` | object | No | Your own key/value data, stored on the transaction and returned on every response and webhook for it. See [Attaching your own metadata](#attaching-your-own-metadata) |
+| `recipientCurrency` | string | No* | Cross-currency payouts: the currency the beneficiary receives. See [Cross-currency payouts](#cross-currency-payouts) |
+| `recipientAmount` | number | No* | Cross-currency payouts: the amount the beneficiary receives, in the recipient currency's smallest units, as quoted |
+| `rateToken` | string | No* | Cross-currency payouts: the `rateToken` for the corridor from [Get Rates](/api-reference/endpoint/wallet/rates) |
 | `payerNameId` | string (UUID) | No | Which of your registered payer names the beneficiary should see on this payout. Requires [Named Payouts](/guides/named-payouts) to be enabled. See [Choosing the payer name](#choosing-the-payer-name) |
 
-\* One of `beneficiaryId` or `inlineBeneficiary` is required.
+\* One of `beneficiaryId` or `inlineBeneficiary` is required. `recipientCurrency`, `recipientAmount` and `rateToken` are sent together, and only for a cross-currency payout.
 
 ---
 
@@ -206,24 +209,28 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
 
 ---
 
-### USD — Crypto (USDT / USDC)
+### Crypto (USDT / USDC)
 
-Crypto withdrawals are sent from your **USD wallet**. Set `withdrawal_method` to `"crypto_usdt"` or `"crypto_usdc"` to send the USD value as a stablecoin to a crypto wallet address.
+Stablecoins are sent to an on-chain wallet address. Set `withdrawal_method` to `"crypto_usdt"` or `"crypto_usdc"`. You can fund the payout from the stablecoin balance itself, or from your USD balance.
 
 | Field | Required |
 |-------|----------|
 | `withdrawal_method` | Yes — `"crypto_usdt"` or `"crypto_usdc"` |
 | `account_name` | Yes — used as a display nickname |
-| `wallet_address` | Yes — 26–64 alphanumeric characters |
-| `wallet_chain` | Yes — e.g. `"ethereum"`, `"tron"` |
+| `wallet_address` | Yes — validated against the chosen network's address format |
+| `wallet_chain` | Yes — the network `slug` from [Get Crypto Withdrawal Networks](/api-reference/endpoint/wallet/crypto-withdrawal-networks), e.g. `"tron"`, `"solana"`, `"ethereum"` |
+
+Which networks are available depends on the stablecoin: always read them from the [networks endpoint](/api-reference/endpoint/wallet/crypto-withdrawal-networks) for the currency you are sending. An unsupported network or an invalid address is refused with `400` and no money moves.
+
+**From a USDT or USDC balance** — set `currency` to the stablecoin; `amount` is in the stablecoin's smallest units (100 = 1.00 USDT) and no rate is involved:
 
 ```bash
 curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
   -d '{
-    "amount": 100,
-    "currency": "USD",
+    "amount": 10000,
+    "currency": "USDT",
     "description": "Treasury top-up",
     "inlineBeneficiary": {
       "withdrawal_method": "crypto_usdt",
@@ -233,6 +240,76 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
     }
   }'
 ```
+
+**From a USD balance** — keep `currency` as `USD` and add the [cross-currency fields](#cross-currency-payouts) with the stablecoin as `recipientCurrency`. USD is debited and the stablecoin is sent on-chain. Omitting them is refused, because the stablecoin to send cannot be inferred from a USD balance.
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 10000,
+    "currency": "USD",
+    "description": "Treasury top-up",
+    "recipientCurrency": "USDC",
+    "recipientAmount": 9985,
+    "rateToken": "eyJhbGciOiJIUzI1NiIs...",
+    "inlineBeneficiary": {
+      "withdrawal_method": "crypto_usdc",
+      "account_name": "My USDC Wallet",
+      "wallet_address": "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU",
+      "wallet_chain": "solana"
+    }
+  }'
+```
+
+The response's `beneficiary` block includes `withdrawal_method`, `wallet_address` and `wallet_chain` for crypto payouts.
+
+---
+
+## Cross-currency payouts
+
+You can pay out in a different currency from the wallet you debit, on any corridor enabled for your account — for example a USD balance to an NGN bank account, or a USD balance to USDT on-chain. The payout settles at the **quoted rate**; rate negotiation is not available on the API.
+
+<Steps>
+  <Step title="Get the quote">
+    Call [`GET /wallet/rates`](/api-reference/endpoint/wallet/rates) and pick the entry with `fromCurrency` = the wallet you will debit and `toCurrency` = what the beneficiary receives. Keep its `rateToken`. If there is no such entry, the corridor is not enabled for you.
+  </Step>
+  <Step title="Quote the fee (optional)">
+    Call [`POST /wallet/fee`](/api-reference/endpoint/wallet/fee) with `recipientCurrency` to see the fee before sending.
+  </Step>
+  <Step title="Send the withdrawal">
+    Send `recipientCurrency`, `recipientAmount` and the `rateToken` along with a beneficiary in the **recipient** currency (its `currency` must equal `recipientCurrency`).
+  </Step>
+</Steps>
+
+| Field | Description |
+|-------|-------------|
+| `amount` | What you spend, in the debited wallet's smallest units |
+| `recipientCurrency` | What the beneficiary receives |
+| `recipientAmount` | The recipient amount implied by the quote, in the recipient currency's smallest units. The server recomputes it from the quoted rate and refuses the payout if yours differs materially |
+| `rateToken` | The quote from `GET /wallet/rates` |
+
+```bash
+curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/withdraw" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 10000,
+    "currency": "USD",
+    "description": "Supplier payment",
+    "recipientCurrency": "NGN",
+    "recipientAmount": 14053992,
+    "rateToken": "eyJhbGciOiJIUzI1NiIs...",
+    "beneficiaryId": "79ee09c0-1518-4a5c-86c7-d880a78ec6e5"
+  }'
+```
+
+The transaction is returned with `transaction_type: "fx_withdrawal"`, `source_amount` / `source_currency` for what left your wallet and `destination_amount` / `destination_currency` for what the beneficiary receives.
+
+<Warning>
+  Corridors are directional. A USDT → USD corridor does not enable USD → USDT. A pair with no enabled corridor is refused with `400` (`No active corridor found for … to …`), and a `rateToken` for a different pair is refused with `Rate token currencies do not match`.
+</Warning>
 
 ---
 

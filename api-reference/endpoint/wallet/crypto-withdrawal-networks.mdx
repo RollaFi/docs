@@ -1,0 +1,45 @@
+---
+title: 'Get Crypto Withdrawal Networks'
+openapi: 'GET /wallet/crypto-withdrawal-networks'
+---
+
+List the blockchain networks a stablecoin payout can currently be sent on. Call this before a crypto withdrawal to find the valid `wallet_chain` values for the currency you are sending.
+
+Availability is per currency: a network that carries USDT may not carry USDC (for example, USDC may only be payable on some networks). Networks are enabled and disabled on our side, so read the list at payout time rather than hard-coding it.
+
+## Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `currency` | string | Yes | `USDT` or `USDC` |
+
+## Example Request
+
+```bash
+curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/crypto-withdrawal-networks?currency=USDT" \
+  -H "X-API-Key: your_api_key_here"
+```
+
+## Example Response
+
+```json
+{
+  "status": 200,
+  "message": "Withdrawal networks retrieved successfully",
+  "success": true,
+  "data": {
+    "networks": [
+      {
+        "slug": "tron",
+        "name": "Tron",
+        "aliases": ["TRC20"],
+        "nativeSymbol": "TRX",
+        "addressRegex": "^T[1-9A-HJ-NP-Za-km-z]{33}$",
+        "explorerAddressUrl": "https://tronscan.org/#/address/{address}"
+      }
+    ]
+  }
+}
+```
+
+Send the `slug` as `wallet_chain` on [Withdraw Funds](/api-reference/endpoint/wallet/withdraw). Recipient addresses are validated against the network's format; a bad address or an unsupported network is refused with `400` before any money moves.

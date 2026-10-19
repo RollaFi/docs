@@ -15611,6 +15611,118 @@
           }
         }
       }
+    },
+    "/wallet/crypto-withdrawal-networks": {
+      "get": {
+        "operationId": "getCryptoWithdrawalNetworks",
+        "summary": "Get Crypto Withdrawal Networks",
+        "description": "Lists the blockchain networks a stablecoin payout can currently be sent on for a currency. Use the returned `slug` as `wallet_chain`.",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "description": "The stablecoin being sent on-chain.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "USDT",
+                "USDC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Withdrawal networks retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "integer",
+                      "example": 200
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Withdrawal networks retrieved successfully"
+                    },
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "networks": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "slug": {
+                                "type": "string",
+                                "description": "Canonical network identifier — send as `wallet_chain`.",
+                                "example": "tron"
+                              },
+                              "name": {
+                                "type": "string",
+                                "example": "Tron"
+                              },
+                              "aliases": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "example": [
+                                  "TRC20"
+                                ]
+                              },
+                              "nativeSymbol": {
+                                "type": "string",
+                                "example": "TRX"
+                              },
+                              "addressRegex": {
+                                "type": "string",
+                                "description": "Pattern a recipient address must match on this network."
+                              },
+                              "explorerAddressUrl": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "status": 200,
+                  "message": "Withdrawal networks retrieved successfully",
+                  "success": true,
+                  "data": {
+                    "networks": [
+                      {
+                        "slug": "tron",
+                        "name": "Tron",
+                        "aliases": [
+                          "TRC20"
+                        ],
+                        "nativeSymbol": "TRX",
+                        "addressRegex": "^T[1-9A-HJ-NP-Za-km-z]{33}$",
+                        "explorerAddressUrl": "https://tronscan.org/#/address/{address}"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or unsupported currency"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -16232,7 +16344,7 @@
           },
           "currency": {
             "type": "string",
-            "description": "Currency code of the wallet the payout leaves",
+            "description": "Currency code of the wallet the payout leaves — the balance that is debited. For a stablecoin payout from a USDT or USDC balance send `USDT` / `USDC`; to pay out from a USD balance, set `recipientCurrency` as well.",
             "minLength": 3,
             "maxLength": 4,
             "example": "NGN"
@@ -16299,6 +16411,24 @@
             "type": "string",
             "format": "uuid",
             "description": "Which of your registered affiliated payer names the beneficiary should see on this payout. Only an international wire can carry one; naming one on any other rail is a 400. Because international wire must be sent as multipart/form-data, a payout carrying payerNameId is always a multipart request. Omit to use your default payer name if you have set one, and your own business name if you have not. Requires Named Payouts to be enabled."
+          },
+          "recipientCurrency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 4,
+            "description": "Cross-currency payouts only: the currency the beneficiary receives (e.g. `NGN`, or `USDT` for an on-chain stablecoin payout from a USD balance). Send together with `recipientAmount` and `rateToken`. An enabled corridor from `currency` to `recipientCurrency` is required — see `GET /wallet/rates`.",
+            "example": "NGN"
+          },
+          "recipientAmount": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Cross-currency payouts only: the amount the beneficiary should receive, in the recipient currency's smallest units, as quoted from the rate. Treated as a check — the server recomputes it from the quoted rate and refuses the payout if it differs materially.",
+            "example": 1500000
+          },
+          "rateToken": {
+            "type": "string",
+            "description": "Cross-currency payouts only: the `rateToken` for this corridor from `GET /wallet/rates`. The payout settles at the quoted rate; rate negotiation is not available on the API.",
+            "example": "eyJhbGciOiJIUzI1NiIs..."
           }
         }
       },
@@ -16448,12 +16578,12 @@
           },
           "wallet_address": {
             "type": "string",
-            "description": "Required for crypto_usdt and crypto_usdc. Use with currency: USD.",
+            "description": "Required for crypto_usdt and crypto_usdc. Validated against the format of the chosen network.",
             "example": "TXyZ1234abcd5678efgh9012ijkl3456mnop"
           },
           "wallet_chain": {
             "type": "string",
-            "description": "Required for crypto_usdt and crypto_usdc. The blockchain network slug (e.g. 'ethereum', 'tron'). Resolved against Rolla's network registry at request time, so a chain that cannot currently carry this stablecoin is refused with 400 and the list of supported networks.",
+            "description": "Required for crypto_usdt and crypto_usdc. The network `slug` from `GET /wallet/crypto-withdrawal-networks` (e.g. 'tron', 'solana'); aliases such as 'TRC20' are accepted and stored as the slug. A chain that cannot currently carry this stablecoin is refused with 400 and the list of supported networks.",
             "example": "tron"
           },
           "mobile_money_provider": {

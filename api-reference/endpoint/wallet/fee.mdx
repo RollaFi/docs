@@ -123,6 +123,8 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/wallet/fee" \
   }'
 ```
 
+The same applies when the beneficiary is paid in a stablecoin on-chain — quote a USD balance paid out as USDT with `recipientCurrency: "USDT"` and `withdrawal_method: "crypto_usdt"`. To then send it, follow [Cross-currency payouts](/api-reference/endpoint/wallet/withdraw#cross-currency-payouts).
+
 <Tip>
   Call this endpoint before initiating a withdrawal or swap to show your users the exact fee they'll be charged. Send the same `withdrawal_method` (or `beneficiaryId`) you will send to [`POST /wallet/withdraw`](/api-reference/endpoint/wallet/withdraw) so the quote matches the charge.
 </Tip>

@@ -3,7 +3,7 @@ title: 'Get Exchange Rates'
 openapi: 'GET /wallet/rates'
 ---
 
-Retrieve current exchange rates for all supported currency pairs. Use the `rateToken` from the response to lock in a rate when performing a swap.
+Retrieve current exchange rates for all supported currency pairs. Use the `rateToken` from the response to lock in a rate when performing a [swap](/api-reference/endpoint/wallet/swap) or a [cross-currency withdrawal](/api-reference/endpoint/wallet/withdraw#cross-currency-payouts). Rates are directional: a pair only appears if that corridor is enabled for your account.
 
 ## Example Request
 
