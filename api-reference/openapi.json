@@ -10145,6 +10145,20 @@
                     "nullable": true,
                     "description": "National Identification Number, accepted in place of `taxId` for Nigerian residents; must be 11 digits when the person's `currentAddress.country` is `NG`.",
                     "example": "12345678901"
+                  },
+                  "firstNameNative": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 100,
+                    "description": "First name as written on the identity document, in its own script (e.g. Chinese). Used only for identity verification; `firstName` stays the Latin name. Send together with `lastNameNative`. Reliance uploads use these when present and fall back to `firstName` / `lastName`. Send `null` for both to clear.",
+                    "example": "超虎"
+                  },
+                  "lastNameNative": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 100,
+                    "description": "Last name as written on the identity document, in its own script. Must be set together with `firstNameNative`.",
+                    "example": "邱"
                   }
                 }
               },
@@ -10408,6 +10422,20 @@
                     "nullable": true,
                     "description": "National Identification Number, accepted in place of `taxId` for Nigerian residents; must be 11 digits when the person's `currentAddress.country` is `NG`.",
                     "example": "12345678901"
+                  },
+                  "firstNameNative": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 100,
+                    "description": "First name as written on the identity document, in its own script (e.g. Chinese). Used only for identity verification; `firstName` stays the Latin name. Send together with `lastNameNative`. Reliance uploads use these when present and fall back to `firstName` / `lastName`. Send `null` for both to clear.",
+                    "example": "超虎"
+                  },
+                  "lastNameNative": {
+                    "type": "string",
+                    "nullable": true,
+                    "maxLength": 100,
+                    "description": "Last name as written on the identity document, in its own script. Must be set together with `firstNameNative`.",
+                    "example": "邱"
                   }
                 }
               },
@@ -18174,6 +18202,20 @@
             "nullable": true,
             "description": "National Identification Number, accepted in place of `taxId` for Nigerian residents; must be 11 digits when the person's `currentAddress.country` is `NG`.",
             "example": "12345678901"
+          },
+          "firstNameNative": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "description": "First name as written on the identity document, in its own script (e.g. Chinese). Used only for identity verification; `firstName` stays the Latin name. Send together with `lastNameNative`. Reliance uploads use these when present and fall back to `firstName` / `lastName`. Send `null` for both to clear.",
+            "example": "超虎"
+          },
+          "lastNameNative": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "description": "Last name as written on the identity document, in its own script. Must be set together with `firstNameNative`.",
+            "example": "邱"
           }
         }
       },
@@ -18522,6 +18564,20 @@
             "type": "string",
             "nullable": true,
             "description": "Government identifier for any other country, as issued"
+          },
+          "firstNameNative": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "description": "First name as written on the identity document, in its own script (e.g. Chinese). Used only for identity verification; `firstName` stays the Latin name. Send together with `lastNameNative`. Reliance uploads use these when present and fall back to `firstName` / `lastName`.",
+            "example": "超虎"
+          },
+          "lastNameNative": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 100,
+            "description": "Last name as written on the identity document, in its own script. Must be set together with `firstNameNative`.",
+            "example": "邱"
           },
           "idDocument": {
             "type": "object",

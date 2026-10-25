@@ -5,6 +5,10 @@ openapi: 'PUT /accounts/{accountId}/individual'
 
 Updates the KYC application of an individual account. Fields inside `individualInfo` are merged into the stored application, so you can collect personal details, address and employment information across multiple calls.
 
+<Tip>
+  **Non-Latin ID documents:** save the name as printed on the document with `firstNameNative` and `lastNameNative` (both or neither; send `null` for both to clear). They are used only for identity verification — `firstName` and `lastName` stay the Latin name everywhere else. [KYC reliance](/api-reference/endpoint/accounts/kyc-reliance) uses the saved native name when the request does not send one, and saves one that it does.
+</Tip>
+
 ## Mandatory and optional fields
 
 <Note>

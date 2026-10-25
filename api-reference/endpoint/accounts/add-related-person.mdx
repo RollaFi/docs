@@ -5,6 +5,10 @@ openapi: 'POST /accounts/{accountId}/related-persons'
 
 Adds a beneficial owner or director to a business account's application. Every related person must complete identity verification — via a [KYC link](/api-reference/endpoint/accounts/kyc-link) — before the application can be submitted.
 
+<Tip>
+  **Non-Latin ID documents:** save the name as printed on the document with `firstNameNative` and `lastNameNative` (both or neither; send `null` for both to clear). They are used only for identity verification — `firstName` and `lastName` stay the Latin name everywhere else. [KYC reliance](/api-reference/endpoint/accounts/kyc-reliance) uses the saved native name when the request does not send one, and saves one that it does.
+</Tip>
+
 ## Mandatory and optional fields
 
 A business must declare **at least one** beneficial owner or director.
