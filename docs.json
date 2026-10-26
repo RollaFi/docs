@@ -86,7 +86,8 @@
             "group": "Wallets",
             "pages": [
               "api-reference/endpoint/wallet/wallets",
-              "api-reference/endpoint/wallet/supported-currencies"
+              "api-reference/endpoint/wallet/supported-currencies",
+              "api-reference/endpoint/wallet/crypto-withdrawal-networks"
             ]
           },
           {

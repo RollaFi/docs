@@ -164,7 +164,8 @@ Affiliated names are reviewed and registered before they can be used, so read th
 ## Other destinations
 
 - **Mobile money** — select corridors (e.g. XAF, XOF, GHS) via `withdrawal_method: "mobile_money"` with `mobile_money_provider` and `phone_number`.
-- **Stablecoins** — `crypto_usdc` / `crypto_usdt` with `wallet_address` and `wallet_chain`.
+- **Stablecoins** — `crypto_usdc` / `crypto_usdt` with `wallet_address` and `wallet_chain`. Pick the chain from [Get Crypto Withdrawal Networks](/api-reference/endpoint/wallet/crypto-withdrawal-networks). Send from a USDT/USDC balance directly, or from a USD balance with the cross-currency fields (see below).
+- **Cross-currency** — pay out in a different currency from the balance you debit (e.g. USD → NGN, USD → USDT on Tron, USD → USDC on Solana) by adding `recipientCurrency`, `recipientAmount` and the `rateToken` from [Get Rates](/api-reference/endpoint/wallet/rates). See [Cross-currency payouts](/api-reference/endpoint/wallet/withdraw#cross-currency-payouts).
 - **Another Rolla business** — skip beneficiaries entirely and use [Rolla Transfer](/api-reference/endpoint/wallet/transfer) for instant transfers between Rolla accounts.
 
 See [Amounts & Currencies](/concepts/amounts-and-currencies#currencies-you-can-pay-out-in) for the full list of destination currencies.
