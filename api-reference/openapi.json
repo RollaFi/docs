@@ -16041,6 +16041,11 @@
               }
             }
           },
+          "sender_name": {
+            "type": "string",
+            "description": "USD, EUR and GBP bank payouts only: the name the payout was sent under, as the beneficiary's bank shows it. Set when the payout is sent to the bank, so it is omitted before then, on other payouts and on deposits.",
+            "example": "Acme Trading Ltd"
+          },
           "payment_rail": {
             "type": "string",
             "enum": [

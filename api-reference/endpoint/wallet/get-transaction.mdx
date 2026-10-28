@@ -46,7 +46,8 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/wallet/transaction/a1b2c3d4-e
 
 Amounts are in **minor units** — `500000` is ₦5,000.00. Fields that do not apply are
 **omitted** rather than returned as `null`: `beneficiary` only when the payout went to one,
-`exchange_rate` on swaps only, and `virtual_account`, `payer` and `payment_rail` on deposits only.
+`exchange_rate` on swaps only, `sender_name` on payouts once they have been sent to the bank,
+and `virtual_account`, `payer` and `payment_rail` on deposits only.
 
 ## Looking one up by your own reference
 
@@ -125,3 +126,23 @@ them — the references a beneficiary's bank is chased with.
   [`transaction.uetr.assigned`](/api-reference/webhooks/events#payout-tracking-events)
   webhook. It carries the same value.
 </Tip>
+
+## Sender name
+
+A USD, EUR or GBP bank payout carries `sender_name` once it has been sent to the bank: the
+name the beneficiary's bank shows as the sender.
+
+```json
+{
+  "id": "c5d3050f-af45-41d3-a2db-29af4fd89ee5",
+  "transaction_type": "withdrawal",
+  "status": "completed",
+  "sender_name": "Acme Trading Ltd"
+}
+```
+
+It is set from the [payer name](/guides/named-payouts) the payout was sent under, your default,
+or your business name, and records what was actually used. Until the payout has been sent to the
+bank it is **omitted**, as it is on local-rail, mobile money and stablecoin payouts and on
+deposits. The [`transaction.completed`](/api-reference/webhooks/payloads#the-sender_name-field-payouts)
+webhook carries the same value.

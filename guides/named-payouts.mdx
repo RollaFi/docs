@@ -178,7 +178,7 @@ Which name a payout goes out under is settled in this order, first match wins:
   </Step>
 </Steps>
 
-The payer name is recorded on the transaction, so a payout always reports the name it was sent under even if you archive that name later.
+The payer name is recorded on the transaction, so a payout always reports the name it was sent under even if you archive that name later. Read it as `sender_name` on [Get Transaction](/api-reference/endpoint/wallet/get-transaction#sender-name) and on the [`transaction.completed`](/api-reference/webhooks/payloads#the-sender_name-field-payouts) webhook. It appears once the payout has been sent to the bank, and can differ from the name you requested if Rolla had to send it under another one.
 
 <Warning>
   **A payout attached to a name that is not yet `active` is accepted, and then waits.** This is deliberate: you usually register a name because of a payment you are about to make, and refusing the payout would make you come back and redo it. But the money does not move until the name is usable, so for anything time-sensitive, wait for `payer_name.active` before sending.
