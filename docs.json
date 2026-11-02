@@ -232,6 +232,8 @@
                 "group": "Sandbox",
                 "pages": [
                   "api-reference/endpoint/accounts/approve-account",
+                  "api-reference/endpoint/accounts/submit-bank-account",
+                  "api-reference/endpoint/accounts/generate-bank-account",
                   "api-reference/endpoint/accounts/simulate-deposit"
                 ]
               }

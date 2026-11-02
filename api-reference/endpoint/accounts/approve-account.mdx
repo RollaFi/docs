@@ -57,5 +57,5 @@ curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79
 </Note>
 
 <Tip>
-  Full sandbox test loop: **create account → complete details + KYC → submit → approve (this endpoint) → issue USD/NGN account → simulate a deposit → initiate a payout.**
+  Full sandbox test loop: **create account → complete details + KYC → submit → approve (this endpoint) → request a USD account → [submit its details](/api-reference/endpoint/accounts/submit-bank-account) → [generate it](/api-reference/endpoint/accounts/generate-bank-account) → simulate a deposit → initiate a payout.** NGN accounts are issued straight away, without the submit and generate steps.
 </Tip>

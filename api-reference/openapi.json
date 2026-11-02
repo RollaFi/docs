@@ -13112,6 +13112,329 @@
         }
       }
     },
+    "/accounts/{accountId}/bank-accounts/submit": {
+      "post": {
+        "operationId": "sandboxSubmitBankAccount",
+        "summary": "Submit USD Account Details (Sandbox)",
+        "description": "Sandbox only. Sends an approved account's USD onboarding details to the banking partner's sandbox — the step the Rolla team takes on a USD request in production. Optional `accountData` corrects the prefilled details (same shape as `prefilled` from Bank Account Requirements). The banking partner's validation errors are returned as `422`, so you can fix them and submit again. When the response says `readyToGenerate: true`, call Generate USD Account.\n\nThe route is not registered in production, where it returns `404`.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "eec3cbed-79d8-4370-87a0-b6be9e287337"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currency"
+                ],
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "USD"
+                    ]
+                  },
+                  "accountData": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Corrections merged over the prefilled details, in the same shape as `prefilled` from Bank Account Requirements."
+                  }
+                }
+              },
+              "example": {
+                "currency": "USD",
+                "accountData": {
+                  "onboardingDetails": {
+                    "taxNumber": "90123456789"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Details submitted (`status: \"submitted\"`), or the account already exists (`status: \"already_exists\"` with `bankAccount`)",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 200,
+                  "message": "Onboarding details submitted to the provider",
+                  "success": true,
+                  "data": {
+                    "status": "submitted",
+                    "requestId": "70ad758f-2a1f-429d-a933-d546c1c27a61",
+                    "onboardingState": "entity_finalized",
+                    "readyToGenerate": true,
+                    "message": "The provider approved the details. Generate the bank account next."
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`currency` is missing or not `\"USD\"` (`\"message\": \"Validation failed\"` with an `errors` array)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, or the endpoint was called in production (sandbox-only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`APPLICATION_NOT_APPROVED` (account not approved), `NO_OPEN_REQUEST` (no USD account requested) or `REQUEST_DECLINED`",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 409,
+                  "message": "There is no open USD request for this account. Request a USD bank account first.",
+                  "code": "NO_OPEN_REQUEST"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The banking partner rejected the details; `errors` lists why",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 422,
+                  "message": "Variable: tax_number. Message: This tax number is already being used.",
+                  "errors": [
+                    "Variable: tax_number. Message: This tax number is already being used."
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/accounts/{accountId}/bank-accounts/generate": {
+      "post": {
+        "operationId": "sandboxGenerateBankAccount",
+        "summary": "Generate USD Account (Sandbox)",
+        "description": "Sandbox only. Generates the USD deposit account once its details were submitted and accepted by the banking partner's sandbox — the last step the Rolla team takes on a USD request in production. Closes the USD request as fulfilled and sends `account.virtual_account.created`. Calling it again returns the same account with `status: \"already_exists\"`.\n\nThe route is not registered in production, where it returns `404`.",
+        "servers": [
+          {
+            "url": "https://api-staging.rolla.xyz/api/v1/external"
+          }
+        ],
+        "parameters": [
+          {
+            "name": "accountId",
+            "in": "path",
+            "required": true,
+            "description": "Identifier of an account owned by the same user as your API key's business",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "eec3cbed-79d8-4370-87a0-b6be9e287337"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "currency"
+                ],
+                "properties": {
+                  "currency": {
+                    "type": "string",
+                    "enum": [
+                      "USD"
+                    ]
+                  }
+                }
+              },
+              "example": {
+                "currency": "USD"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account generated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 201,
+                  "message": "Bank account generated",
+                  "success": true,
+                  "data": {
+                    "status": "issued",
+                    "bankAccount": {
+                      "id": "a572f509-f16b-47bc-aa6f-cd875db581ea",
+                      "currency": "USD",
+                      "bankName": "Portage Bank",
+                      "accountNumber": "5a8886a6-8012-4311-835c-50d68ccd1f31",
+                      "accountName": "Amara Okafor",
+                      "routingNumber": "125109064",
+                      "swiftCode": "ROUTUS22XXX",
+                      "bankAddress": {
+                        "city": "Bellevue",
+                        "line1": "880 108th Ave NE",
+                        "state": "WA",
+                        "country": "US",
+                        "postalCode": "98004"
+                      },
+                      "type": "static",
+                      "status": "active",
+                      "reference": null,
+                      "label": null,
+                      "expiresAt": null,
+                      "createdAt": "2026-11-02T09:29:59.039Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "The account was already generated; the same account is returned with `status: \"already_exists\"`",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": 200,
+                  "message": "Client already onboarded",
+                  "success": true,
+                  "data": {
+                    "status": "already_exists",
+                    "message": "This client has already been onboarded; returning the existing account.",
+                    "bankAccount": {
+                      "id": "a572f509-f16b-47bc-aa6f-cd875db581ea",
+                      "currency": "USD",
+                      "bankName": "Portage Bank",
+                      "accountNumber": "5a8886a6-8012-4311-835c-50d68ccd1f31",
+                      "accountName": "Amara Okafor",
+                      "routingNumber": "125109064",
+                      "swiftCode": "ROUTUS22XXX",
+                      "bankAddress": {
+                        "city": "Bellevue",
+                        "line1": "880 108th Ave NE",
+                        "state": "WA",
+                        "country": "US",
+                        "postalCode": "98004"
+                      },
+                      "type": "static",
+                      "status": "active",
+                      "reference": null,
+                      "label": null,
+                      "expiresAt": null,
+                      "createdAt": "2026-11-02T09:29:59.039Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`currency` is missing or not `\"USD\"` (`\"message\": \"Validation failed\"` with an `errors` array)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing API key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Account not found, or the endpoint was called in production (sandbox-only)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`APPLICATION_NOT_APPROVED`, `ONBOARDING_NOT_SUBMITTED` (details not submitted yet) or `PROVIDER_REVIEW_PENDING` (banking partner has not accepted them)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "status": 409,
+                  "message": "The provider has not approved the onboarding details yet (state: entity_created). Submit again, or fix the details it rejected.",
+                  "code": "PROVIDER_REVIEW_PENDING"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The banking partner refused to create the account; `errors` lists why",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/accounts/{accountId}/verification/documents": {
       "get": {
         "operationId": "getAccountVerificationDocuments",
