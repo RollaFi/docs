@@ -13116,7 +13116,7 @@
       "post": {
         "operationId": "sandboxSubmitBankAccount",
         "summary": "Submit USD Account Details (Sandbox)",
-        "description": "Sandbox only. Sends a requested USD account's details to the banking partner's sandbox.",
+        "description": "Sandbox only. Submits a requested USD account's details for review.",
         "servers": [
           {
             "url": "https://api-staging.rolla.xyz/api/v1/external"
@@ -13150,40 +13150,26 @@
                     "enum": [
                       "USD"
                     ]
-                  },
-                  "accountData": {
-                    "type": "object",
-                    "additionalProperties": true,
-                    "description": "Corrections merged over the prefilled details, in the same shape as `prefilled` from Bank Account Requirements."
                   }
                 }
               },
               "example": {
-                "currency": "USD",
-                "accountData": {
-                  "onboardingDetails": {
-                    "taxNumber": "90123456789"
-                  }
-                }
+                "currency": "USD"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Details submitted (`status: \"submitted\"`), or the account already exists (`status: \"already_exists\"` with `bankAccount`)",
+            "description": "Submitted",
             "content": {
               "application/json": {
                 "example": {
                   "status": 200,
-                  "message": "Onboarding details submitted to the provider",
                   "success": true,
                   "data": {
                     "status": "submitted",
-                    "requestId": "70ad758f-2a1f-429d-a933-d546c1c27a61",
-                    "onboardingState": "entity_finalized",
-                    "readyToGenerate": true,
-                    "message": "The provider approved the details. Generate the bank account next."
+                    "readyToGenerate": true
                   }
                 }
               }
@@ -13220,7 +13206,7 @@
             }
           },
           "409": {
-            "description": "`APPLICATION_NOT_APPROVED` (account not approved), `NO_OPEN_REQUEST` (no USD account requested) or `REQUEST_DECLINED`",
+            "description": "`APPLICATION_NOT_APPROVED` or `NO_OPEN_REQUEST`",
             "content": {
               "application/json": {
                 "schema": {
@@ -13235,7 +13221,7 @@
             }
           },
           "422": {
-            "description": "The banking partner rejected the details; `errors` lists why",
+            "description": "The details did not pass; `errors` says why",
             "content": {
               "application/json": {
                 "schema": {
@@ -13408,7 +13394,7 @@
             }
           },
           "409": {
-            "description": "`APPLICATION_NOT_APPROVED`, `ONBOARDING_NOT_SUBMITTED` (details not submitted yet) or `PROVIDER_REVIEW_PENDING` (banking partner has not accepted them)",
+            "description": "`ONBOARDING_NOT_SUBMITTED` or `PROVIDER_REVIEW_PENDING`",
             "content": {
               "application/json": {
                 "schema": {
@@ -13416,14 +13402,14 @@
                 },
                 "example": {
                   "status": 409,
-                  "message": "The provider has not approved the onboarding details yet (state: entity_created). Submit again, or fix the details it rejected.",
+                  "message": "The onboarding details have not passed yet. Submit them again.",
                   "code": "PROVIDER_REVIEW_PENDING"
                 }
               }
             }
           },
           "422": {
-            "description": "The banking partner refused to create the account; `errors` lists why",
+            "description": "The account could not be created; `errors` says why",
             "content": {
               "application/json": {
                 "schema": {

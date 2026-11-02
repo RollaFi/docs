@@ -6,7 +6,7 @@ openapi: 'POST /accounts/{accountId}/bank-accounts/generate'
 Creates the USD account once its details have been [submitted](/api-reference/endpoint/accounts/submit-bank-account) and passed. Sends the [`account.virtual_account.created`](/api-reference/webhooks/events) webhook.
 
 <Warning>
-  **Sandbox only.** Returns `404` in production, where the Rolla team handles this step.
+  **Sandbox only.** Returns `404` in production.
 </Warning>
 
 ```bash
