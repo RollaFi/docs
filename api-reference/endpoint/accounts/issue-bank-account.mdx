@@ -108,6 +108,10 @@ Call the endpoint again once the account is approved — the response then inclu
 
 Two other `202` bodies can come back while you wait. If the review asks you to correct something, `data.status` is `changes_requested` and `data.message` carries the note; re-submit with corrected `accountData`. Once the request is approved on our side but the banking partner is still finishing its own checks, `data.status` is `pending_provider_review` (with the provider `state` and no `requestId`); keep retrying until the account is returned. If the request was declined, the call returns `409` with code `REQUEST_DECLINED` (see [Errors](#errors)).
 
+<Info>
+  **In sandbox, you run the review yourself.** Nobody reviews sandbox requests, so instead of waiting, [submit the details](/api-reference/endpoint/accounts/submit-bank-account) to the banking partner's sandbox, fix anything it rejects, then [generate the account](/api-reference/endpoint/accounts/generate-bank-account).
+</Info>
+
 <Tip>
   Rather than polling, subscribe to [`account.virtual_account.created`](/api-reference/webhooks/events) — it fires as soon as the deposit account exists, with the account details in the payload.
 </Tip>
