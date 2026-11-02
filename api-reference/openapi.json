@@ -13116,7 +13116,7 @@
       "post": {
         "operationId": "sandboxSubmitBankAccount",
         "summary": "Submit USD Account Details (Sandbox)",
-        "description": "Sandbox only. Sends an approved account's USD onboarding details to the banking partner's sandbox — the step the Rolla team takes on a USD request in production. Optional `accountData` corrects the prefilled details (same shape as `prefilled` from Bank Account Requirements). The banking partner's validation errors are returned as `422`, so you can fix them and submit again. When the response says `readyToGenerate: true`, call Generate USD Account.\n\nThe route is not registered in production, where it returns `404`.",
+        "description": "Sandbox only. Sends a requested USD account's details to the banking partner's sandbox.",
         "servers": [
           {
             "url": "https://api-staging.rolla.xyz/api/v1/external"
@@ -13258,7 +13258,7 @@
       "post": {
         "operationId": "sandboxGenerateBankAccount",
         "summary": "Generate USD Account (Sandbox)",
-        "description": "Sandbox only. Generates the USD deposit account once its details were submitted and accepted by the banking partner's sandbox — the last step the Rolla team takes on a USD request in production. Closes the USD request as fulfilled and sends `account.virtual_account.created`. Calling it again returns the same account with `status: \"already_exists\"`.\n\nThe route is not registered in production, where it returns `404`.",
+        "description": "Sandbox only. Creates the USD account once its details have passed.",
         "servers": [
           {
             "url": "https://api-staging.rolla.xyz/api/v1/external"

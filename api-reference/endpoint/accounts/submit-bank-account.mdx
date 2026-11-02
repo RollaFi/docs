@@ -3,97 +3,47 @@ title: 'Submit USD Account Details (Sandbox)'
 openapi: 'POST /accounts/{accountId}/bank-accounts/submit'
 ---
 
-Sends an account's USD onboarding details to the banking partner's sandbox, the same step the Rolla team takes when it reviews a USD request in production. Use it to see whether your customer's details pass the banking partner's checks, correct anything it rejects, and then [generate the account](/api-reference/endpoint/accounts/generate-bank-account).
+Sends a requested USD account's details to the banking partner's sandbox. When they pass, [generate the account](/api-reference/endpoint/accounts/generate-bank-account).
 
 <Warning>
-  **Sandbox / testing only.** This endpoint does **not** exist in production — calls to the production API return `404 Not Found`. In production, USD requests are reviewed and submitted by the Rolla team.
+  **Sandbox only.** Returns `404` in production, where the Rolla team handles this step.
 </Warning>
-
-## Where it fits
-
-In sandbox, a USD account is set up in the same steps it takes in production. You run the steps the Rolla team would otherwise run:
-
-1. [Request a USD account](/api-reference/endpoint/accounts/issue-bank-account) — returns `202` with `status: "submitted_for_review"`.
-2. [Check what will be sent](/api-reference/endpoint/accounts/bank-account-requirements) — the `prefilled` details built from the account's application.
-3. **Submit the details (this endpoint).** If the banking partner rejects something, correct it and submit again.
-4. [Generate the account](/api-reference/endpoint/accounts/generate-bank-account) once the response says `readyToGenerate: true`.
-
-## Prerequisites
-
-- The account is **approved**. Otherwise the call returns `409` with code `APPLICATION_NOT_APPROVED`.
-- A USD account has been **requested** for it. Otherwise the call returns `409` with code `NO_OPEN_REQUEST`.
 
 ## Request Body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `currency` | string | Yes | Must be `"USD"`. |
-| `accountData` | object | No | Corrections to the prefilled details, in the same shape as `prefilled` from [Bank Account Requirements](/api-reference/endpoint/accounts/bank-account-requirements). Only the fields you send change; everything else is taken from the application. |
-
-## Example Request
-
-Correct the customer's tax number and submit:
+| `currency` | string | Yes | `"USD"`. |
+| `accountData` | object | No | Corrections to the details in `prefilled` from [Bank Account Requirements](/api-reference/endpoint/accounts/bank-account-requirements), in the same shape. |
 
 ```bash
-curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-87a0-b6be9e287337/bank-accounts/submit" \
+curl -X POST "https://api-staging.rolla.xyz/api/v1/external/accounts/{accountId}/bank-accounts/submit" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json" \
-  -d '{
-    "currency": "USD",
-    "accountData": {
-      "onboardingDetails": { "taxNumber": "90123456789" }
-    }
-  }'
+  -d '{ "currency": "USD", "accountData": { "onboardingDetails": { "taxNumber": "90123456789" } } }'
 ```
 
-## Example Response
+## Response
 
 ```json
 {
   "status": 200,
-  "message": "Onboarding details submitted to the provider",
   "success": true,
   "data": {
     "status": "submitted",
     "requestId": "70ad758f-2a1f-429d-a933-d546c1c27a61",
     "onboardingState": "entity_finalized",
-    "readyToGenerate": true,
-    "message": "The provider approved the details. Generate the bank account next."
+    "readyToGenerate": true
   }
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `readyToGenerate` | `true` once the banking partner has accepted the details. [Generate the account](/api-reference/endpoint/accounts/generate-bank-account) next. |
-| `onboardingState` | The banking partner's state for this customer. |
-| `requestId` | The USD request this submission belongs to. |
-
-If `readyToGenerate` is `false`, the banking partner has not finished its checks yet. Call this endpoint again after a few seconds.
-
-Once the details have been accepted they can no longer be changed, so submitting again returns the same result without resending them. If the account has already been generated, the call returns `200` with `status: "already_exists"` and the `bankAccount`.
-
-## When the details are rejected
-
-The banking partner's own validation messages come back as `422`, so you can see exactly which field to fix:
-
-```json
-{
-  "status": 422,
-  "message": "Variable: tax_number. Message: This tax number is already being used.",
-  "errors": ["Variable: tax_number. Message: This tax number is already being used."]
-}
-```
-
-Fix the field and submit again, either by sending the corrected value in `accountData` or by updating the account's application (for example with [Update Individual](/api-reference/endpoint/accounts/update-individual) or [Upload Document](/api-reference/endpoint/accounts/upload-document)).
+If `readyToGenerate` is `false`, call again after a few seconds.
 
 ## Errors
 
 | Status | Code | When |
 |--------|------|------|
-| `400` | — | `currency` is missing or not `"USD"`. |
-| `409` | `APPLICATION_NOT_APPROVED` | The account is not approved yet. |
-| `409` | `NO_OPEN_REQUEST` | No USD account has been requested for this account. |
-| `409` | `REQUEST_DECLINED` | The USD request was declined. |
-| `422` | — | The banking partner rejected the details; `errors` lists why. |
-| `404` | — | Called in production, or the account does not belong to you. |
+| `409` | `APPLICATION_NOT_APPROVED` | The account is not approved. |
+| `409` | `NO_OPEN_REQUEST` | No USD account has been [requested](/api-reference/endpoint/accounts/issue-bank-account). |
+| `422` | — | The banking partner rejected the details. `errors` says which field; correct it and submit again. |
