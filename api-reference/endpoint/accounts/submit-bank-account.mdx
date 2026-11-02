@@ -35,6 +35,7 @@ If `readyToGenerate` is `false`, call again after a few seconds.
 
 | Status | Code | When |
 |--------|------|------|
+| `400` | — | The body has anything other than `currency: "USD"`. |
 | `409` | `APPLICATION_NOT_APPROVED` | The account is not approved. |
 | `409` | `NO_OPEN_REQUEST` | No USD account has been [requested](/api-reference/endpoint/accounts/issue-bank-account). |
 | `422` | — | The details did not pass. `errors` says why; update the account's application and submit again. |

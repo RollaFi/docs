@@ -44,5 +44,6 @@ Calling it again returns `200` with `status: "already_exists"` and the same acco
 
 | Status | Code | When |
 |--------|------|------|
+| `400` | — | The body has anything other than `currency: "USD"`. |
 | `409` | `ONBOARDING_NOT_SUBMITTED` | The details have not been submitted yet. |
 | `409` | `PROVIDER_REVIEW_PENDING` | The details have not passed yet. Submit again. |
