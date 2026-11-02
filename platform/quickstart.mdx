@@ -82,7 +82,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/{accountId}/bank-ac
   -d '{ "currency": "NGN" }'
 ```
 
-NGN accounts are issued **instantly**; USD accounts go through provider review first (`202`). In sandbox, take a USD request through that review yourself: [submit its details](/api-reference/endpoint/accounts/submit-bank-account), fix anything the banking partner rejects, then [generate the account](/api-reference/endpoint/accounts/generate-bank-account). If the provider needs details the application didn't capture, [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) lists what to pass in `accountData`. Share the returned account number with your customer — or fetch complete payment details any time with [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions).
+NGN accounts are issued **instantly**; USD accounts go through provider review first (`202`). In sandbox, [submit its details](/api-reference/endpoint/accounts/submit-bank-account) and [generate it](/api-reference/endpoint/accounts/generate-bank-account) yourself. If the provider needs details the application didn't capture, [Get Issuance Requirements](/api-reference/endpoint/accounts/bank-account-requirements) lists what to pass in `accountData`. Share the returned account number with your customer — or fetch complete payment details any time with [Funding Instructions](/api-reference/endpoint/accounts/funding-instructions).
 
 ## Step 5: Fund it (simulated)
 
