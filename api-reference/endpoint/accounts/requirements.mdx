@@ -3,7 +3,7 @@ title: 'Get Requirements'
 openapi: 'GET /accounts/{accountId}/requirements'
 ---
 
-Returns a live checklist of everything still required before the account's application can be submitted: missing fields, missing documents and outstanding identity verifications. Use it to drive your own onboarding UI or to verify readiness before calling submit.
+Returns a live checklist of everything still required before the account's application can be submitted: missing fields, missing documents, details our USD banking partner would refuse, and outstanding identity verifications. Use it to drive your own onboarding UI or to verify readiness before calling submit.
 
 ## Example Request
 
@@ -91,6 +91,7 @@ curl -X GET "https://api.rolla.xyz/api/v1/external/accounts/eec3cbed-79d8-4370-8
     "readyToSubmit": true,
     "missingFields": [],
     "missingDocuments": [],
+    "invalidFields": [],
     "submitBlocker": null,
     "identityVerification": "verified"
   }
@@ -114,7 +115,36 @@ When `readyToSubmit` is `false`, `submitBlocker` names the reason — the same o
 }
 ```
 
-Missing data is reported first. Once the application is complete and identity verification is the only hold, the code becomes `KYC_INCOMPLETE`:
+Missing data is reported first. Once nothing is missing, the application is checked against our USD banking partner's own rules — for the account and every related person — on exactly the details a USD bank account request would send. Anything it would refuse is listed in `invalidFields` under the field you send, and the code is `APPLICATION_INVALID`:
+
+```json
+{
+  "invalidFields": [
+    {
+      "field": "individualInfo.address.street",
+      "message": "individualInfo.address.street must be 2–64 characters; \"Pudong New Area Room 602, Building 2, No. 88 Keyuan Road, Zhangjiang High-Tech Park\" is 83"
+    },
+    {
+      "field": "individualInfo.firstName",
+      "message": "individualInfo.firstName \"辉生\" doesn't match the required format (e.g. John)"
+    }
+  ],
+  "submitBlocker": {
+    "code": "APPLICATION_INVALID",
+    "message": "Some details would be refused when the USD bank account is issued. Correct them before submitting.",
+    "details": {
+      "invalidFields": [
+        { "field": "individualInfo.address.street", "message": "…" },
+        { "field": "individualInfo.firstName", "message": "…" }
+      ]
+    }
+  }
+}
+```
+
+Fix them with the update endpoints — here, the name as on the ID (`Hui Sheng`) and the street split into `street` and `line2` — and they clear on the next call. For a business, a related person's entry is prefixed `related_persons.<id>.`.
+
+Once the application is complete and identity verification is the only hold, the code becomes `KYC_INCOMPLETE`:
 
 ```json
 {
@@ -152,12 +182,13 @@ For a business, `details.unverified` lists who is outstanding:
 |-------|------|-------------|
 | `entityType` | string | `business` or `individual` — decides which of the two shapes below you get |
 | `status` | string | Current application status (`draft`, `submitted`, `approved`, `rejected`, `changes_requested`) |
-| `readyToSubmit` | boolean | `true` only when **everything** is cleared: no missing fields, no missing documents, and identity verification complete — `identityVerification` for an individual, every entry in `relatedPersons` for a business |
+| `readyToSubmit` | boolean | `true` only when **everything** is cleared: no missing fields, no missing documents, nothing in `invalidFields`, and identity verification complete — `identityVerification` for an individual, every entry in `relatedPersons` for a business |
 | `missingFields` | string[] | Required application fields not yet provided, e.g. `business_info.legalName`. Entries prefixed `related_persons.<id>.` belong to that person |
 | `missingDocuments` | string[] | Required document types not yet uploaded, including each related person's own documents |
+| `invalidFields` | object[] | Details our USD banking partner would refuse, as `{ field, message }`. Empty until nothing is missing, since the check runs on the complete application |
 | `relatedPersons` | object[] | Business only: each related person with their KYC `verification` state (`verified`, `pending`, `unknown`) and their own `missingFields` / `missingDocuments` |
 | `identityVerification` | string | Individual only: identity verification state (`verified`, `pending`, `unknown`) |
-| `submitBlocker` | object \| null | `null` when the account is ready. Otherwise `code` (`APPLICATION_INCOMPLETE` or `KYC_INCOMPLETE`), a human-readable `message`, and `details` carrying the specifics |
+| `submitBlocker` | object \| null | `null` when the account is ready. Otherwise `code` (`APPLICATION_INCOMPLETE`, `APPLICATION_INVALID` or `KYC_INCOMPLETE`), a human-readable `message`, and `details` carrying the specifics |
 
 <Info>
   A business must declare **at least one** beneficial owner or director. Until one is added, `missingFields` contains `related_persons`.

@@ -65,7 +65,7 @@ curl -X POST "https://api.rolla.xyz/api/v1/external/accounts/b6075be0-f1d0-451f-
 ## Error Responses
 
 <Info>
-  When more than one thing is outstanding you get the most actionable one first: missing fields or documents are reported as `400 APPLICATION_INCOMPLETE` and always list what is missing; `409 KYC_INCOMPLETE` is returned only once the application data is complete and identity verification is the sole remaining hold.
+  When more than one thing is outstanding you get the most actionable one first: missing fields or documents are reported as `400 APPLICATION_INCOMPLETE` and always list what is missing; then details our USD banking partner would refuse, as `400 APPLICATION_INVALID`; `409 KYC_INCOMPLETE` is returned only once the application data is complete and identity verification is the sole remaining hold.
 </Info>
 
 ### Application incomplete (`400`)
@@ -89,6 +89,25 @@ reports the same list without attempting a submit.
 To find out what a submit would return without calling it, read `submitBlocker` on
 [Get Requirements](/api-reference/endpoint/accounts/requirements) — it carries the same
 `code` and details as the errors below.
+
+### Details the USD banking partner would refuse (`400`)
+
+The application is complete, but our USD banking partner's own rules would refuse something
+in it. `invalidFields` names each field as you send it; fix them and submit again.
+
+```json
+{
+  "status": 400,
+  "message": "Some details would be refused when the USD bank account is issued. Correct them before submitting.",
+  "code": "APPLICATION_INVALID",
+  "invalidFields": [
+    {
+      "field": "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.firstName",
+      "message": "firstName \"辉生\" doesn't match the required format (e.g. John)"
+    }
+  ]
+}
+```
 
 ### No beneficial owners declared (`400`)
 

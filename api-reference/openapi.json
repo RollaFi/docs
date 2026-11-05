@@ -10042,7 +10042,8 @@
                   "firstName": {
                     "type": "string",
                     "minLength": 1,
-                    "example": "Jane"
+                    "example": "Jane",
+                    "description": "First name. Write it exactly as the ID document does in Latin letters, spaces, hyphens and accents included (`Hui Sheng`, not `Huisheng`): identity verification compares it with the ID. Rolla removes the spaces, hyphens and accents itself when sending it to the USD banking partner."
                   },
                   "lastName": {
                     "type": "string",
@@ -10102,6 +10103,11 @@
                       "street": {
                         "type": "string",
                         "example": "5 Oak St"
+                      },
+                      "line2": {
+                        "type": "string",
+                        "description": "Optional second address line: room, unit, building or estate. Sent to the USD banking partner as address line 2.",
+                        "example": "Unit 5"
                       },
                       "city": {
                         "type": "string",
@@ -10305,7 +10311,8 @@
                   "firstName": {
                     "type": "string",
                     "minLength": 1,
-                    "example": "Jane"
+                    "example": "Jane",
+                    "description": "First name. Write it exactly as the ID document does in Latin letters, spaces, hyphens and accents included (`Hui Sheng`, not `Huisheng`): identity verification compares it with the ID. Rolla removes the spaces, hyphens and accents itself when sending it to the USD banking partner."
                   },
                   "lastName": {
                     "type": "string",
@@ -10365,6 +10372,11 @@
                       "street": {
                         "type": "string",
                         "example": "5 Oak St"
+                      },
+                      "line2": {
+                        "type": "string",
+                        "description": "Optional second address line: room, unit, building or estate. Sent to the USD banking partner as address line 2.",
+                        "example": "Unit 5"
                       },
                       "city": {
                         "type": "string",
@@ -11089,7 +11101,7 @@
             }
           },
           "400": {
-            "description": "The application is incomplete: `missingFields` and `missingDocuments` name exactly what is outstanding. A business that has declared nobody carries the bare `related_persons` entry.",
+            "description": "The application is incomplete: `missingFields` and `missingDocuments` name exactly what is outstanding. A business that has declared nobody carries the bare `related_persons` entry. Details the USD banking partner would refuse are reported the same way with `code: APPLICATION_INVALID` and an `invalidFields` list.",
             "content": {
               "application/json": {
                 "schema": {
@@ -18392,6 +18404,11 @@
             "type": "string",
             "example": "77 Commerce Ave"
           },
+          "line2": {
+            "type": "string",
+            "description": "Optional second address line: room, unit, building or estate. Keep `street` to the room and street number and name, and put the rest here. Sent to the USD banking partner as address line 2.",
+            "example": "Building 2, Zhangjiang High-Tech Park"
+          },
           "city": {
             "type": "string",
             "example": "Wilmington"
@@ -18483,7 +18500,8 @@
           "firstName": {
             "type": "string",
             "minLength": 1,
-            "example": "Jane"
+            "example": "Jane",
+            "description": "First name. Write it exactly as the ID document does in Latin letters, spaces, hyphens and accents included (`Hui Sheng`, not `Huisheng`): identity verification compares it with the ID. Rolla removes the spaces, hyphens and accents itself when sending it to the USD banking partner."
           },
           "lastName": {
             "type": "string",
@@ -18543,6 +18561,11 @@
               "street": {
                 "type": "string",
                 "example": "5 Oak St"
+              },
+              "line2": {
+                "type": "string",
+                "description": "Optional second address line: room, unit, building or estate. Sent to the USD banking partner as address line 2.",
+                "example": "Unit 5"
               },
               "city": {
                 "type": "string",
@@ -19021,7 +19044,8 @@
           "readyToSubmit",
           "missingFields",
           "missingDocuments",
-          "submitBlocker"
+          "submitBlocker",
+          "invalidFields"
         ],
         "properties": {
           "entityType": {
@@ -19049,7 +19073,7 @@
           },
           "readyToSubmit": {
             "type": "boolean",
-            "description": "True only when everything is cleared: no missing fields, no missing documents, and identity verification complete — `identityVerification` for an individual, every entry of `relatedPersons` for a business",
+            "description": "True only when everything is cleared: no missing fields, no missing documents, and identity verification complete — `identityVerification` for an individual, every entry of `relatedPersons` for a business, and nothing listed in `invalidFields`.",
             "example": false
           },
           "missingFields": {
@@ -19074,6 +19098,27 @@
               "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.proof_of_address"
             ]
           },
+          "invalidFields": {
+            "type": "array",
+            "description": "Details that are present but that the USD banking partner's own published rules would refuse when the USD bank account is issued, under the fields you send. Checked once nothing is missing, for the account and every related person. Any entry makes `readyToSubmit` false with `APPLICATION_INVALID`.",
+            "items": {
+              "type": "object",
+              "required": [
+                "field",
+                "message"
+              ],
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "example": "related_persons.a3d4f21e-f499-488f-8508-43228dfea485.firstName"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "firstName \"辉生\" doesn't match the required format (e.g. John)"
+                }
+              }
+            }
+          },
           "submitBlocker": {
             "type": "object",
             "nullable": true,
@@ -19088,9 +19133,10 @@
                 "type": "string",
                 "enum": [
                   "APPLICATION_INCOMPLETE",
+                  "APPLICATION_INVALID",
                   "KYC_INCOMPLETE"
                 ],
-                "description": "Missing data is reported first; `KYC_INCOMPLETE` only once identity verification is the sole remaining hold",
+                "description": "Missing data is reported first, then `APPLICATION_INVALID` for details the USD banking partner would refuse; `KYC_INCOMPLETE` only once identity verification is the sole remaining hold",
                 "example": "APPLICATION_INCOMPLETE"
               },
               "message": {
@@ -19100,7 +19146,7 @@
               "details": {
                 "type": "object",
                 "additionalProperties": true,
-                "description": "`missingFields` + `missingDocuments` for `APPLICATION_INCOMPLETE`; `identityVerification` for an individual `KYC_INCOMPLETE`; `unverified` (a list of `{personId, name}`) for a business one"
+                "description": "`missingFields` + `missingDocuments` for `APPLICATION_INCOMPLETE`; `invalidFields` for `APPLICATION_INVALID`; `identityVerification` for an individual `KYC_INCOMPLETE`; `unverified` (a list of `{personId, name}`) for a business one"
               }
             }
           },

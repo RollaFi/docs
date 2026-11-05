@@ -23,7 +23,7 @@ The account must already be **`submitted`** — which is only possible once ever
 }
 ```
 
-The submission gate is re-run at approval time. If the account would no longer pass it, the call returns `400` whose `message` names the blocking requirement, the same message [Submit Application](/api-reference/endpoint/accounts/submit) reports.
+The submission gate is re-run at approval time. If the account would no longer pass it, the call returns `400` with the same `code` and details [Submit Application](/api-reference/endpoint/accounts/submit) reports — for example `APPLICATION_INVALID` with its `invalidFields` list.
 
 ## Example Request
 

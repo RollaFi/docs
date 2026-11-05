@@ -19,8 +19,8 @@ Updates the KYC application of an individual account. Fields inside `individualI
 
 | Field | | Notes |
 |---|---|---|
-| `firstName` | **Mandatory** | |
-| `lastName` | **Mandatory** | |
+| `firstName` | **Mandatory** | Exactly as the ID document writes it in Latin letters, spaces and accents included (`Hui Sheng`, not `Huisheng`). Identity verification compares it with the ID; Rolla removes the spaces and accents itself when sending it to the USD banking partner |
+| `lastName` | **Mandatory** | As on the ID document |
 | `phone` | **Mandatory** | International format |
 | `dateOfBirth` | **Mandatory** | `YYYY-MM-DD` |
 | `citizenship` | **Mandatory** | ISO-2 country code |
