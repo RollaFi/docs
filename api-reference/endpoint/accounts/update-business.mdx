@@ -38,11 +38,24 @@ Updates the application of a business account. Each section you send (`business_
 
 | Field | | Notes |
 |---|---|---|
-| `street` | **Mandatory** | |
+| `street` | **Mandatory** | Room and street number and name, e.g. `Room 1201, 188 Harbour Road` |
+| `line2` | Optional | Building, phase, estate or park, e.g. `Block A, Lakeview Business Park` |
 | `city` | **Mandatory** | |
 | `state` | **Mandatory** | State, province or region |
 | `postalCode` | **Mandatory** | |
 | `country` | **Mandatory** | Accepts an ISO-2 code (`US`), a country name (`United States`) or a demonym; stored as the ISO-2 code |
+
+#### Splitting a long address
+
+Our USD banking partner takes each address line as 2–64 characters. A long address written
+as one line — common for machine-translated addresses — is split across the fields:
+
+| Address | `Riverside District Room 1201, Block A, No. 188 Harbour Road, Lakeview Business Park` |
+|---|---|
+| `street` | `Room 1201, 188 Harbour Road` |
+| `line2` | `Block A, Lakeview Business Park` |
+| `city` | `Shanghai` |
+| `state` | `Riverside District` |
 
 ### `contact_info`
 
@@ -69,6 +82,14 @@ All six are mandatory before submission, uploaded via [Upload Document](/api-ref
   "what is still outstanding" — its `missingFields` and `missingDocuments` arrays name exactly
   what is blocking submission, so you never have to reconcile this table by hand.
 </Tip>
+
+<Info>
+  Once nothing is missing, [Get Requirements](/api-reference/endpoint/accounts/requirements)
+  also checks the application against our USD banking partner's own rules — for the business
+  and for every related person — and lists anything it would refuse in `invalidFields`.
+  Submission is refused until those are fixed, so an approved account can always be issued a
+  USD bank account.
+</Info>
 
 <Info>
   Every **beneficial owner / director** must complete identity verification (Sumsub **GREEN**) before the application can be submitted. Add them via [Add Related Person](/api-reference/endpoint/accounts/add-related-person) and send each their KYC link.

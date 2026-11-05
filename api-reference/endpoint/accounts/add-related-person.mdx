@@ -15,12 +15,12 @@ checked before the application can be submitted.
 
 | Field | | Notes |
 |---|---|---|
-| `firstName` | **Required in request** | |
-| `lastName` | **Required in request** | |
+| `firstName` | **Required in request** | As on the ID document, including any spaces or accents |
+| `lastName` | **Required in request** | As on the ID document |
 | `email` | **Required in request** | Where their KYC link is sent |
 | `phone` | **Required in request** | International format |
 | `dateOfBirth` | **Required in request** | `YYYY-MM-DD`. Must be 18 or older |
-| `currentAddress` | **Required in request** | All five fields — see below |
+| `currentAddress` | **Required in request** | All five required fields — see below |
 | `sourceOfWealthExplanation` | Required to submit | Accepted empty here, blocks submission if left so |
 | Identifier | Required to submit | `taxId`, or `nin` for Nigerian residents — see below |
 | `ownershipPercentage` | Optional | 0–100. Write `60` for 60%, never `0.6` |
@@ -29,11 +29,12 @@ checked before the application can be submitted.
 
 ### `currentAddress`
 
-Required in the request, and all five fields must be present together.
+Required in the request, and all five required fields must be present together.
 
 | Field | | Notes |
 |---|---|---|
-| `street` | **Required** | |
+| `street` | **Required** | House or room number and street name |
+| `line2` | Optional | Unit, building or estate |
 | `city` | **Required** | |
 | `state` | **Required** | State, province or region |
 | `postalCode` | **Required** | |
@@ -140,7 +141,7 @@ The stored record is the `id` plus exactly the fields you sent: anything you lef
 | `phone` | string | Yes | Phone number |
 | `dateOfBirth` | string | Yes | Date of birth (`YYYY-MM-DD`) |
 | `ownershipPercentage` | number | No | Ownership stake, 0–100 |
-| `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`) |
+| `currentAddress` | object | Yes | Residential address (`street`, `city`, `state`, `postalCode`, `country`, optional `line2`) |
 | `sourceOfWealthExplanation` | string | No (required before submission) | Free-text source of wealth |
 | `taxId` | string | No (required before submission) | The person's government identifier, in [the format their country of residence issues](#government-identifier). Nigerian residents send `nin` instead. Can also be patched later via [Update Related Person](/api-reference/endpoint/accounts/update-related-person) |
 | `bvn` / `nin` | string | No | Nigerian identifiers. `nin` (11 digits) is what Nigerian residents send in place of `taxId`. Both are checked for 11 digits only when `currentAddress.country` is `NG` |
