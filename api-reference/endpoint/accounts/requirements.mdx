@@ -122,11 +122,11 @@ Missing data is reported first. Once nothing is missing, the application is chec
   "invalidFields": [
     {
       "field": "individualInfo.address.street",
-      "message": "individualInfo.address.street must be 2–64 characters; \"Pudong New Area Room 602, Building 2, No. 88 Keyuan Road, Zhangjiang High-Tech Park\" is 83"
+      "message": "individualInfo.address.street must be 2–64 characters; \"Riverside District Room 1201, Block A, No. 188 Harbour Road, Lakeview Business Park\" is 83"
     },
     {
       "field": "individualInfo.firstName",
-      "message": "individualInfo.firstName \"辉生\" doesn't match the required format (e.g. John)"
+      "message": "individualInfo.firstName \"美琳\" doesn't match the required format (e.g. John)"
     }
   ],
   "submitBlocker": {
@@ -142,7 +142,7 @@ Missing data is reported first. Once nothing is missing, the application is chec
 }
 ```
 
-Fix them with the update endpoints — here, the name as on the ID (`Hui Sheng`) and the street split into `street` and `line2` — and they clear on the next call. For a business, a related person's entry is prefixed `related_persons.<id>.`.
+Fix them with the update endpoints — here, the name as on the ID and the street split into `street` and `line2` — and they clear on the next call. For a business, a related person's entry is prefixed `related_persons.<id>.`.
 
 Once the application is complete and identity verification is the only hold, the code becomes `KYC_INCOMPLETE`:
 
